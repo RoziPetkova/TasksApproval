@@ -1,5 +1,5 @@
 _schema-version: "3.2"
-ID: onboarding.taskapproval.TaskApprovalApp
+ID: onboarding.taskapproval.tasksapproval
 version: 0.0.1
 
 build-parameters:
@@ -10,7 +10,7 @@ build-parameters:
         - npm run build:workspaces
 
 modules:
-  - name: onboarding.taskapproval.TaskApprovalApp
+  - name: onboarding.taskapproval.tasksapproval
     type: staticfile
     path: dist
     parameters:

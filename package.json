@@ -1,17 +1,17 @@
 {
-    "name": "onboarding.taskapproval.TaskApprovalApp",
+    "name": "onboarding.taskapproval.tasksapproval",
     "scripts": {
-        "build": "mbt build --mtar onboarding.taskapproval.TaskApprovalApp.mtar",
+        "build": "mbt build --mtar onboarding.taskapproval.tasksapproval.mtar",
         "build:workspaces": "npm run build --workspaces --if-present",
-        "deploy": "cf deploy mta_archives/onboarding.taskapproval.TaskApprovalApp.mtar --retries 0",
+        "deploy": "cf deploy mta_archives/onboarding.taskapproval.tasksapproval.mtar --retries 0",
         "lint": "npm run lint --workspaces --if-present",
         "ui5lint": "npm run ui5lint --workspaces --if-present",
-        "start:taskApproval": "npm start --workspace taskApproval"
+        "start:appiuimodule": "npm start --workspace appiuimodule"
     },
     "dependencies": {
         "mbt": "^1"
     },
     "workspaces": [
-        "taskApproval"
+        "appiuimodule"
     ]
 }

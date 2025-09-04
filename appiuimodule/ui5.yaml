@@ -1,0 +1,30 @@
+specVersion: "3.1"
+metadata:
+  name: appiuimodule
+type: application
+server:
+  customMiddleware:
+    - name: fiori-tools-proxy
+      afterMiddleware: compression
+      configuration:
+        ignoreCertError: false
+    - name: fiori-tools-appreload
+      afterMiddleware: compression
+      configuration:
+        port: 35729
+        path: webapp
+        delay: 300
+    - name: preview-middleware
+      afterMiddleware: compression
+      configuration:
+        test:
+          - framework: Qunit
+framework:
+  libraries:
+    - name: sap.m
+    - name: sap.ui.core
+    - name: themelib_sap_horizon
+    - name: sap.fe.templates
+    - name: sap.ui.export
+  name: SAPUI5
+  version: 1.136.2

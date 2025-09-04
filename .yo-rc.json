@@ -1,8 +1,8 @@
 {
   "generator-ui5-project": {
     "namespaceUI5": "onboarding.taskapproval",
-    "projectName": "TaskApprovalApp",
-    "uimoduleName": "taskApproval",
+    "projectName": "tasksapproval",
+    "uimoduleName": "appiuimodule",
     "enableFPM": true,
     "enableTypescript": false,
     "enableFioriTools": false,
@@ -10,6 +10,9 @@
     "ui5Libs": "Local resources (SAPUI5)",
     "newDir": false,
     "initRepo": false,
-    "projectId": "onboarding.taskapproval.TaskApprovalApp"
+    "projectId": "onboarding.taskapproval.tasksapproval",
+    "uimodules": [
+      "appiuimodule"
+    ]
   }
 }

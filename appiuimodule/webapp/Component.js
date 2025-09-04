@@ -3,7 +3,7 @@ sap.ui.define(
     function (UIComponent) {
         "use strict";
 
-        return UIComponent.extend("taskApproval.Component", {
+        return UIComponent.extend("appiuimodule.Component", {
             metadata: {
                 manifest: "json"
             },

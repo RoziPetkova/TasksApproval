@@ -1,0 +1,89 @@
+{
+    "_version": "1.60.0",
+    "sap.app": {
+        "id": "appiuimodule",
+        "type": "application",
+        "i18n": "i18n/i18n.properties",
+        "applicationVersion": {
+            "version": "0.0.1"
+        },
+        "title": "{{appTitle}}",
+        "description": "{{appDescription}}",
+        "resources": "resources.json",
+        "sourceTemplate": {
+            "id": "",
+            "version": ""
+        }
+    },
+    "sap.ui": {
+        "technology": "UI5",
+        "icons": {
+            "icon": "",
+            "favIcon": "",
+            "phone": "",
+            "phone@2": "",
+            "tablet": "",
+            "tablet@2": ""
+        },
+        "deviceTypes": {
+            "desktop": true,
+            "tablet": true,
+            "phone": true
+        }
+    },
+    "sap.ui5": {
+        "flexEnabled": true,
+        "dependencies": {
+            "minUI5Version": "1.136.2",
+            "libs": {
+                "sap.m": {},
+                "sap.ui.core": {},
+                "sap.fe.templates": {}
+            }
+        },
+        "contentDensities": {
+            "compact": true,
+            "cozy": true
+        },
+        "models": {
+            "i18n": {
+                "type": "sap.ui.model.resource.ResourceModel",
+                "settings": {
+                    "bundleName": "appiuimodule.i18n.i18n"
+                }
+            }
+        },
+        "rootView": {
+            "viewName": "appiuimodule.ext.overview.Overview",
+            "type": "XML",
+            "id": "Overview"
+        },
+        "resources": {
+            "css": []
+        },
+        "routing": {
+            "config": {},
+            "routes": [
+                {
+                    "name": "TaskOverview",
+                    "pattern": "",
+                    "target": "TaskOverview"
+                }
+            ],
+            "targets": {
+                "TaskOverview": {
+                    "type": "Component",
+                    "id": "TaskOverview",
+                    "name": "sap.fe.core.fpm",
+                    "options": {
+                        "settings": {
+                            "navigation": {},
+                            "contextPath": "/Task",
+                            "viewName": "appiuimodule.ext.overview.Overview"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
