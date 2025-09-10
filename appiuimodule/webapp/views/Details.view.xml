@@ -1,0 +1,53 @@
+<mvc:View
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:macros="sap.fe.macros"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    controllerName="appiuimodule.controllers.Details">
+    <Page
+        id="Details"
+        title="{i18n>DetailsTitle}"
+        showNavButton="true"
+        navButtonPress=".onNavBack">
+        <content>
+            <Table id="taskTable"
+                items="{taskModel>/taskDetails}"
+                class="sapUiResponsiveMargin"
+                width="auto">
+                <columns>
+                    <Column>
+
+                    </Column>
+                    <Column>
+
+                    </Column>
+                </columns>
+
+                <items>
+                    <ColumnListItem>
+                        <cells>
+                            <Text text="{taskModel>label}" design="Bold" />
+                            <Text text="{taskModel>value}" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </content>
+         <footer>
+                <Toolbar>
+                    <ToolbarSpacer /> <!-- pushes buttons to the right -->
+                    <Button
+                        id="ApproveButton"
+                        icon="sap-icon://accept"
+                        text="{i18n>Approve}"
+                        press=".onApprove" />
+                    <Button
+                        id="DeclineButton"
+                        icon="sap-icon://decline"
+                        text="{i18n>Decline}"
+                        press=".onDecline" />
+                </Toolbar>
+            </footer>
+    </Page>
+</mvc:View>

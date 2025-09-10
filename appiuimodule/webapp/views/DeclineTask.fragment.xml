@@ -1,0 +1,29 @@
+<!--A fragment in SAPUI5 is like a UI snippet (a reusable piece of UI), but without its own
+controller or lifecycle.
+You can think of a fragment as a partial view:
+- It contains UI controls (XML, JS, or HTML).
+- It has no onInit, onExit lifecycle methods (unlike a View).
+- It’s always used inside a View or Controller.-->
+
+<!--fragments
+do not have a controller this attribute is missing. Also, the fragment does not have 
+any footprint in the DOM tree of the app, 
+and there is no control instance of the fragment itself (only the contained controls).-->
+
+<!-- xmlns and xml:core -> namespaces of sap libraries -->
+<!--Everything
+inside this tag is part of the fragment, which can be loaded and used in views or controllers.-->
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    <Dialog
+        id="taskDecisionDialog"
+        title="Hello {/recipient/name}">
+        <content>
+            <core:Icon
+                src="sap-icon://hello-world"
+                size="8rem"
+                class="sapUiMediumMargin" />
+        </content>
+    </Dialog>
+</core:FragmentDefinition>

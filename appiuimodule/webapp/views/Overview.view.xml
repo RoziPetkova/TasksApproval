@@ -1,0 +1,78 @@
+<mvc:View
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:macros="sap.fe.macros"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    controllerName="appiuimodule.controllers.Overview">
+    <Page
+        id="Overview"
+        title="{i18n>OverviewTitle}">
+        <content>
+            <Table
+                id="tasksTable"
+                items="{
+                        path : 'tasks>/tasks',
+                        sorter : {
+                            path : 'type',
+                            group : true
+                        }
+                    }"
+                class="sapUiResponsiveMargin"
+                width="auto">
+                <headerToolbar>
+                    <Toolbar>
+                        <Title text="{i18n>taskListTitle}" />
+                        <ToolbarSpacer />
+                        <SearchField
+                            width="50%"
+                            search=".onFilterTasks" />
+                    </Toolbar>
+                </headerToolbar>
+                <columns>
+                    <Column
+                        minScreenWidth="Small"
+                        width="5em">
+                        <Text text="{i18n>taskId}" />
+                    </Column>
+                    <Column>
+                        <Text text="{i18n>taskType}" />
+                    </Column>
+                    <Column>
+                        <Text text="{i18n>taskTitle}" />
+                    </Column>
+                    <Column minScreenWidth="Small">
+                        <Text text="{i18n>taskCreationDate}" />
+                    </Column>
+                    <Column minScreenWidth="Small">
+                        <Text text="{i18n>taskStatus}" />
+                    </Column>
+                    <Column>
+                        <Text text="{i18n>taskEmployee}" />
+                    </Column>
+                    <Column minScreenWidth="Small">
+                        <Text text="{i18n>taskDueDate}" />
+                    </Column>
+                </columns>
+                <items>
+                    <ColumnListItem
+                        type="Navigation"
+                        press=".onPress">
+                        <cells>
+                            <Text text="{tasks>taskId}" />
+                            <Text text="{tasks>type}" />
+                            <Text text="{tasks>title}" />
+                            <Text text="{tasks>creationDate}" />
+                            <Text text="{tasks>status}" />
+                            <Text text="{tasks>employee}" />
+                            <Text text="{tasks>dueDate}" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+            <Button
+                text="Go to details"
+                press=".onShowDetails" />
+        </content>
+    </Page>
+</mvc:View>

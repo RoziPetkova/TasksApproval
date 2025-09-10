@@ -5,20 +5,22 @@ sap.ui.define(
     function (Controller) {
         'use strict';
 
-        return Controller.extend('appiuimodule.ext.overview.Overview', {
-
-            onShowHello() {
-                // show a native JavaScript alert
-                alert("Hello World");
-            }
-            /**
+        return Controller.extend('appiuimodule.controllers.Overview', {
+             /**
              * Called when a controller is instantiated and its View controls (if available) are already created.
              * Can be used to modify the View before it is displayed, to bind event handlers and do other one-time initialization.
              * @memberOf appiuimodule.ext.overview.Overview
              */
-            //  onInit: function () {
-            //
-            //  },
+            // onInit: function () {
+            //     console.log("Overview controller initialized");
+            //     console.log(this.getView().getModel("tasks"));
+            // },
+
+            onPress(oEvent) {
+                const oItem = oEvent.getSource();
+                const oRouter = this.getOwnerComponent().getRouter();
+                oRouter.navTo("details", {taskId: oEvent.getSource().getBindingContext("tasks").getObject().taskId});
+            }
 
             /**
              * Similar to onAfterRendering, but this hook is invoked before the controller's View is re-rendered

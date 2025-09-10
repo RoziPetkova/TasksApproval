@@ -1,0 +1,58 @@
+{
+  "tasks": [
+    {
+      "taskId": 1,
+      "type": "LeaveRequest",
+      "title": "Annual Leave - 5 days",
+      "creationDate": "2025-08-01",
+      "dueDate": "2025-08-10",
+      "status": "Pending",
+      "employee": "John Doe"
+    },
+    {
+      "taskId": 2,
+      "type": "LeaveRequest",
+      "title": "Sick Leave - 2 days",
+      "creationDate": "2025-08-12",
+      "dueDate": "2025-08-14",
+      "status": "Approved",
+      "employee": "Alice Smith"
+    },
+    {
+      "taskId": 3,
+      "type": "ExpenseReport",
+      "title": "Business trip to Berlin",
+      "creationDate": "2025-08-05",
+      "dueDate": "2025-08-15",
+      "status": "Pending",
+      "employee": "Michael Brown"
+    },
+    {
+      "taskId": 4,
+      "type": "ExpenseReport",
+      "title": "Client dinner",
+      "creationDate": "2025-08-15",
+      "dueDate": "2025-08-17",
+      "status": "Rejected",
+      "employee": "Jane Doe"
+    },
+    {
+      "taskId": 5,
+      "type": "PurchaseOrder",
+      "title": "Laptop procurement",
+      "creationDate": "2025-08-10",
+      "dueDate": "2025-08-20",
+      "status": "Pending",
+      "employee": "Robert Taylor"
+    },
+    {
+      "taskId": 6,
+      "type": "PurchaseOrder",
+      "title": "Office chairs",
+      "creationDate": "2025-08-20",
+      "dueDate": "2025-08-25",
+      "status": "Approved",
+      "employee": "Emily Johnson"
+    }
+  ]
+}

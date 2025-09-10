@@ -1,0 +1,8 @@
+<mvc:View
+   controllerName="appiuimodule.controllers.App"
+   xmlns="sap.m"
+   xmlns:mvc="sap.ui.core.mvc">
+   <App
+            class="myAppDemoWT"
+            id="app" />
+</mvc:View>

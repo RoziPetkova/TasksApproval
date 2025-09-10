@@ -51,37 +51,53 @@
                 "settings": {
                     "bundleName": "appiuimodule.i18n.i18n"
                 }
+            },
+            "tasks": {
+                "type": "sap.ui.model.json.JSONModel",
+                "uri": "data.json"
             }
         },
         "rootView": {
-            "viewName": "appiuimodule.ext.overview.Overview",
+            "viewName": "appiuimodule.views.App",
             "type": "XML",
-            "id": "Overview"
+            "id": "app"
         },
         "resources": {
-            "css": []
+            "css": [
+                {
+                    "uri": "css/style.css"
+                }
+            ]
         },
         "routing": {
-            "config": {},
+            "config": {
+                "routerClass": "sap.m.routing.Router",
+                "type": "View",
+                "viewType": "XML",
+                "path": "appiuimodule.views",
+                "controlId": "app",
+                "controlAggregation": "pages"
+            },
             "routes": [
                 {
-                    "name": "TaskOverview",
                     "pattern": "",
-                    "target": "TaskOverview"
+                    "name": "overview",
+                    "target": "targetoverview"
+                },
+                {
+                    "pattern": "details/{taskId}",
+                    "name": "details",
+                    "target": "targetdetails"
                 }
             ],
             "targets": {
-                "TaskOverview": {
-                    "type": "Component",
-                    "id": "TaskOverview",
-                    "name": "sap.fe.core.fpm",
-                    "options": {
-                        "settings": {
-                            "navigation": {},
-                            "contextPath": "/Task",
-                            "viewName": "appiuimodule.ext.overview.Overview"
-                        }
-                    }
+                "targetoverview": {
+                    "id": "overview",
+                    "name": "Overview"
+                },
+                "targetdetails": {
+                    "id": "details",
+                    "name": "Details"
                 }
             }
         }
