@@ -6,7 +6,7 @@ sap.ui.define(
     function (Controller, History) {
         "use strict";
 
-        return Controller.extend("appiuimodule.controllers.Details", {
+        return Controller.extend("appiuimodule.controllers.OrderDetails", {
             /**
              * Called when a controller is instantiated and its View controls (if available) are already created.
              * Can be used to modify the View before it is displayed, to bind event handlers and do other one-time initialization.
@@ -14,22 +14,22 @@ sap.ui.define(
              */
             onInit() {
                 const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.getRoute("details").attachPatternMatched(this.onObjectMatched, this);
+                oRouter.getRoute("orderdetails").attachPatternMatched(this.onObjectMatched, this);
             },
 
 
             onObjectMatched(oEvent) {
-                var sTaskId = oEvent.getParameter("arguments").taskId;
-                var oModel = this.getOwnerComponent().getModel("tasks");
-                var aTasks = oModel.getProperty("/tasks");
-                var oTask = aTasks.find(function (task) {
-                    return String(task.taskId) === String(sTaskId);
+                var sOrderId = oEvent.getParameter("arguments").OrderID;
+                var oModel = this.getOwnerComponent().getModel("orders");
+                var aOrders = oModel.getProperty("/orders");
+                var oOrder = aOrders.find(function (order) {
+                    return String(order.OrderID) === String(sOrderId);
                 });
-                // oTask now contains the task object with the matching taskId
-                if (oTask) {
+                // oOrder now contains the order object with the matching OrderID
+                if (oOrder) {
                     // set it to a local model for binding
-                    var oTaskModel = loadTaskProperties(oTask);
-                    this.getView().setModel(oTaskModel, "taskModel");
+                    var oOrderModel = this.loadTaskProperties(oOrder);
+                    this.getView().setModel(oOrderModel, "taskModel");
                 }
                 this.updateStatusStyle();
             },
@@ -56,7 +56,7 @@ sap.ui.define(
                     var aCells = oItem.getCells();
                     var sLabel = aCells[0].getText();
 
-                    if (sLabel === "Status") {
+                    if (sLabel === "Status" || sLabel.includes("Status")) {
                         var sStatus = aCells[1].getText();
                         // Remove any previous status classes
                         clearStatysStyle(aCells);
@@ -92,7 +92,7 @@ sap.ui.define(
                     new sap.m.VBox({
                         alignItems: "Center",
                         items: [
-                            new sap.ui.core.Icon({src: "sap-icon://accept"}),
+                            new sap.ui.core.Icon({ src: "sap-icon://accept" }),
                             new sap.m.Text({
                                 text: "Confirm Approval",
                                 textAlign: "Center",
@@ -127,7 +127,7 @@ sap.ui.define(
                         alignItems: "Center",
                         items: [
                             new sap.ui.core.Icon({ src: "sap-icon://decline" }),
-                            new sap.m.Input({placeholder: "Rejection reason..." })
+                            new sap.m.Input({ placeholder: "Rejection reason..." })
                         ]
                     })
                 );
@@ -142,13 +142,42 @@ sap.ui.define(
 
                 this.decisionDialog.open();
             },
+
+            formatStatus: function(shippedDate) {
+                return shippedDate ? "Shipped" : "Pending";
+            },
+
+            formatDate: function(dateString) {
+                if (!dateString) return "";
+                var date = new Date(dateString);
+                return date.toLocaleDateString();
+            },
+
+            loadTaskProperties(task) {
+                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+
+                return new sap.ui.model.json.JSONModel({
+                    taskDetails: [
+                        { label: bundle.getText("orderIdColumn"), value: task.OrderID },
+                        { label: bundle.getText("taskTypeLabel"), value: "Order" },
+                        { label: bundle.getText("customerIdColumn"), value: task.CustomerID },
+                        { label: bundle.getText("orderDateColumn"), value: this.formatDate(task.OrderDate) },
+                        { label: bundle.getText("shippedDateLabel"), value: this.formatDate(task.ShippedDate) },
+                        { label: bundle.getText("countryLabel"), value: task.ShipCountry },
+                        { label: bundle.getText("cityLabel"), value: task.ShipCity },
+                        { label: bundle.getText("statusLabel"), value: this.formatStatus(task.ShippedDate) }
+                    ]
+                });
+            },
+
+
         });
     }
 );
 function setNewStatusStyle(sStatus, aCells) {
     if (sStatus === "Pending") {
         aCells[1].addStyleClass("statusPending");
-    } else if (sStatus === "Approved") {
+    } else if (sStatus === "Shipped" || sStatus === "Approved") {
         aCells[1].addStyleClass("statusApproved");
     } else if (sStatus === "Rejected") {
         aCells[1].addStyleClass("statusRejected");
@@ -160,18 +189,3 @@ function clearStatysStyle(aCells) {
     aCells[1].removeStyleClass("statusApproved");
     aCells[1].removeStyleClass("statusRejected");
 }
-
-function loadTaskProperties(oTask) {
-    return new sap.ui.model.json.JSONModel({
-        taskDetails: [
-            { label: "Task ID", value: oTask.taskId },
-            { label: "Type", value: oTask.type },
-            { label: "Title", value: oTask.title },
-            { label: "Creation Date", value: oTask.creationDate },
-            { label: "Due Date", value: oTask.dueDate },
-            { label: "Status", value: oTask.status },
-            { label: "Employee", value: oTask.employee }
-        ]
-    });
-}
-

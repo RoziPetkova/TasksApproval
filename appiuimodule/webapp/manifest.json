@@ -51,10 +51,6 @@
                 "settings": {
                     "bundleName": "appiuimodule.i18n.i18n"
                 }
-            },
-            "tasks": {
-                "type": "sap.ui.model.json.JSONModel",
-                "uri": "data.json"
             }
         },
         "rootView": {
@@ -85,9 +81,19 @@
                     "target": "targetoverview"
                 },
                 {
-                    "pattern": "details/{taskId}",
-                    "name": "details",
-                    "target": "targetdetails"
+                    "pattern": "orderdetails/{OrderID}",
+                    "name": "orderdetails",
+                    "target": "targetorderdetails"
+                },
+                {
+                    "pattern": "customerdetails/{CustomerID}",
+                    "name": "customerdetails",
+                    "target": "targetcustomerdetails"
+                },
+                {
+                    "pattern": "invoicedetails/{OrderID}/{ProductName}",
+                    "name": "invoicedetails",
+                    "target": "targetinvoicedetails"
                 }
             ],
             "targets": {
@@ -95,9 +101,17 @@
                     "id": "overview",
                     "name": "Overview"
                 },
-                "targetdetails": {
-                    "id": "details",
-                    "name": "Details"
+                "targetorderdetails": {
+                    "id": "orderdetails",
+                    "name": "OrderDetails"
+                },
+                "targetcustomerdetails": {
+                    "id": "customerdetails",
+                    "name": "CustomerDetails"
+                },
+                "targetinvoicedetails": {
+                    "id": "invoicedetails",
+                    "name": "InvoiceDetails"
                 }
             }
         }

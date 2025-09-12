@@ -1,0 +1,12 @@
+<core:FragmentDefinition 
+    xmlns="sap.m" 
+    xmlns:core="sap.ui.core">
+    <Toolbar design="Header"
+        class="sapUiSmallMarginBottom">
+        <Title text="{i18n>appTitle}" level="H2" />
+        <ToolbarSpacer />
+        <Button icon="sap-icon://home" tooltip="{i18n>Home}" press=".onHomePress" />
+        <Button icon="sap-icon://settings" tooltip="{i18n>Settings}" press=".onSettingsPress" />
+        <Button icon="sap-icon://log" tooltip="{i18n>LogOut}" press=".onLogoutPress" />
+    </Toolbar>
+</core:FragmentDefinition>

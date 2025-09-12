@@ -21,15 +21,47 @@ sap.ui.define(
                 // call the base component's init function
                 UIComponent.prototype.init.apply(this, arguments);
 
-                // Global JSON model
-                //const oModel = new JSONModel("data.json");
-                //this.setModel(oModel, "tasks");
+                // Load models programmatically
+                this._loadOrdersModel();
+                this._loadCustomersModel();
+                this._loadInvoicesModel();
 
                 // create the views based on the url/hash
-                //this.getRouter() gets the router instance defined in your app’s manifest.
+                //this.getRouter() gets the router instance defined in your app's manifest.
                 //.initialize() starts the router, enabling navigation and view handling
                 // based on the URL/hash.
+
                 this.getRouter().initialize();
+            },
+
+            /**
+             * Load the orders JSON model
+             * @private
+             */
+            _loadOrdersModel: function () {
+                var oOrdersModel = new JSONModel();
+                oOrdersModel.loadData("data.json");
+                this.setModel(oOrdersModel, "orders");
+            },
+
+            /**
+             * Load the customers JSON model
+             * @private
+             */
+            _loadCustomersModel: function () {
+                var oCustomersModel = new JSONModel();
+                oCustomersModel.loadData("customers.json");
+                this.setModel(oCustomersModel, "customers");
+            },
+
+            /**
+             * Load the invoices JSON model
+             * @private
+             */
+            _loadInvoicesModel: function () {
+                var oInvoicesModel = new JSONModel();
+                oInvoicesModel.loadData("invoices.json");
+                this.setModel(oInvoicesModel, "invoices");
             }
         });
     }

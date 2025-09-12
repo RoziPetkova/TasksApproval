@@ -8,21 +8,26 @@
     <Page
         id="Overview"
         title="{i18n>OverviewTitle}">
-        <content>
-            <Table
-                id="tasksTable"
-                items="{
+        <customHeader>
+            <core:Fragment fragmentName="appiuimodule.views.Header" type="XML" />
+        </customHeader>
+        <content class="sapUiSmallMarginBottom sapUiMediumMarginBegin sapUiMediumMarginEnd">
+
+             <!-- items="{
                         path : 'tasks>/tasks',
                         sorter : {
                             path : 'type',
                             group : true
                         }
-                    }"
+                    }" -->
+            <Table
+                id="ordersTable"
+                items="{ path: 'orders>/orders' }"
                 class="sapUiResponsiveMargin"
                 width="auto">
                 <headerToolbar>
                     <Toolbar>
-                        <Title text="{i18n>taskListTitle}" />
+                        <Title text="{i18n>orderListTitle}" />
                         <ToolbarSpacer />
                         <SearchField
                             width="50%"
@@ -33,25 +38,49 @@
                     <Column
                         minScreenWidth="Small"
                         width="5em">
-                        <Text text="{i18n>taskId}" />
+                        <HBox alignItems="Center">
+                            <Text text="{i18n>orderIdColumn}" />
+                            <core:Icon 
+                                src="sap-icon://sort" 
+                                press=".onSortOrdersOrderId"
+                                class="sapUiTinyMarginBegin sortIcon" />
+                        </HBox>
                     </Column>
                     <Column>
-                        <Text text="{i18n>taskType}" />
+                        <Text text="{i18n>taskTypeColumn}" />
                     </Column>
                     <Column>
-                        <Text text="{i18n>taskTitle}" />
+                        <HBox alignItems="Center">
+                            <Text text="{i18n>customerIdColumn}" />
+                            <core:Icon 
+                                src="sap-icon://sort" 
+                                press=".onSortCustomerIdOrders"
+                                class="sapUiTinyMarginBegin sortIcon" />
+                        </HBox>
                     </Column>
                     <Column minScreenWidth="Small">
-                        <Text text="{i18n>taskCreationDate}" />
+                        <HBox alignItems="Center">
+                            <Text text="{i18n>countryColumn}" />
+                            <core:Icon 
+                                src="sap-icon://sort" 
+                                press=".onSortShipCountry"
+                                class="sapUiTinyMarginBegin sortIcon" />
+                        </HBox>
                     </Column>
                     <Column minScreenWidth="Small">
-                        <Text text="{i18n>taskStatus}" />
-                    </Column>
-                    <Column>
-                        <Text text="{i18n>taskEmployee}" />
+                        <HBox alignItems="Center">
+                            <Text text="{i18n>orderDateColumn}" />
+                            <core:Icon 
+                                src="sap-icon://sort" 
+                                press=".onSortOrderDate"
+                                class="sapUiTinyMarginBegin sortIcon" />
+                        </HBox>
                     </Column>
                     <Column minScreenWidth="Small">
-                        <Text text="{i18n>taskDueDate}" />
+                        <Text text="{i18n>shippedDateColumn}" />
+                    </Column>
+                    <Column minScreenWidth="Small">
+                        <Text text="{i18n>statusColumn}" />
                     </Column>
                 </columns>
                 <items>
@@ -59,20 +88,160 @@
                         type="Navigation"
                         press=".onPress">
                         <cells>
-                            <Text text="{tasks>taskId}" />
-                            <Text text="{tasks>type}" />
-                            <Text text="{tasks>title}" />
-                            <Text text="{tasks>creationDate}" />
-                            <Text text="{tasks>status}" />
-                            <Text text="{tasks>employee}" />
-                            <Text text="{tasks>dueDate}" />
+                            <Text text="{orders>OrderID}" />
+                            <Text text="Order" />
+                            <Text text="{orders>CustomerID}" />
+                            <Text text="{orders>ShipCountry}" />
+                            <Text text="{path: 'orders>OrderDate', formatter: '.formatDate'}" />
+                            <Text text="{path: 'orders>ShippedDate', formatter: '.formatDate'}" />
+                            <Text text="{path: 'orders>ShippedDate', formatter: '.formatStatus'}" />
                         </cells>
                     </ColumnListItem>
                 </items>
             </Table>
-            <Button
-                text="Go to details"
-                press=".onShowDetails" />
+
+            <!-- Customers Table -->
+            <Table
+                id="customersTable"
+                items="{ path: 'customers>/customers' }"
+                class="sapUiResponsiveMargin"
+                width="auto">
+                <headerToolbar>
+                    <Toolbar>
+                        <Title text="{i18n>customersListTitle}" />
+                        <ToolbarSpacer />
+                        <SearchField
+                            width="50%"
+                            search=".onFilterCustomers" />
+                    </Toolbar>
+                </headerToolbar>
+                <columns>
+                    <Column
+                        minScreenWidth="Small"
+                        width="5em">
+                        <HBox alignItems="Center">
+                            <Text text="{i18n>customerIdColumn}" />
+                            <core:Icon 
+                                src="sap-icon://sort" 
+                                press=".onSortCustomerId"
+                                class="sapUiTinyMarginBegin sortIcon" />
+                        </HBox>
+                    </Column>
+                    <Column>
+                        <HBox alignItems="Center">
+                            <Text text="{i18n>companyNameColumn}" />
+                            <core:Icon 
+                                src="sap-icon://sort" 
+                                press=".onSortCompanyName"
+                                class="sapUiTinyMarginBegin sortIcon" />
+                        </HBox>
+                    </Column>
+                    <Column>
+                        <HBox alignItems="Center">
+                            <Text text="{i18n>contactNameColumn}" />
+                            <core:Icon 
+                                src="sap-icon://sort" 
+                                press=".onSortContactName"
+                                class="sapUiTinyMarginBegin sortIcon" />
+                        </HBox>
+                    </Column>
+                    <Column minScreenWidth="Small">
+                        <HBox alignItems="Center">
+                            <Text text="{i18n>countryColumn}" />
+                            <core:Icon 
+                                src="sap-icon://sort" 
+                                press=".onSortCountry"
+                                class="sapUiTinyMarginBegin sortIcon" />
+                        </HBox>
+                    </Column>
+                </columns>
+                <items>
+                    <ColumnListItem
+                        type="Navigation"
+                        press=".onCustomerPress">
+                        <cells>
+                            <Text text="{customers>CustomerID}" />
+                            <Text text="{customers>CompanyName}" />
+                            <Text text="{customers>ContactName}" />
+                            <Text text="{customers>Country}" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+
+            <!-- Invoices Table -->
+            <Table
+                id="invoicesTable"
+                items="{ path: 'invoices>/invoices' }"
+                class="sapUiResponsiveMargin"
+                width="auto">
+                <headerToolbar>
+                    <Toolbar>
+                        <Title text="{i18n>invoicesListTitle}" />
+                        <ToolbarSpacer />
+                        <SearchField
+                            width="50%"
+                            search=".onFilterInvoices" />
+                    </Toolbar>
+                </headerToolbar>
+                <columns>
+                    <Column
+                        minScreenWidth="Small"
+                        width="5em">
+                        <HBox alignItems="Center">
+                            <Text text="{i18n>orderIdColumn}" />
+                            <core:Icon 
+                                src="sap-icon://sort" 
+                                press=".onSortOrderId"
+                                class="sapUiTinyMarginBegin sortIcon" />
+                        </HBox>
+                    </Column>
+                    <Column>
+                        <HBox alignItems="Center">
+                            <Text text="{i18n>productNameColumn}" />
+                            <core:Icon 
+                                src="sap-icon://sort" 
+                                press=".onSortProductName"
+                                class="sapUiTinyMarginBegin sortIcon" />
+                        </HBox>
+                    </Column>
+                    <Column>
+                        <HBox alignItems="Center">
+                            <Text text="{i18n>customerColumn}" />
+                            <core:Icon 
+                                src="sap-icon://sort" 
+                                press=".onSortCustomerName"
+                                class="sapUiTinyMarginBegin sortIcon" />
+                        </HBox>
+                    </Column>
+                    <Column minScreenWidth="Small">
+                        <Text text="{i18n>orderDateColumn}" />
+                    </Column>
+                    <Column minScreenWidth="Small">
+                        <Text text="{i18n>statusColumn}" />
+                    </Column>
+                    <Column minScreenWidth="Small">
+                        <Text text="{i18n>priceColumn}" />
+                    </Column>
+                </columns>
+                <items>
+                    <ColumnListItem
+                        type="Navigation"
+                        press=".onInvoicePress">
+                        <cells>
+                            <Text text="{invoices>OrderID}" />
+                            <Text text="{invoices>ProductName}" />
+                            <Text text="{invoices>CustomerName}" />
+                            <Text text="{path: 'invoices>OrderDate', formatter: '.formatDate'}" />
+                            <Text text="Active" />
+                            <Text text="{invoices>ExtendedPrice}" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
         </content>
+        <footer>
+            <core:Fragment fragmentName="appiuimodule.views.Footer" type="XML" />
+        </footer>
     </Page>
 </mvc:View>

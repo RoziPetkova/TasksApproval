@@ -18,7 +18,7 @@ inside this tag is part of the fragment, which can be loaded and used in views o
     xmlns:core="sap.ui.core">
     <Dialog
         id="taskDecisionDialog"
-        title="Hello {/recipient/name}">
+        title="{i18n>taskDecisionDialogTitle}">
         <content>
             <core:Icon
                 src="sap-icon://hello-world"

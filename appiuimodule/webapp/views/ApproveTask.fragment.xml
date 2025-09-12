@@ -16,7 +16,7 @@ inside this tag is part of the fragment, which can be loaded and used in views o
 <core:FragmentDefinition
     xmlns="sap.m"
     xmlns:core="sap.ui.core">
-    <Text text="Confirm approval"></Text>
+    <Text text="{i18n>confirmApproval}"></Text>
     <Button
         id="confirmButton"
         icon="sap-icon://accept"

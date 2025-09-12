@@ -6,12 +6,16 @@
         "deploy": "cf deploy mta_archives/onboarding.taskapproval.tasksapproval.mtar --retries 0",
         "lint": "npm run lint --workspaces --if-present",
         "ui5lint": "npm run ui5lint --workspaces --if-present",
-        "start:appiuimodule": "npm start --workspace appiuimodule"
+        "start:appiuimodule": "npm start --workspace appiuimodule",
+        "start": "npm run start:appiuimodule"
     },
     "dependencies": {
         "mbt": "^1"
     },
     "workspaces": [
         "appiuimodule"
-    ]
+    ],
+    "devDependencies": {
+        "ui5-middleware-simpleproxy": "^3.4.3"
+    }
 }
