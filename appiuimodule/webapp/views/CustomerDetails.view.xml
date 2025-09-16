@@ -10,9 +10,6 @@
         title="{i18n>customerDetailsTitle}"
         showNavButton="true"
         navButtonPress=".onNavBack">
-        <customHeader>
-            <core:Fragment fragmentName="appiuimodule.views.Header" type="XML" />
-        </customHeader>
         <content class="sapUiSmallMarginBottom sapUiMediumMarginBegin sapUiMediumMarginEnd">
             
             <!-- Customer Details Table -->
@@ -39,6 +36,111 @@
                         <cells>
                             <Text text="{customerModel>label}" />
                             <Text text="{customerModel>value}" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+
+            <!-- Customer Orders Table -->
+            <Table
+                id="customerOrdersTable"
+                items="{ path: 'customerOrdersModel>/orders' }"
+                class="sapUiResponsiveMargin sapUiMediumMarginTop"
+                width="auto">
+                <headerToolbar>
+                    <Toolbar>
+                        <Title text="{i18n>customerOrdersTitle}" />
+                    </Toolbar>
+                </headerToolbar>
+                <columns>
+                    <Column width="8em">
+                        <Text text="{i18n>orderIdColumn}" />
+                    </Column>
+                    <Column width="10em">
+                        <Text text="{i18n>orderDateColumn}" />
+                    </Column>
+                    <Column width="10em">
+                        <Text text="{i18n>shippedDateColumn}" />
+                    </Column>
+                    <Column width="8em">
+                        <Text text="{i18n>statusColumn}" />
+                    </Column>
+                    <Column width="8em">
+                        <Text text="{i18n>countryColumn}" />
+                    </Column>
+                    <Column>
+                        <Text text="{i18n>cityColumn}" />
+                    </Column>
+                </columns>
+                <items>
+                    <ColumnListItem>
+                        <cells>
+                            <Text text="{customerOrdersModel>OrderID}" />
+                            <Text text="{
+                                parts: ['customerOrdersModel>OrderDate'],
+                                formatter: '.formatDate'
+                            }" />
+                            <Text text="{
+                                parts: ['customerOrdersModel>ShippedDate'],
+                                formatter: '.formatDate'
+                            }" />
+                            <Text text="{customerOrdersModel>Status}" />
+                            <Text text="{customerOrdersModel>ShipCountry}" />
+                            <Text text="{customerOrdersModel>ShipCity}" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+
+            <!-- Customer Invoices Table -->
+            <Table
+                id="customerInvoicesTable"
+                items="{ path: 'customerInvoicesModel>/invoices' }"
+                class="sapUiResponsiveMargin sapUiMediumMarginTop"
+                width="auto">
+                <headerToolbar>
+                    <Toolbar>
+                        <Title text="{i18n>customerInvoicesTitle}" />
+                    </Toolbar>
+                </headerToolbar>
+                <columns>
+                    <Column width="8em">
+                        <Text text="{i18n>orderIdColumn}" />
+                    </Column>
+                    <Column width="12em">
+                        <Text text="{i18n>productNameColumn}" />
+                    </Column>
+                    <Column width="6em">
+                        <Text text="{i18n>quantityLabel}" />
+                    </Column>
+                    <Column width="8em">
+                        <Text text="{i18n>unitPriceLabel}" />
+                    </Column>
+                    <Column width="8em">
+                        <Text text="{i18n>extendedPriceLabel}" />
+                    </Column>
+                    <Column width="10em">
+                        <Text text="{i18n>orderDateColumn}" />
+                    </Column>
+                </columns>
+                <items>
+                    <ColumnListItem>
+                        <cells>
+                            <Text text="{customerInvoicesModel>OrderID}" />
+                            <Text text="{customerInvoicesModel>ProductName}" />
+                            <Text text="{customerInvoicesModel>Quantity}" />
+                            <Text text="{
+                                parts: ['customerInvoicesModel>UnitPrice'],
+                                formatter: '.formatCurrency'
+                            }" />
+                            <Text text="{
+                                parts: ['customerInvoicesModel>ExtendedPrice'],
+                                formatter: '.formatCurrency'
+                            }" />
+                            <Text text="{
+                                parts: ['customerInvoicesModel>OrderDate'],
+                                formatter: '.formatDate'
+                            }" />
                         </cells>
                     </ColumnListItem>
                 </items>

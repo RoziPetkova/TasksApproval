@@ -21,15 +21,15 @@ sap.ui.define(
             onObjectMatched(oEvent) {
                 var sOrderId = oEvent.getParameter("arguments").OrderID;
                 var oModel = this.getOwnerComponent().getModel("orders");
-                var aOrders = oModel.getProperty("/orders");
+                var aOrders = oModel.getProperty("/value");
                 var oOrder = aOrders.find(function (order) {
                     return String(order.OrderID) === String(sOrderId);
                 });
                 // oOrder now contains the order object with the matching OrderID
                 if (oOrder) {
                     // set it to a local model for binding
-                    var oOrderModel = this.loadTaskProperties(oOrder);
-                    this.getView().setModel(oOrderModel, "taskModel");
+                    var oOrderModel = this.loadOrderProperties(oOrder);
+                    this.getView().setModel(oOrderModel, "orderModel");
                 }
                 this.updateStatusStyle();
             },
@@ -49,7 +49,7 @@ sap.ui.define(
              * @memberOf appiuimodule.ext.overview.Overview
              */
             updateStatusStyle: function () {
-                var oTable = this.byId("taskTable");
+                var oTable = this.byId("orderTable");
                 var aItems = oTable.getItems();
 
                 aItems.forEach(function (oItem) {
@@ -153,24 +153,38 @@ sap.ui.define(
                 return date.toLocaleDateString();
             },
 
-            loadTaskProperties(task) {
+            onGoToCustomerDetails: function() {
+                const oTaskModel = this.getView().getModel("orderModel");
+                const aTaskDetails = oTaskModel.getProperty("/taskDetails");
+                
+                // Find customer ID from the task details
+                const oCustomerDetail = aTaskDetails.find(function(detail) {
+                    return detail.label === this.getOwnerComponent().getModel("i18n").getResourceBundle().getText("customerIdColumn");
+                }.bind(this));
+                
+                if (oCustomerDetail && oCustomerDetail.value) {
+                    const customerId = oCustomerDetail.value;
+                    const oRouter = this.getOwnerComponent().getRouter();
+                    oRouter.navTo("customerdetails", { CustomerID: customerId });
+                }
+            },
+
+            loadOrderProperties(order) {
                 var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
 
                 return new sap.ui.model.json.JSONModel({
                     taskDetails: [
-                        { label: bundle.getText("orderIdColumn"), value: task.OrderID },
+                        { label: bundle.getText("orderIdColumn"), value: order.OrderID },
                         { label: bundle.getText("taskTypeLabel"), value: "Order" },
-                        { label: bundle.getText("customerIdColumn"), value: task.CustomerID },
-                        { label: bundle.getText("orderDateColumn"), value: this.formatDate(task.OrderDate) },
-                        { label: bundle.getText("shippedDateLabel"), value: this.formatDate(task.ShippedDate) },
-                        { label: bundle.getText("countryLabel"), value: task.ShipCountry },
-                        { label: bundle.getText("cityLabel"), value: task.ShipCity },
-                        { label: bundle.getText("statusLabel"), value: this.formatStatus(task.ShippedDate) }
+                        { label: bundle.getText("customerIdColumn"), value: order.CustomerID },
+                        { label: bundle.getText("orderDateColumn"), value: this.formatDate(order.OrderDate) },
+                        { label: bundle.getText("shippedDateLabel"), value: this.formatDate(order.ShippedDate) },
+                        { label: bundle.getText("countryLabel"), value: order.ShipCountry },
+                        { label: bundle.getText("cityLabel"), value: order.ShipCity },
+                        { label: bundle.getText("statusLabel"), value: this.formatStatus(order.Status) }
                     ]
                 });
             },
-
-
         });
     }
 );

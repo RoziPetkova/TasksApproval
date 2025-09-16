@@ -11,10 +11,17 @@
         showNavButton="true"
         navButtonPress=".onNavBack">
         <content>
-            <Table id="taskTable"
-                items="{taskModel>/taskDetails}"
+            <Table id="orderTable"
+                items="{orderModel>/taskDetails}"
                 class="sapUiResponsiveMargin"
                 width="auto">
+                <headerToolbar>
+                    <Toolbar>
+                        <Title text="{i18n>DetailsTitle}" />
+                        <ToolbarSpacer />
+                        <core:Fragment fragmentName="appiuimodule.views.CustomerDetailsButton" type="XML" />
+                    </Toolbar>
+                </headerToolbar>
                 <columns>
                     <Column>
 
@@ -27,8 +34,8 @@
                 <items>
                     <ColumnListItem>
                         <cells>
-                            <Text text="{taskModel>label}" />
-                            <Text text="{taskModel>value}" />
+                            <Text text="{orderModel>label}" />
+                            <Text text="{orderModel>value}" />
                         </cells>
                     </ColumnListItem>
                 </items>

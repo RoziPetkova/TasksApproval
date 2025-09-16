@@ -17,20 +17,12 @@ sap.ui.define(
                 oRouter.getRoute("invoicedetails").attachPatternMatched(this.onObjectMatched, this);
             },
 
-            onObjectMatched(oEvent) {
+            onObjectMatched: async function(oEvent) {
                 var sOrderID = oEvent.getParameter("arguments").OrderID;
                 var sProductName = decodeURIComponent(oEvent.getParameter("arguments").ProductName);
-                var oModel = this.getOwnerComponent().getModel("invoices");
-                var aInvoices = oModel.getProperty("/invoices");
-                var oInvoice = aInvoices.find(function (invoice) {
-                    return String(invoice.OrderID) === String(sOrderID) && invoice.ProductName === sProductName;
-                });
                 
-                if (oInvoice) {
-                    // Set it to a local model for binding
-                    var oInvoiceModel = this.loadInvoiceProperties(oInvoice);
-                    this.getView().setModel(oInvoiceModel, "invoiceModel");
-                }
+                // Fetch all products for this OrderID and extract current invoice from the result
+                await this.loadOrderData(sOrderID, sProductName);
             },
 
             onNavBack() {
@@ -45,15 +37,20 @@ sap.ui.define(
                 }
             },
 
-            formatCurrency: function(value) {
+            formatCurrency: function (value) {
                 if (!value) return "0.00";
                 return parseFloat(value).toFixed(2);
             },
 
-            formatDate: function(dateString) {
+            formatDate: function (dateString) {
                 if (!dateString) return "";
                 var date = new Date(dateString);
                 return date.toLocaleDateString();
+            },
+
+            formatDiscount: function (value) {
+                if (!value) return "0%";
+                return (value * 100).toFixed(1) + "%";
             },
 
             loadInvoiceProperties(invoice) {
@@ -76,6 +73,64 @@ sap.ui.define(
                 });
             },
 
+            loadOrderData: async function(orderID, productName) {
+                try {
+                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$filter=OrderID eq ${orderID}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    
+                    if (data.value && data.value.length > 0) {
+                        // Use any entry for invoice details
+                        // since they all share the same order information (OrderID, CustomerName, OrderDate, etc.)
+                        const oInvoice = data.value[0]; 
+                        
+                        // Set invoice details model using the selected entry
+                        var oInvoiceModel = this.loadInvoiceProperties(oInvoice);
+                        this.getView().setModel(oInvoiceModel, "invoiceModel");
+                        
+                        // Set products model with all entries - each entry represents one product line
+                        var oProductsModel = new sap.ui.model.json.JSONModel({
+                            products: data.value
+                        });
+                        this.getView().setModel(oProductsModel, "productsModel");
+                    }
+                } catch (error) {
+                    console.error("Error loading order data:", error);
+                    // Set empty models on error
+                    var oProductsModel = new sap.ui.model.json.JSONModel({
+                        products: []
+                    });
+                    this.getView().setModel(oProductsModel, "productsModel");
+                }
+            },
+
+            onGoToCustomerDetails: function() {
+                const oInvoiceModel = this.getView().getModel("invoiceModel");
+                const aInvoiceDetails = oInvoiceModel.getProperty("/invoiceDetails");
+                
+                // Find customer name from the invoice details
+                const oCustomerDetail = aInvoiceDetails.find(function(detail) {
+                    return detail.label === this.getOwnerComponent().getModel("i18n").getResourceBundle().getText("customerColumn");
+                }.bind(this));
+                
+                if (oCustomerDetail && oCustomerDetail.value) {
+                    const customerName = oCustomerDetail.value;
+                    
+                    // Find CustomerID from CustomerName
+                    const oCustomersModel = this.getOwnerComponent().getModel("customers");
+                    const aCustomers = oCustomersModel.getProperty("/value");
+                    const oCustomer = aCustomers.find(function (customer) {
+                        return customer.CompanyName === customerName;
+                    });
+                    
+                    if (oCustomer) {
+                        const oRouter = this.getOwnerComponent().getRouter();
+                        oRouter.navTo("customerdetails", { CustomerID: oCustomer.CustomerID });
+                    }
+                }
+            }
 
         });
     }

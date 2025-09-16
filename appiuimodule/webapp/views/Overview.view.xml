@@ -13,25 +13,20 @@
         </customHeader>
         <content class="sapUiSmallMarginBottom sapUiMediumMarginBegin sapUiMediumMarginEnd">
 
-             <!-- items="{
-                        path : 'tasks>/tasks',
-                        sorter : {
-                            path : 'type',
-                            group : true
-                        }
-                    }" -->
+            <!-- Customers Table -->
             <Table
-                id="ordersTable"
-                items="{ path: 'orders>/orders' }"
+                id="customersTable"
+                items="{ path: 'customers>/value' }"
                 class="sapUiResponsiveMargin"
                 width="auto">
                 <headerToolbar>
                     <Toolbar>
-                        <Title text="{i18n>orderListTitle}" />
+                        <Title text="{i18n>customersListTitle}" />
                         <ToolbarSpacer />
                         <SearchField
                             width="50%"
-                            search=".onFilterTasks" />
+                            placeholder="{i18n>searchCustomersPlaceholder}"
+                            search=".onFilterCustomers" />
                     </Toolbar>
                 </headerToolbar>
                 <columns>
@@ -39,12 +34,79 @@
                         minScreenWidth="Small"
                         width="5em">
                         <HBox alignItems="Center">
-                            <Text text="{i18n>orderIdColumn}" />
-                            <core:Icon 
-                                src="sap-icon://sort" 
-                                press=".onSortOrdersOrderId"
+                            <Text text="{i18n>customerIdColumn}" />
+                            <core:Icon
+                                src="sap-icon://sort"
+                                press=".onSortCustomerId"
                                 class="sapUiTinyMarginBegin sortIcon" />
                         </HBox>
+                    </Column>
+                    <Column>
+                        <Text text="{i18n>companyNameColumn}" />
+                    </Column>
+                    <Column>
+                        <Text text="{i18n>contactNameColumn}" />
+                    </Column>
+                    <Column minScreenWidth="Small">
+                        <HBox alignItems="Center">
+                            <Text text="{i18n>countryColumn}" />
+                            <core:Icon
+                                src="sap-icon://sort"
+                                press=".onSortCountry"
+                                class="sapUiTinyMarginBegin sortIcon" />
+                        </HBox>
+                    </Column>
+                </columns>
+                <items>
+                    <ColumnListItem
+                        type="Navigation"
+                        press=".onCustomerPress">
+                        <cells>
+                            <Text text="{customers>CustomerID}" />
+                            <Text text="{customers>CompanyName}" />
+                            <Text text="{customers>ContactName}" />
+                            <Text text="{customers>Country}" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+
+            <!-- items="{
+                        path : 'tasks>/tasks',
+                        sorter : {
+                            path : 'type',
+                            group : true
+                        }
+                    }" -->
+            <ScrollContainer height="400px" vertical="true" horizontal="false" class="sapUiResponsiveMargin">
+                <Table
+                    id="ordersTable"
+                    items="{ path: 'orders>/value' }"
+                    width="auto">
+                <headerToolbar>
+                    <Toolbar>
+                        <Title text="{i18n>orderListTitle}" />
+                        <SearchField
+                            width="40%"
+                            placeholder="{i18n>searchOrdersPlaceholder}"
+                            search=".onFilterTasks" />
+                        <ToolbarSpacer />
+                        <Select
+                            selectedKey="All"
+                            width="8em"
+                            change=".onStatusFilterChange"
+                            class="sapUiTinyMarginEnd">
+                            <core:Item key="All" text="{i18n>allStatusFilter}" />
+                            <core:Item key="Pending" text="{i18n>pendingStatusFilter}" />
+                            <core:Item key="Shipped" text="{i18n>shippedStatusFilter}" />
+                        </Select>
+                    </Toolbar>
+                </headerToolbar>
+                <columns>
+                    <Column
+                        minScreenWidth="Small"
+                        width="5em">
+                        <Text text="{i18n>orderIdColumn}" />
                     </Column>
                     <Column>
                         <Text text="{i18n>taskTypeColumn}" />
@@ -52,26 +114,20 @@
                     <Column>
                         <HBox alignItems="Center">
                             <Text text="{i18n>customerIdColumn}" />
-                            <core:Icon 
-                                src="sap-icon://sort" 
+                            <core:Icon
+                                src="sap-icon://sort"
                                 press=".onSortCustomerIdOrders"
                                 class="sapUiTinyMarginBegin sortIcon" />
                         </HBox>
                     </Column>
                     <Column minScreenWidth="Small">
-                        <HBox alignItems="Center">
-                            <Text text="{i18n>countryColumn}" />
-                            <core:Icon 
-                                src="sap-icon://sort" 
-                                press=".onSortShipCountry"
-                                class="sapUiTinyMarginBegin sortIcon" />
-                        </HBox>
+                        <Text text="{i18n>countryColumn}" />
                     </Column>
                     <Column minScreenWidth="Small">
                         <HBox alignItems="Center">
                             <Text text="{i18n>orderDateColumn}" />
-                            <core:Icon 
-                                src="sap-icon://sort" 
+                            <core:Icon
+                                src="sap-icon://sort"
                                 press=".onSortOrderDate"
                                 class="sapUiTinyMarginBegin sortIcon" />
                         </HBox>
@@ -94,85 +150,17 @@
                             <Text text="{orders>ShipCountry}" />
                             <Text text="{path: 'orders>OrderDate', formatter: '.formatDate'}" />
                             <Text text="{path: 'orders>ShippedDate', formatter: '.formatDate'}" />
-                            <Text text="{path: 'orders>ShippedDate', formatter: '.formatStatus'}" />
+                            <Text text="{orders>Status}" />
                         </cells>
                     </ColumnListItem>
                 </items>
             </Table>
-
-            <!-- Customers Table -->
-            <Table
-                id="customersTable"
-                items="{ path: 'customers>/customers' }"
-                class="sapUiResponsiveMargin"
-                width="auto">
-                <headerToolbar>
-                    <Toolbar>
-                        <Title text="{i18n>customersListTitle}" />
-                        <ToolbarSpacer />
-                        <SearchField
-                            width="50%"
-                            search=".onFilterCustomers" />
-                    </Toolbar>
-                </headerToolbar>
-                <columns>
-                    <Column
-                        minScreenWidth="Small"
-                        width="5em">
-                        <HBox alignItems="Center">
-                            <Text text="{i18n>customerIdColumn}" />
-                            <core:Icon 
-                                src="sap-icon://sort" 
-                                press=".onSortCustomerId"
-                                class="sapUiTinyMarginBegin sortIcon" />
-                        </HBox>
-                    </Column>
-                    <Column>
-                        <HBox alignItems="Center">
-                            <Text text="{i18n>companyNameColumn}" />
-                            <core:Icon 
-                                src="sap-icon://sort" 
-                                press=".onSortCompanyName"
-                                class="sapUiTinyMarginBegin sortIcon" />
-                        </HBox>
-                    </Column>
-                    <Column>
-                        <HBox alignItems="Center">
-                            <Text text="{i18n>contactNameColumn}" />
-                            <core:Icon 
-                                src="sap-icon://sort" 
-                                press=".onSortContactName"
-                                class="sapUiTinyMarginBegin sortIcon" />
-                        </HBox>
-                    </Column>
-                    <Column minScreenWidth="Small">
-                        <HBox alignItems="Center">
-                            <Text text="{i18n>countryColumn}" />
-                            <core:Icon 
-                                src="sap-icon://sort" 
-                                press=".onSortCountry"
-                                class="sapUiTinyMarginBegin sortIcon" />
-                        </HBox>
-                    </Column>
-                </columns>
-                <items>
-                    <ColumnListItem
-                        type="Navigation"
-                        press=".onCustomerPress">
-                        <cells>
-                            <Text text="{customers>CustomerID}" />
-                            <Text text="{customers>CompanyName}" />
-                            <Text text="{customers>ContactName}" />
-                            <Text text="{customers>Country}" />
-                        </cells>
-                    </ColumnListItem>
-                </items>
-            </Table>
+            </ScrollContainer>
 
             <!-- Invoices Table -->
             <Table
                 id="invoicesTable"
-                items="{ path: 'invoices>/invoices' }"
+                items="{ path: 'invoices>/value' }"
                 class="sapUiResponsiveMargin"
                 width="auto">
                 <headerToolbar>
@@ -181,6 +169,7 @@
                         <ToolbarSpacer />
                         <SearchField
                             width="50%"
+                            placeholder="{i18n>searchInvoicesPlaceholder}"
                             search=".onFilterInvoices" />
                     </Toolbar>
                 </headerToolbar>
@@ -188,19 +177,13 @@
                     <Column
                         minScreenWidth="Small"
                         width="5em">
-                        <HBox alignItems="Center">
-                            <Text text="{i18n>orderIdColumn}" />
-                            <core:Icon 
-                                src="sap-icon://sort" 
-                                press=".onSortOrderId"
-                                class="sapUiTinyMarginBegin sortIcon" />
-                        </HBox>
+                        <Text text="{i18n>orderIdColumn}" />
                     </Column>
                     <Column>
                         <HBox alignItems="Center">
                             <Text text="{i18n>productNameColumn}" />
-                            <core:Icon 
-                                src="sap-icon://sort" 
+                            <core:Icon
+                                src="sap-icon://sort"
                                 press=".onSortProductName"
                                 class="sapUiTinyMarginBegin sortIcon" />
                         </HBox>
@@ -208,8 +191,8 @@
                     <Column>
                         <HBox alignItems="Center">
                             <Text text="{i18n>customerColumn}" />
-                            <core:Icon 
-                                src="sap-icon://sort" 
+                            <core:Icon
+                                src="sap-icon://sort"
                                 press=".onSortCustomerName"
                                 class="sapUiTinyMarginBegin sortIcon" />
                         </HBox>

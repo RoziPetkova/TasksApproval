@@ -1,0 +1,6 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+    <Button
+        text="{i18n>goToCustomerDetailsButton}"
+        icon="sap-icon://customer"
+        press="onGoToCustomerDetails" />
+</core:FragmentDefinition>

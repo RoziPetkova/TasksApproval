@@ -26,6 +26,8 @@ sap.ui.define(
                 this._loadCustomersModel();
                 this._loadInvoicesModel();
 
+                sap.ui.getCore().getConfiguration().setLanguage("en"); // switch to Bulgarian
+
                 // create the views based on the url/hash
                 //this.getRouter() gets the router instance defined in your app's manifest.
                 //.initialize() starts the router, enabling navigation and view handling
@@ -38,9 +40,29 @@ sap.ui.define(
              * Load the orders JSON model
              * @private
              */
-            _loadOrdersModel: function () {
+            _loadOrdersModel: async function () {
                 var oOrdersModel = new JSONModel();
-                oOrdersModel.loadData("data.json");
+
+                try {
+                    const response = await fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Orders?$top=100");
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    
+                    // Add Status property to each order
+                    if (data.value) {
+                        data.value.forEach(function (order) {
+                            //  if ShippedDate exists, status is "Shipped", otherwise "Pending"
+                            order.Status = order.ShippedDate ? "Shipped" : "Pending";
+                        });
+                    }
+                    
+                    oOrdersModel.setData(data);
+                } catch (error) {
+                    console.error("Error loading orders data:", error);
+                }
+
                 this.setModel(oOrdersModel, "orders");
             },
 
@@ -48,19 +70,67 @@ sap.ui.define(
              * Load the customers JSON model
              * @private
              */
-            _loadCustomersModel: function () {
+            // _loadCustomersModel: function () {
+            //     var oCustomersModel = new JSONModel();
+            //     oCustomersModel.loadData("customers.json");
+            //     this.setModel(oCustomersModel, "customers");
+            // },
+
+            _loadCustomersModel: async function () {
                 var oCustomersModel = new JSONModel();
-                oCustomersModel.loadData("customers.json");
+
+                try {
+                    const response = await
+                        fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$top=10");
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    oCustomersModel.setData(data);
+                } catch (error) {
+                    console.error("Error loading customers data: ", error);
+                }
+
                 this.setModel(oCustomersModel, "customers");
             },
 
+            // _loadCustomersModel: function () {
+            //     var oCustomersModel = new
+            //         sap.ui.model.odata.v4.ODataModel({
+            //             serviceUrl: "Northwind.svc/",
+            //             synchronizationMode: "None"
+            //         });
+
+            // this.setModel(oCustomersModel, "customers");
+        // },
+
+            // _loadCustomersModel: function () {
+            //     var oCustomersModel = new
+            //         sap.ui.model.odata.v4.ODataModel({
+            //             serviceUrl: "Northwind.svc/",
+            //             synchronizationMode: "None"
+            //         });
+            //     this.setModel(oCustomersModel, "Customers");
+            //     console.log(oCustomersModel);
+            // },
             /**
              * Load the invoices JSON model
              * @private
              */
-            _loadInvoicesModel: function () {
+            _loadInvoicesModel: async function () {
                 var oInvoicesModel = new JSONModel();
-                oInvoicesModel.loadData("invoices.json");
+
+                try {
+                    const response = await fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$top=10");
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    oInvoicesModel.setData(data);
+                } catch (error) {
+                    console.error("Error loading invoices data:", error);
+                }
+
                 this.setModel(oInvoicesModel, "invoices");
             }
         });
