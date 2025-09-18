@@ -10,6 +10,9 @@
         title="{i18n>customerDetailsTitle}"
         showNavButton="true"
         navButtonPress=".onNavBack">
+        <headerContent>
+            <core:Fragment fragmentName="appiuimodule.views.HeaderButtons" type="XML" />
+        </headerContent>
         <content class="sapUiSmallMarginBottom sapUiMediumMarginBegin sapUiMediumMarginEnd">
             
             <!-- Customer Details Table -->
@@ -42,16 +45,16 @@
             </Table>
 
             <!-- Customer Orders Table -->
-            <Table
-                id="customerOrdersTable"
-                items="{ path: 'customerOrdersModel>/orders' }"
-                class="sapUiResponsiveMargin sapUiMediumMarginTop"
-                width="auto">
-                <headerToolbar>
-                    <Toolbar>
-                        <Title text="{i18n>customerOrdersTitle}" />
-                    </Toolbar>
-                </headerToolbar>
+            <ScrollContainer height="400px" vertical="true" horizontal="false" class="sapUiResponsiveMargin sapUiMediumMarginTop">
+                <Table
+                    id="customerOrdersTable"
+                    items="{ path: 'customerOrdersModel>/orders' }"
+                    width="auto">
+                    <headerToolbar>
+                        <Toolbar>
+                            <Title text="{i18n>customerOrdersTitle}" />
+                        </Toolbar>
+                    </headerToolbar>
                 <columns>
                     <Column width="8em">
                         <Text text="{i18n>orderIdColumn}" />
@@ -73,7 +76,9 @@
                     </Column>
                 </columns>
                 <items>
-                    <ColumnListItem>
+                    <ColumnListItem
+                        type="Navigation"
+                        press=".onCustomerOrderPress">
                         <cells>
                             <Text text="{customerOrdersModel>OrderID}" />
                             <Text text="{
@@ -91,18 +96,19 @@
                     </ColumnListItem>
                 </items>
             </Table>
+            </ScrollContainer>
 
             <!-- Customer Invoices Table -->
-            <Table
-                id="customerInvoicesTable"
-                items="{ path: 'customerInvoicesModel>/invoices' }"
-                class="sapUiResponsiveMargin sapUiMediumMarginTop"
-                width="auto">
-                <headerToolbar>
-                    <Toolbar>
-                        <Title text="{i18n>customerInvoicesTitle}" />
-                    </Toolbar>
-                </headerToolbar>
+            <ScrollContainer height="400px" vertical="true" horizontal="false" class="sapUiResponsiveMargin sapUiMediumMarginTop">
+                <Table
+                    id="customerInvoicesTable"
+                    items="{ path: 'customerInvoicesModel>/invoices' }"
+                    width="auto">
+                    <headerToolbar>
+                        <Toolbar>
+                            <Title text="{i18n>customerInvoicesTitle}" />
+                        </Toolbar>
+                    </headerToolbar>
                 <columns>
                     <Column width="8em">
                         <Text text="{i18n>orderIdColumn}" />
@@ -124,7 +130,9 @@
                     </Column>
                 </columns>
                 <items>
-                    <ColumnListItem>
+                    <ColumnListItem
+                        type="Navigation"
+                        press=".onCustomerInvoicePress">
                         <cells>
                             <Text text="{customerInvoicesModel>OrderID}" />
                             <Text text="{customerInvoicesModel>ProductName}" />
@@ -145,6 +153,7 @@
                     </ColumnListItem>
                 </items>
             </Table>
+            </ScrollContainer>
 
         </content>
         <footer>

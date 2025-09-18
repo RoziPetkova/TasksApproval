@@ -18,11 +18,9 @@ sap.ui.define(
             },
 
             onObjectMatched: async function(oEvent) {
-                var sOrderID = oEvent.getParameter("arguments").OrderID;
-                var sProductName = decodeURIComponent(oEvent.getParameter("arguments").ProductName);
-                
+                var sOrderID = oEvent.getParameter("arguments").OrderID;                
                 // Fetch all products for this OrderID and extract current invoice from the result
-                await this.loadOrderData(sOrderID, sProductName);
+                await this.loadOrderData(sOrderID);
             },
 
             onNavBack() {
@@ -73,7 +71,7 @@ sap.ui.define(
                 });
             },
 
-            loadOrderData: async function(orderID, productName) {
+            loadOrderData: async function(orderID) {
                 try {
                     const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$filter=OrderID eq ${orderID}`);
                     if (!response.ok) {
@@ -85,7 +83,7 @@ sap.ui.define(
                         // Use any entry for invoice details
                         // since they all share the same order information (OrderID, CustomerName, OrderDate, etc.)
                         const oInvoice = data.value[0]; 
-                        
+
                         // Set invoice details model using the selected entry
                         var oInvoiceModel = this.loadInvoiceProperties(oInvoice);
                         this.getView().setModel(oInvoiceModel, "invoiceModel");

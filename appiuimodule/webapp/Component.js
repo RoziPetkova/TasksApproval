@@ -13,7 +13,8 @@ sap.ui.define(
             },
 
             /**
-             * The component is initialized by UI5 automatically during the startup of the app and calls the init method once.
+             * The component is initialized by UI5 automatically during 
+             * the startup of the app and calls the init method once.
              * @public
              * @override
              */
@@ -22,60 +23,25 @@ sap.ui.define(
                 UIComponent.prototype.init.apply(this, arguments);
 
                 // Load models programmatically
-                this._loadOrdersModel();
                 this._loadCustomersModel();
                 this._loadInvoicesModel();
+                this._loadInitialOrders();
 
-                sap.ui.getCore().getConfiguration().setLanguage("en"); // switch to Bulgarian
+                // switch to Bulgarian fere if needed
+                //sap.ui.getCore().getConfiguration().setLanguage("bg"); 
 
                 // create the views based on the url/hash
                 //this.getRouter() gets the router instance defined in your app's manifest.
                 //.initialize() starts the router, enabling navigation and view handling
                 // based on the URL/hash.
-
                 this.getRouter().initialize();
             },
 
-            /**
-             * Load the orders JSON model
-             * @private
-             */
-            _loadOrdersModel: async function () {
-                var oOrdersModel = new JSONModel();
-
-                try {
-                    const response = await fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Orders?$top=100");
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    
-                    // Add Status property to each order
-                    if (data.value) {
-                        data.value.forEach(function (order) {
-                            //  if ShippedDate exists, status is "Shipped", otherwise "Pending"
-                            order.Status = order.ShippedDate ? "Shipped" : "Pending";
-                        });
-                    }
-                    
-                    oOrdersModel.setData(data);
-                } catch (error) {
-                    console.error("Error loading orders data:", error);
-                }
-
-                this.setModel(oOrdersModel, "orders");
-            },
 
             /**
              * Load the customers JSON model
              * @private
              */
-            // _loadCustomersModel: function () {
-            //     var oCustomersModel = new JSONModel();
-            //     oCustomersModel.loadData("customers.json");
-            //     this.setModel(oCustomersModel, "customers");
-            // },
-
             _loadCustomersModel: async function () {
                 var oCustomersModel = new JSONModel();
 
@@ -94,25 +60,6 @@ sap.ui.define(
                 this.setModel(oCustomersModel, "customers");
             },
 
-            // _loadCustomersModel: function () {
-            //     var oCustomersModel = new
-            //         sap.ui.model.odata.v4.ODataModel({
-            //             serviceUrl: "Northwind.svc/",
-            //             synchronizationMode: "None"
-            //         });
-
-            // this.setModel(oCustomersModel, "customers");
-        // },
-
-            // _loadCustomersModel: function () {
-            //     var oCustomersModel = new
-            //         sap.ui.model.odata.v4.ODataModel({
-            //             serviceUrl: "Northwind.svc/",
-            //             synchronizationMode: "None"
-            //         });
-            //     this.setModel(oCustomersModel, "Customers");
-            //     console.log(oCustomersModel);
-            // },
             /**
              * Load the invoices JSON model
              * @private
@@ -132,7 +79,35 @@ sap.ui.define(
                 }
 
                 this.setModel(oInvoicesModel, "invoices");
+            },
+
+            _loadInitialOrders: async function () {
+
+                try {
+                    // Load orders without any limit
+                    let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Orders";
+
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+
+                    // Add Status property to each order
+                    if (data.value) {
+                        data.value.forEach(function (order) {
+                            order.Status = order.ShippedDate ? "Shipped" : "Pending";
+                        });
+                    }
+                    // Create and set the model
+                    const oOrdersModel = new sap.ui.model.json.JSONModel();
+                    oOrdersModel.setData(data);
+                    this.setModel(oOrdersModel, "orders");
+                } catch (error) {
+                    console.error("Error loading initial orders:", error);
+                }
             }
-        });
+        },
+        );
     }
 );

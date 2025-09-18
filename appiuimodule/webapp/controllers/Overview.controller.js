@@ -17,27 +17,41 @@ sap.ui.define(
                 ordersTable: {}
             },
 
-            /**
-            * Called when a controller is instantiated and its View controls (if available) are already created.
-            * Can be used to modify the View before it is displayed, to bind event handlers and do other one-time initialization.
-            * @memberOf appiuimodule.ext.overview.Overview
-            */
-            // onInit: function () {
-            //     console.log("Overview controller initialized");
-            //     console.log(this.getView().getModel("tasks"));
-            // },
+            // Store original orders data for filtering
+            _originalOrdersData: null,
 
+            onInit: function () {
+                // Listen for orders model data changes and store original data
+                const oOrdersModel = this.getOwnerComponent().getModel("orders");
+                if (oOrdersModel) {
+                    oOrdersModel.attachPropertyChange(this.onOrdersDataChanged, this);
+                    // Also check if data is already loaded
+                    this.onOrdersDataChanged();
+                }
+            },
 
-            onPress(oEvent) {
+            onOrdersDataChanged: function() {
+                const oOrdersModel = this.getOwnerComponent().getModel("orders");
+                if (oOrdersModel && oOrdersModel.getProperty("/value") && oOrdersModel.getProperty("/value").length > 0) {
+                    // Store original data for filtering/search if not already stored
+                    if (!this._originalOrdersData) {
+                        this._originalOrdersData = oOrdersModel.getProperty("/value");
+                    }
+                }
+            },
+
+            onOrderPress(oEvent) {
                 const oItem = oEvent.getSource();
                 const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("orderdetails", { OrderID: oEvent.getSource().getBindingContext("orders").getObject().OrderID });
+                oRouter.navTo("orderdetails",
+                    { OrderID: oEvent.getSource().getBindingContext("orders").getObject().OrderID });
             },
 
             onCustomerPress(oEvent) {
                 const oItem = oEvent.getSource();
                 const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("customerdetails", { CustomerID: oEvent.getSource().getBindingContext("customers").getObject().CustomerID });
+                oRouter.navTo("customerdetails",
+                    { CustomerID: oEvent.getSource().getBindingContext("customers").getObject().CustomerID });
             },
 
             onInvoicePress(oEvent) {
@@ -52,98 +66,14 @@ sap.ui.define(
                 });
             },
 
-            onFilterTasks: async function(oEvent) {
-                const query = oEvent.getParameter("query");
-                await this.searchOrders(query);
-            },
-
-            searchOrders: async function(query) {
-                const oOrdersModel = this.getOwnerComponent().getModel("orders");
-                
-                try {
-                    let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Orders";
-                    
-                    if (query && query.trim()) {
-                        // Search by CustomerID only
-                        const filter = `contains(CustomerID,'${encodeURIComponent(query)}')`;
-                        url += `?$filter=${filter}`;
-                    } else {
-                        // If no query, load more records for scrollable table
-                        url += "?$top=100";
-                    }
-                    
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    
-                    // Add Status property to each order
-                    if (data.value) {
-                        data.value.forEach(function (order) {
-                            order.Status = order.ShippedDate ? "Shipped" : "Pending";
-                        });
-                    }
-                    
-                    oOrdersModel.setData(data);
-                    
-                    // Reapply status styling after data update
-                    setTimeout(() => {
-                        this.updateStatusStyle();
-                    }, 100);
-                } catch (error) {
-                    console.error("Error searching orders:", error);
+            formatStatusState: function (status) {
+                // Return the appropriate state for ObjectStatus control
+                if (status === "Shipped") {
+                    return "Success";
+                } else if (status === "Pending") {
+                    return "Warning";
                 }
-            },
-
-            onStatusFilterChange: async function(oEvent) {
-                const selectedKey = oEvent.getParameter("selectedItem").getKey();
-                await this.searchOrdersByStatus(selectedKey);
-            },
-
-            searchOrdersByStatus: async function(status) {
-                const oOrdersModel = this.getOwnerComponent().getModel("orders");
-                
-                try {
-                    let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Orders";
-                    
-                    if (status === "Shipped") {
-                        // Filter for orders that have ShippedDate (not null)
-                        url += "?$filter=ShippedDate ne null";
-                    } else if (status === "Pending") {
-                        // Filter for orders that don't have ShippedDate (null)
-                        url += "?$filter=ShippedDate eq null";
-                    } else {
-                        // Show all orders with higher limit for scrollable table
-                        url += "?$top=100";
-                    }
-                    
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    
-                    // Add Status property to each order
-                    if (data.value) {
-                        data.value.forEach(function (order) {
-                            order.Status = order.ShippedDate ? "Shipped" : "Pending";
-                        });
-                    }
-                    
-                    oOrdersModel.setData(data);
-                    
-                    // Reapply status styling after data update
-                    setTimeout(() => {
-                        this.updateStatusStyle();
-                    }, 100);
-                } catch (error) {
-                    console.error("Error filtering orders by status:", error);
-                }
-            },
-
-            formatStatus: function (shippedDate) {
-                return shippedDate ? "Shipped" : "Pending";
+                return "None";
             },
 
             formatDate: function (dateString) {
@@ -152,53 +82,103 @@ sap.ui.define(
                 return date.toLocaleDateString();
             },
 
-            onAfterRendering: function () {
-                this.updateStatusStyle();
+            onFilterOrders: function (oEvent) {
+                const query = oEvent.getParameter("query");
+                this.searchOrders(query);
             },
 
-            updateStatusStyle: function () {
-                var oTable = this.byId("ordersTable");
-                var aItems = oTable.getItems();
-
-                aItems.forEach(function (oItem) {
-                    var aCells = oItem.getCells();
-                    var oStatusCell = aCells[6]; // Status is now the 7th column (index 6)
-                    var sStatus = oStatusCell.getText();
-
-                    // Clear previous classes
-                    oStatusCell.removeStyleClass("statusPending");
-                    oStatusCell.removeStyleClass("statusApproved");
-                    oStatusCell.removeStyleClass("statusRejected");
-
-                    // Add appropriate class based on status
-                    if (sStatus === "Pending") {
-                        oStatusCell.addStyleClass("statusPending");
-                    } else if (sStatus === "Shipped") {
-                        oStatusCell.addStyleClass("statusApproved");
+            searchOrders: function (query) {
+                const oOrdersModel = this.getOwnerComponent().getModel("orders");
+                
+                // Check if original data exists, if not try to set it
+                if (!this._originalOrdersData) {
+                    if (oOrdersModel && oOrdersModel.getProperty("/value")) {
+                        this._originalOrdersData = oOrdersModel.getProperty("/value");
+                    } else {
+                        console.warn("Orders data not available for search");
+                        return;
                     }
-                });
+                }
+                
+                // Use stored original data for search
+                const allOrders = this._originalOrdersData || [];
+                let filteredOrders;
+                
+                if (query && query.trim()) {
+                    // Filter by CustomerID locally
+                    const queryLower = query.toLowerCase();
+                    filteredOrders = allOrders.filter(function(order) {
+                        return order.CustomerID.toLowerCase().includes(queryLower);
+                    });
+                } else {
+                    // Show all orders if no query
+                    filteredOrders = allOrders;
+                }
+                
+                // Update the model with filtered data
+                oOrdersModel.setProperty("/value", filteredOrders);
             },
 
-            onFilterCustomers: async function(oEvent) {
+            onStatusFilterChange: function(oEvent) {
+                const selectedKey = oEvent.getParameter("selectedItem").getKey();
+                this.filterOrdersByStatus(selectedKey);
+            },
+
+            filterOrdersByStatus: function(status) {
+                const oOrdersModel = this.getOwnerComponent().getModel("orders");
+                
+                // Check if original data exists, if not try to set it
+                if (!this._originalOrdersData) {
+                    if (oOrdersModel && oOrdersModel.getProperty("/value")) {
+                        this._originalOrdersData = oOrdersModel.getProperty("/value");
+                    } else {
+                        console.warn("Orders data not available for status filtering");
+                        return;
+                    }
+                }
+                
+                // Use stored original data for filtering
+                const allOrders = this._originalOrdersData || [];
+                let filteredOrders;
+                
+                if (status === "Shipped") {
+                    filteredOrders = allOrders.filter(function(order) {
+                        return order.Status === "Shipped";
+                    });
+                } else if (status === "Pending") {
+                    filteredOrders = allOrders.filter(function(order) {
+                        return order.Status === "Pending";
+                    });
+                } else {
+                    // Show all orders for "All" or no selection
+                    filteredOrders = allOrders;
+                }
+                
+                // Update the model with filtered data
+                oOrdersModel.setProperty("/value", filteredOrders);
+            },
+
+            onFilterCustomers: async function (oEvent) {
                 const query = oEvent.getParameter("query");
                 await this.searchCustomers(query);
             },
 
-            searchCustomers: async function(query) {
+            searchCustomers: async function (query) {
                 const oCustomersModel = this.getOwnerComponent().getModel("customers");
-                
+
                 try {
                     let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Customers";
-                    
+
                     if (query && query.trim()) {
-                        // Search by CustomerID or CompanyName only
-                        const filter = `contains(CustomerID,'${encodeURIComponent(query)}') or contains(CompanyName,'${encodeURIComponent(query)}')`;
-                        url += `?$filter=${filter}`;
+                        // Search by CustomerID or CompanyName only - escape single quotes for OData
+                        const escapedQuery = query.replace(/'/g, "''");
+                        const filter = `contains(CustomerID,'${escapedQuery}') or contains(CompanyName,'${escapedQuery}')`;
+                        url += `?$filter=${encodeURIComponent(filter)}`;
                     } else {
                         // If no query, show top 10 as default
                         url += "?$top=10";
                     }
-                    
+
                     const response = await fetch(url);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -210,26 +190,27 @@ sap.ui.define(
                 }
             },
 
-            onFilterInvoices: async function(oEvent) {
+            onFilterInvoices: async function (oEvent) {
                 const query = oEvent.getParameter("query");
                 await this.searchInvoices(query);
             },
 
-            searchInvoices: async function(query) {
+            searchInvoices: async function (query) {
                 const oInvoicesModel = this.getOwnerComponent().getModel("invoices");
-                
+
                 try {
                     let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Invoices";
-                    
+
                     if (query && query.trim()) {
-                        // Search by CustomerName only
-                        const filter = `contains(CustomerName,'${encodeURIComponent(query)}')`;
-                        url += `?$filter=${filter}`;
+                        // Search by CustomerName only - escape single quotes for OData
+                        const escapedQuery = query.replace(/'/g, "''");
+                        const filter = `contains(CustomerName,'${escapedQuery}')`;
+                        url += `?$filter=${encodeURIComponent(filter)}`;
                     } else {
                         // If no query, show top 10 as default
                         url += "?$top=10";
                     }
-                    
+
                     const response = await fetch(url);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -353,41 +334,65 @@ sap.ui.define(
                 this.onSortColumn("invoicesTable", "CustomerName", 2);
             },
 
-            // Orders table - CustomerID and Order Date sorting allowed
+            // Orders table - CustomerID and Status sorting allowed
             onSortCustomerIdOrders() {
                 this.onSortColumn("ordersTable", "CustomerID", 2);
             },
 
-            onSortOrderDate() {
-                this.onSortColumn("ordersTable", "OrderDate", 4);
+            onSortStatus() {
+                this.onSortColumn("ordersTable", "Status", 6);
             },
 
+            onSettingsPress: function () {
+                // Placeholder for settings functionality
+                sap.m.MessageToast.show("Settings functionality not implemented yet");
+            },
 
-            /**
-             * Similar to onAfterRendering, but this hook is invoked before the controller's View is re-rendered
-             * (NOT before the first rendering! onInit() is used for that one!).
-             * @memberOf appiuimodule.ext.overview.Overview
-             */
-            //  onBeforeRendering: function() {
-            //
-            //  },
+            onLogoutPress: async function () {
+                this.logoutDialog ??= await this.loadFragment({
+                    name: "appiuimodule.views.TaskDecision"
+                });
 
-            /**
-             * Called when the View has been rendered (so its HTML is part of the document). Post-rendering manipulations of the HTML could be done here.
-             * This hook is the same one that SAPUI5 controls get after being rendered.
-             * @memberOf appiuimodule.ext.overview.Overview
-             */
-            //  onAfterRendering: function() {
-            //
-            //  },
+                // Set title dynamically for logout
+                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                this.logoutDialog.setTitle(bundle.getText("logoutTitle"));
 
-            /**
-             * Called when the Controller is destroyed. Use this one to free resources and finalize activities.
-             * @memberOf appiuimodule.ext.overview.Overview
-             */
-            //  onExit: function() {
-            //
-            //  }
+                // Clear previous content
+                this.logoutDialog.removeAllContent();
+
+                // Add logout confirmation content
+                this.logoutDialog.addContent(
+                    new sap.m.VBox({
+                        alignItems: "Center",
+                        items: [
+                            new sap.ui.core.Icon({ src: "sap-icon://log" }),
+                            new sap.m.Text({
+                                text: bundle.getText("logoutConfirmationMessage"),
+                                textAlign: "Center",
+                                width: "100%"
+                            })
+                        ]
+                    })
+                );
+
+                this.logoutDialog.setBeginButton(new sap.m.Button({
+                    text: bundle.getText("confirmLogoutButton"),
+                    press: function () {
+                        const oRouter = this.getOwnerComponent().getRouter();
+                        oRouter.navTo("logout");
+                        this.logoutDialog.close();
+                    }.bind(this)
+                }));
+
+                this.logoutDialog.setEndButton(new sap.m.Button({
+                    text: bundle.getText("dialogCloseButtonText"),
+                    press: function () {
+                        this.logoutDialog.close();
+                    }.bind(this)
+                }));
+
+                this.logoutDialog.open();
+            },
         });
     }
 );

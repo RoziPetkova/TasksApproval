@@ -1,0 +1,44 @@
+<mvc:View
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    controllerName="appiuimodule.controllers.Logout">
+    <Page
+        id="LogoutPage"
+        title="{i18n>logoutTitle}"
+        enableScrolling="false">
+        <content>
+            <VBox 
+                alignItems="Center" 
+                justifyContent="Center"
+                height="100%"
+                class="sapUiLargeMargin">
+                
+                <!-- Logout Icon -->
+                <core:Icon 
+                    src="sap-icon://log"
+                    size="4rem"
+                    color="#666"
+                    class="sapUiLargeMarginBottom" />
+                
+                <!-- Logout Message -->
+                <Title 
+                    text="{i18n>logoutMessage}" 
+                    level="H2"
+                    class="sapUiMediumMarginBottom" />
+                
+                <Text 
+                    text="{i18n>logoutSubMessage}"
+                    textAlign="Center"
+                    class="sapUiLargeMarginBottom" />
+                
+                <!-- Login Again Button -->
+                <Button 
+                    text="{i18n>loginAgainButton}"
+                    type="Emphasized"
+                    press=".onLoginAgain"
+                    class="sapUiMediumMarginTop" />
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

@@ -18,30 +18,35 @@ sap.ui.define(
             },
 
 
-            onObjectMatched(oEvent) {
+            onObjectMatched: async function(oEvent) {
                 var sOrderId = oEvent.getParameter("arguments").OrderID;
                 var oModel = this.getOwnerComponent().getModel("orders");
+                
+                // Check if model exists and has data
+                if (!oModel || !oModel.getProperty("/value")) {
+                    // If model doesn't exist or has no data, fetch order directly from API
+                    await this.loadOrderById(sOrderId);
+                    return;
+                }
+                
                 var aOrders = oModel.getProperty("/value");
                 var oOrder = aOrders.find(function (order) {
                     return String(order.OrderID) === String(sOrderId);
                 });
-                // oOrder now contains the order object with the matching OrderID
-                if (oOrder) {
-                    // set it to a local model for binding
-                    var oOrderModel = this.loadOrderProperties(oOrder);
-                    this.getView().setModel(oOrderModel, "orderModel");
+                
+                // If order not found in loaded model, try fetching from API
+                if (!oOrder) {
+                    console.warn("Order not found in loaded model, fetching from API:", sOrderId);
+                    await this.loadOrderById(sOrderId);
+                    return;
                 }
+                
+                // oOrder found in model - use it
+                var oOrderModel = this.loadOrderProperties(oOrder);
+                this.getView().setModel(oOrderModel, "orderModel");
                 this.updateStatusStyle();
             },
 
-            /**
-             * Similar to onAfterRendering, but this hook is invoked before the controller's View is re-rendered
-             * (NOT before the first rendering! onInit() is used for that one!).
-             * @memberOf appiuimodule.ext.overview.Overview
-             */
-            //  onBeforeRendering: function() {
-            //
-            //  },
 
             /**
              * Called when the View has been rendered (so its HTML is part of the document). Post-rendering manipulations of the HTML could be done here.
@@ -83,9 +88,12 @@ sap.ui.define(
                     name: "appiuimodule.views.TaskDecision"
                 });
 
+                // Set title dynamically
+                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                this.decisionDialog.setTitle(bundle.getText("taskDecisionDialogTitle"));
+
                 // Clear previous content
                 this.decisionDialog.removeAllContent();
-
 
                 // Add a simple text for Approve
                 this.decisionDialog.addContent(
@@ -118,10 +126,14 @@ sap.ui.define(
                     name: "appiuimodule.views.TaskDecision"
                 });
 
+                // Set title dynamically
+                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                this.decisionDialog.setTitle(bundle.getText("taskDecisionDialogTitle"));
+
                 // Clear previous content
                 this.decisionDialog.removeAllContent();
 
-                // Add a simple text for Approve
+                // Add a simple text for Decline
                 this.decisionDialog.addContent(
                     new sap.m.VBox({
                         alignItems: "Center",
@@ -169,6 +181,106 @@ sap.ui.define(
                 }
             },
 
+            loadOrderById: async function(orderId) {
+                try {
+                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Orders?$filter=OrderID eq ${orderId}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    
+                    if (data.value && data.value.length > 0) {
+                        const oOrder = data.value[0];
+                        
+                        // Add Status property
+                        oOrder.Status = oOrder.ShippedDate ? "Shipped" : "Pending";
+                        
+                        // Set order details
+                        var oOrderModel = this.loadOrderProperties(oOrder);
+                        this.getView().setModel(oOrderModel, "orderModel");
+                        this.updateStatusStyle();
+                    } else {
+                        console.error("Order not found in API:", orderId);
+                        // Show error message to user
+                        sap.m.MessageToast.show(`Order ${orderId} not found. This order may not exist in the system.`);
+                        
+                        // Navigate back or set empty model
+                        this.getView().setModel(new sap.ui.model.json.JSONModel({
+                            taskDetails: [
+                                { label: "Error", value: `Order ${orderId} not found` },
+                                { label: "Status", value: "Not Available" }
+                            ]
+                        }), "orderModel");
+                    }
+                } catch (error) {
+                    console.error("Error loading order by ID:", error);
+                    sap.m.MessageToast.show(`Failed to load order ${orderId}. Please try again.`);
+                    
+                    // Set error model
+                    this.getView().setModel(new sap.ui.model.json.JSONModel({
+                        taskDetails: [
+                            { label: "Error", value: `Failed to load order ${orderId}` },
+                            { label: "Status", value: "Error" }
+                        ]
+                    }), "orderModel");
+                }
+            },
+
+            onHomePress: function() {
+                const oRouter = this.getOwnerComponent().getRouter();
+                oRouter.navTo("overview");
+            },
+
+            onSettingsPress: function() {
+                sap.m.MessageToast.show("Settings functionality not implemented yet");
+            },
+
+            onLogoutPress: async function() {
+                this.logoutDialog ??= await this.loadFragment({
+                    name: "appiuimodule.views.TaskDecision"
+                });
+
+                // Set title dynamically for logout
+                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                this.logoutDialog.setTitle(bundle.getText("logoutTitle"));
+
+                // Clear previous content
+                this.logoutDialog.removeAllContent();
+
+                // Add logout confirmation content
+                this.logoutDialog.addContent(
+                    new sap.m.VBox({
+                        alignItems: "Center",
+                        items: [
+                            new sap.ui.core.Icon({ src: "sap-icon://log" }),
+                            new sap.m.Text({
+                                text: bundle.getText("logoutConfirmationMessage"),
+                                textAlign: "Center",
+                                width: "100%"
+                            })
+                        ]
+                    })
+                );
+
+                this.logoutDialog.setBeginButton(new sap.m.Button({
+                    text: bundle.getText("confirmLogoutButton"),
+                    press: function () {
+                        const oRouter = this.getOwnerComponent().getRouter();
+                        oRouter.navTo("logout");
+                        this.logoutDialog.close();
+                    }.bind(this)
+                }));
+
+                this.logoutDialog.setEndButton(new sap.m.Button({
+                    text: bundle.getText("dialogCloseButtonText"),
+                    press: function () {
+                        this.logoutDialog.close();
+                    }.bind(this)
+                }));
+
+                this.logoutDialog.open();
+            },
+
             loadOrderProperties(order) {
                 var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
 
@@ -181,7 +293,7 @@ sap.ui.define(
                         { label: bundle.getText("shippedDateLabel"), value: this.formatDate(order.ShippedDate) },
                         { label: bundle.getText("countryLabel"), value: order.ShipCountry },
                         { label: bundle.getText("cityLabel"), value: order.ShipCity },
-                        { label: bundle.getText("statusLabel"), value: this.formatStatus(order.Status) }
+                        { label: bundle.getText("statusLabel"), value: order.Status }
                     ]
                 });
             },

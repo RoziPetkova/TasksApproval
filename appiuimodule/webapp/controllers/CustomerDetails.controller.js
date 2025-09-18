@@ -20,6 +20,14 @@ sap.ui.define(
             onObjectMatched: async function(oEvent) {
                 var sCustomerId = oEvent.getParameter("arguments").CustomerID;
                 var oModel = this.getOwnerComponent().getModel("customers");
+                
+                // Check if model exists and has data
+                if (!oModel || !oModel.getProperty("/value")) {
+                    // If model doesn't exist or has no data, fetch customer directly from API
+                    await this.loadCustomerById(sCustomerId);
+                    return;
+                }
+                
                 var aCustomers = oModel.getProperty("/value");
                 var oCustomer = aCustomers.find(function (customer) {
                     return customer.CustomerID === sCustomerId;
@@ -88,6 +96,44 @@ sap.ui.define(
                 return parseFloat(value).toFixed(2);
             },
 
+            loadCustomerById: async function(customerId) {
+                try {
+                    // Escape single quotes for OData filter
+                    const escapedCustomerId = customerId.replace(/'/g, "''");
+                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$filter=CustomerID eq '${escapedCustomerId}'`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    
+                    if (data.value && data.value.length > 0) {
+                        const oCustomer = data.value[0];
+                        
+                        // Set customer details
+                        var oCustomerModel = this.loadCustomerProperties(oCustomer);
+                        this.getView().setModel(oCustomerModel, "customerModel");
+                        
+                        // Fetch orders and invoices for this customer
+                        await this.loadCustomerOrders(customerId);
+                        await this.loadCustomerInvoices(oCustomer.CompanyName);
+                        
+                        this.updateStatusStyle();
+                    } else {
+                        console.error("Customer not found:", customerId);
+                        // Set empty models
+                        this.getView().setModel(new sap.ui.model.json.JSONModel({customerDetails: []}), "customerModel");
+                        this.getView().setModel(new sap.ui.model.json.JSONModel({orders: []}), "customerOrdersModel");
+                        this.getView().setModel(new sap.ui.model.json.JSONModel({invoices: []}), "customerInvoicesModel");
+                    }
+                } catch (error) {
+                    console.error("Error loading customer by ID:", error);
+                    // Set empty models on error
+                    this.getView().setModel(new sap.ui.model.json.JSONModel({customerDetails: []}), "customerModel");
+                    this.getView().setModel(new sap.ui.model.json.JSONModel({orders: []}), "customerOrdersModel");
+                    this.getView().setModel(new sap.ui.model.json.JSONModel({invoices: []}), "customerInvoicesModel");
+                }
+            },
+
             loadCustomerOrders: async function(customerId) {
                 try {
                     const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Orders?$filter=CustomerID eq '${customerId}'`);
@@ -119,7 +165,9 @@ sap.ui.define(
 
             loadCustomerInvoices: async function(companyName) {
                 try {
-                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$filter=CustomerName eq '${encodeURIComponent(companyName)}'`);
+                    // Escape single quotes in OData filter by doubling them
+                    const escapedCompanyName = companyName.replace(/'/g, "''");
+                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$filter=CustomerName eq '${escapedCompanyName}'`);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
@@ -137,6 +185,80 @@ sap.ui.define(
                     });
                     this.getView().setModel(oCustomerInvoicesModel, "customerInvoicesModel");
                 }
+            },
+
+            onCustomerOrderPress(oEvent) {
+                const oItem = oEvent.getSource();
+                const oRouter = this.getOwnerComponent().getRouter();
+                const oOrder = oEvent.getSource().getBindingContext("customerOrdersModel").getObject();
+                oRouter.navTo("orderdetails", { OrderID: oOrder.OrderID });
+            },
+
+            onCustomerInvoicePress(oEvent) {
+                const oItem = oEvent.getSource();
+                const oRouter = this.getOwnerComponent().getRouter();
+                const oInvoice = oEvent.getSource().getBindingContext("customerInvoicesModel").getObject();
+                // Encode ProductName to handle special characters in URL
+                const encodedProductName = encodeURIComponent(oInvoice.ProductName);
+                oRouter.navTo("invoicedetails", {
+                    OrderID: oInvoice.OrderID,
+                    ProductName: encodedProductName
+                });
+            },
+
+            onHomePress: function() {
+                const oRouter = this.getOwnerComponent().getRouter();
+                oRouter.navTo("overview");
+            },
+
+            onSettingsPress: function() {
+                sap.m.MessageToast.show("Settings functionality not implemented yet");
+            },
+
+            onLogoutPress: async function() {
+                this.logoutDialog ??= await this.loadFragment({
+                    name: "appiuimodule.views.TaskDecision"
+                });
+
+                // Set title dynamically for logout
+                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                this.logoutDialog.setTitle(bundle.getText("logoutTitle"));
+
+                // Clear previous content
+                this.logoutDialog.removeAllContent();
+
+                // Add logout confirmation content
+                this.logoutDialog.addContent(
+                    new sap.m.VBox({
+                        alignItems: "Center",
+                        items: [
+                            new sap.ui.core.Icon({ src: "sap-icon://log" }),
+                            new sap.m.Text({
+                                text: bundle.getText("logoutConfirmationMessage"),
+                                textAlign: "Center",
+                                width: "100%"
+                            })
+                        ]
+                    })
+                );
+
+                this.logoutDialog.setBeginButton(new sap.m.Button({
+                    text: bundle.getText("confirmLogoutButton"),
+                    press: function () {
+                        const oRouter = this.getOwnerComponent().getRouter();
+                        oRouter.navTo("logout");
+                        this.logoutDialog.close();
+                    }.bind(this)
+                }));
+
+                this.logoutDialog.setEndButton(new sap.m.Button({
+                    text: bundle.getText("dialogCloseButtonText"),
+                    press: function () {
+                        this.logoutDialog.close();
+                    }.bind(this)
+                }));
+
+                this.logoutDialog.open();
             },
 
             loadCustomerProperties(customer) {

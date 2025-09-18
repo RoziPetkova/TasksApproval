@@ -86,11 +86,11 @@
                 <headerToolbar>
                     <Toolbar>
                         <Title text="{i18n>orderListTitle}" />
+                        <ToolbarSpacer />
                         <SearchField
                             width="40%"
                             placeholder="{i18n>searchOrdersPlaceholder}"
-                            search=".onFilterTasks" />
-                        <ToolbarSpacer />
+                            search=".onFilterOrders" />
                         <Select
                             selectedKey="All"
                             width="8em"
@@ -136,13 +136,19 @@
                         <Text text="{i18n>shippedDateColumn}" />
                     </Column>
                     <Column minScreenWidth="Small">
-                        <Text text="{i18n>statusColumn}" />
+                        <HBox alignItems="Center">
+                            <Text text="{i18n>statusColumn}" />
+                            <core:Icon
+                                src="sap-icon://sort"
+                                press=".onSortStatus"
+                                class="sapUiTinyMarginBegin sortIcon" />
+                        </HBox>
                     </Column>
                 </columns>
                 <items>
                     <ColumnListItem
                         type="Navigation"
-                        press=".onPress">
+                        press=".onOrderPress">
                         <cells>
                             <Text text="{orders>OrderID}" />
                             <Text text="Order" />
@@ -150,7 +156,9 @@
                             <Text text="{orders>ShipCountry}" />
                             <Text text="{path: 'orders>OrderDate', formatter: '.formatDate'}" />
                             <Text text="{path: 'orders>ShippedDate', formatter: '.formatDate'}" />
-                            <Text text="{orders>Status}" />
+                            <ObjectStatus 
+                                text="{orders>Status}" 
+                                state="{path: 'orders>Status', formatter: '.formatStatusState'}" />
                         </cells>
                     </ColumnListItem>
                 </items>

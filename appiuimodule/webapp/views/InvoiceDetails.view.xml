@@ -10,6 +10,9 @@
         title="{i18n>invoiceDetailsTitle}"
         showNavButton="true"
         navButtonPress=".onNavBack">
+        <headerContent>
+            <core:Fragment fragmentName="appiuimodule.views.HeaderButtons" type="XML" />
+        </headerContent>
         <content class="sapUiSmallMarginBottom sapUiMediumMarginBegin sapUiMediumMarginEnd">
             
             <!-- Invoice Details Table -->

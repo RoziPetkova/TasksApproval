@@ -94,6 +94,11 @@
                     "pattern": "invoicedetails/{OrderID}/{ProductName}",
                     "name": "invoicedetails",
                     "target": "targetinvoicedetails"
+                },
+                {
+                    "pattern": "logout",
+                    "name": "logout",
+                    "target": "targetlogout"
                 }
             ],
             "targets": {
@@ -112,6 +117,10 @@
                 "targetinvoicedetails": {
                     "id": "invoicedetails",
                     "name": "InvoiceDetails"
+                },
+                "targetlogout": {
+                    "id": "logout",
+                    "name": "Logout"
                 }
             }
         }
