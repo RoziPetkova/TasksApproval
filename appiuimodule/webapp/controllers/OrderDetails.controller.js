@@ -85,7 +85,7 @@ sap.ui.define(
 
             async onApprove() {
                 this.decisionDialog ??= await this.loadFragment({
-                    name: "appiuimodule.views.TaskDecision"
+                    name: "appiuimodule.views.CoreDialog"
                 });
 
                 // Set title dynamically
@@ -112,8 +112,8 @@ sap.ui.define(
 
                 this.decisionDialog.setBeginButton(new sap.m.Button({
                     text: "Confirm",
-                    press: function () {
-                        // handle confirm approve
+                    press: async function () {
+                        await this.handleApproveOrder();
                         this.decisionDialog.close();
                     }.bind(this)
                 }));
@@ -123,7 +123,7 @@ sap.ui.define(
 
             async onDecline() {
                 this.decisionDialog ??= await this.loadFragment({
-                    name: "appiuimodule.views.TaskDecision"
+                    name: "appiuimodule.views.CoreDialog"
                 });
 
                 // Set title dynamically
@@ -138,7 +138,7 @@ sap.ui.define(
                     new sap.m.VBox({
                         alignItems: "Center",
                         items: [
-                            new sap.ui.core.Icon({ src: "sap-icon://decline" }),
+                            new sap.ui.core.Icon({ src: "sap-icon://cancel" }),
                             new sap.m.Input({ placeholder: "Rejection reason..." })
                         ]
                     })
@@ -146,8 +146,13 @@ sap.ui.define(
 
                 this.decisionDialog.setBeginButton(new sap.m.Button({
                     text: "Decline",
-                    press: function () {
-                        // handle decline approve
+                    press: async function () {
+                        // Get rejection reason from input
+                        const vboxContent = this.decisionDialog.getContent()[0];
+                        const input = vboxContent.getItems()[1]; // Input is the second item
+                        const rejectionReason = input.getValue();
+                        
+                        await this.handleDeclineOrder(rejectionReason);
                         this.decisionDialog.close();
                     }.bind(this)
                 }));
@@ -231,13 +236,55 @@ sap.ui.define(
                 oRouter.navTo("overview");
             },
 
-            onSettingsPress: function() {
-                sap.m.MessageToast.show("Settings functionality not implemented yet");
+            onSettingsPress: async function () {
+                this.settingsDialog ??= await this.loadFragment({
+                    name: "appiuimodule.views.CoreDialog"
+                });
+
+                // Set title dynamically for settings
+                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                this.settingsDialog.setTitle("Settings");
+
+                // Clear previous content
+                this.settingsDialog.removeAllContent();
+
+                // Add settings placeholder content
+                this.settingsDialog.addContent(
+                    new sap.m.VBox({
+                        alignItems: "Center",
+                        items: [
+                            new sap.ui.core.Icon({ src: "sap-icon://settings" }),
+                            new sap.m.Text({
+                                text: "Some settings should be manipulated here... to be implemented.",
+                                textAlign: "Center",
+                                width: "100%"
+                            })
+                        ]
+                    })
+                );
+
+                this.settingsDialog.setBeginButton(new sap.m.Button({
+                    text: "Save",
+                    press: function () {
+                        // Placeholder for save functionality
+                        sap.m.MessageToast.show("Settings saved (placeholder)");
+                        this.settingsDialog.close();
+                    }.bind(this)
+                }));
+
+                this.settingsDialog.setEndButton(new sap.m.Button({
+                    text: "Close",
+                    press: function () {
+                        this.settingsDialog.close();
+                    }.bind(this)
+                }));
+
+                this.settingsDialog.open();
             },
 
             onLogoutPress: async function() {
                 this.logoutDialog ??= await this.loadFragment({
-                    name: "appiuimodule.views.TaskDecision"
+                    name: "appiuimodule.views.CoreDialog"
                 });
 
                 // Set title dynamically for logout
@@ -281,6 +328,97 @@ sap.ui.define(
                 this.logoutDialog.open();
             },
 
+            handleApproveOrder: async function() {
+                try {
+                    // Get current order data
+                    const oOrderModel = this.getView().getModel("orderModel");
+                    const currentOrderId = oOrderModel.getProperty("/taskDetails/0/value"); // OrderID is first detail
+                    
+                    // Update local model: set ShippedDate to current date, Status to Shipped
+                    const currentDate = new Date().toISOString();
+                    const updatedOrderData = oOrderModel.getData();
+                    
+                    // Find and update the ShippedDate and Status in taskDetails
+                    updatedOrderData.taskDetails.forEach(detail => {
+                        if (detail.label.includes("Shipped Date") || detail.label.includes("shippedDate")) {
+                            detail.value = this.formatDate(currentDate);
+                        }
+                        if (detail.label.includes("Status") || detail.label.includes("status")) {
+                            detail.value = "Shipped";
+                        }
+                    });
+                    
+                    // Update the model
+                    oOrderModel.setData(updatedOrderData);
+                    
+                    // Also update the orders model in Component if available
+                    const oOrdersModel = this.getOwnerComponent().getModel("orders");
+                    if (oOrdersModel) {
+                        const orders = oOrdersModel.getProperty("/value") || [];
+                        const orderToUpdate = orders.find(order => String(order.OrderID) === String(currentOrderId));
+                        if (orderToUpdate) {
+                            orderToUpdate.ShippedDate = currentDate;
+                            orderToUpdate.Status = "Shipped";
+                            oOrdersModel.setProperty("/value", orders);
+                        }
+                    }
+                    
+                    // Show success message
+                    sap.m.MessageToast.show(`Order ${currentOrderId} has been approved and shipped!`);
+                    
+                } catch (error) {
+                    console.error("Error approving order:", error);
+                    sap.m.MessageToast.show("Failed to approve order. Please try again.");
+                }
+            },
+
+            handleDeclineOrder: async function(rejectionReason) {
+                try {
+                    // Get current order data
+                    const oOrderModel = this.getView().getModel("orderModel");
+                    const currentOrderId = oOrderModel.getProperty("/taskDetails/0/value"); // OrderID is first detail
+                
+                    // Since Northwind API is read-only, we simulate the API call                   
+                    // Update local model: set ShippedDate to null, Status to Declined
+                    const updatedOrderData = oOrderModel.getData();
+                    
+                    // Find and update the ShippedDate and Status in taskDetails
+                    updatedOrderData.taskDetails.forEach(detail => {
+                        if (detail.label.includes("Shipped Date")) {
+                            detail.value = ""; // Set to empty for declined orders
+                        }
+                        if (detail.label.includes("Status") || detail.label.includes("status")) {
+                            detail.value = "Declined";
+                        }
+                    });
+                    
+                    // Update the model
+                    oOrderModel.setData(updatedOrderData);
+                    
+                    // Also update the orders model in Component if available
+                    const oOrdersModel = this.getOwnerComponent().getModel("orders");
+                    if (oOrdersModel) {
+                        const orders = oOrdersModel.getProperty("/value") || [];
+                        const orderToUpdate = orders.find(order => String(order.OrderID) === String(currentOrderId));
+                        if (orderToUpdate) {
+                            orderToUpdate.ShippedDate = null;
+                            orderToUpdate.Status = "Declined";
+                            oOrdersModel.setProperty("/value", orders);
+                        }
+                    }
+                    
+                    // Show success message
+                    const message = rejectionReason 
+                        ? `Order ${currentOrderId} has been declined. Reason: ${rejectionReason}`
+                        : `Order ${currentOrderId} has been declined.`;
+                    sap.m.MessageToast.show(message);
+                    
+                } catch (error) {
+                    console.error("Error declining order:", error);
+                    sap.m.MessageToast.show("Failed to decline order. Please try again.");
+                }
+            },
+
             loadOrderProperties(order) {
                 var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
 
@@ -305,7 +443,7 @@ function setNewStatusStyle(sStatus, aCells) {
         aCells[1].addStyleClass("statusPending");
     } else if (sStatus === "Shipped" || sStatus === "Approved") {
         aCells[1].addStyleClass("statusApproved");
-    } else if (sStatus === "Rejected") {
+    } else if (sStatus === "Rejected" || sStatus === "Declined") {
         aCells[1].addStyleClass("statusRejected");
     }
 }

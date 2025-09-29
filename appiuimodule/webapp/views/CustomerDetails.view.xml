@@ -2,6 +2,8 @@
     xmlns:core="sap.ui.core"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:card="sap.f.cards"
     xmlns:macros="sap.fe.macros"
     xmlns:html="http://www.w3.org/1999/xhtml"
     controllerName="appiuimodule.controllers.CustomerDetails">
@@ -13,39 +15,62 @@
         <headerContent>
             <core:Fragment fragmentName="appiuimodule.views.HeaderButtons" type="XML" />
         </headerContent>
-        <content class="sapUiSmallMarginBottom sapUiMediumMarginBegin sapUiMediumMarginEnd">
+        <content class="sapUiResponsiveMargin">
             
-            <!-- Customer Details Table -->
-            <Table
-                id="customerTable"
-                items="{ path: 'customerModel>/customerDetails' }"
-                class="sapUiResponsiveMargin"
-                width="auto">
-                <headerToolbar>
-                    <Toolbar>
-                        <Title text="{i18n>customerDetailsTitle}" />
-                    </Toolbar>
-                </headerToolbar>
-                <columns>
-                    <Column width="8em">
-                        <Text text="{i18n>fieldColumn}" />
-                    </Column>
-                    <Column>
-                        <Text text="{i18n>valueColumn}" />
-                    </Column>
-                </columns>
-                <items>
-                    <ColumnListItem>
-                        <cells>
-                            <Text text="{customerModel>label}" />
-                            <Text text="{customerModel>value}" />
-                        </cells>
-                    </ColumnListItem>
-                </items>
-            </Table>
+            <!-- Customer Information Card -->
+            <f:Card class="sapUiResponsiveMargin" width="auto">
+                <f:header>
+                    <card:Header 
+                        title="{i18n>customerDetailsTitle}"
+                        subtitle="{customerModel>/CompanyName}"
+                        iconSrc="sap-icon://customer" />
+                </f:header>
+                <f:content>
+                    <VBox class="sapUiMediumMargin">
+                        <!-- Company Name as main title -->
+                        <Title text="{customerModel>/CompanyName}" 
+                               level="H2" 
+                               class="sapUiMediumMarginBottom" />
+                        
+                        <!-- Three Column Layout -->
+                        <HBox wrap="Wrap" justifyContent="SpaceBetween">
+                            <!-- General Information Column -->
+                            <VBox width="30%">
+                                <Label text="{i18n>generalInformationLabel}" class="sapUiSmallMarginBottom" />
+                                <VBox class="sapUiSmallMarginBottom sapUiMediumMarginStart">
+                                    <Text text="{i18n>customerIdColumn}: {customerModel>/CustomerID}" />
+                                    <Text text="{i18n>companyNameColumn}: {customerModel>/CompanyName}" />
+                                </VBox>
+                            </VBox>
+                            
+                            <!-- Contact Information Column -->
+                            <VBox width="30%">
+                                <Label text="{i18n>contactInformationLabel}" class="sapUiSmallMarginBottom" />
+                                <VBox class="sapUiSmallMarginBottom sapUiMediumMarginStart">
+                                    <Text text="{i18n>contactNameColumn}: {customerModel>/ContactName}" />
+                                    <Text text="{i18n>contactTitleLabel}: {customerModel>/ContactTitle}" />
+                                    <Text text="{i18n>phoneColumn}: {customerModel>/Phone}" />
+                                    <Text text="{i18n>faxLabel}: {path: 'customerModel>/Fax', formatter: '.formatFax'}" />
+                                </VBox>
+                            </VBox>
+                            
+                            <!-- Address Column -->
+                            <VBox width="30%">
+                                <Label text="{i18n>addressLabel}" class="sapUiSmallMarginBottom" />
+                                <VBox class="sapUiSmallMarginBottom sapUiMediumMarginStart">
+                                    <Text text="{customerModel>/Address}" />
+                                    <Text text="{customerModel>/City}, {path: 'customerModel>/Region', formatter: '.formatRegion'}" />
+                                    <Text text="{customerModel>/PostalCode}" />
+                                    <Text text="{customerModel>/Country}" />
+                                </VBox>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+                </f:content>
+            </f:Card>
 
             <!-- Customer Orders Table -->
-            <ScrollContainer height="400px" vertical="true" horizontal="false" class="sapUiResponsiveMargin sapUiMediumMarginTop">
+            <ScrollContainer height="400px" vertical="true" horizontal="false" class="sapUiResponsiveMargin">
                 <Table
                     id="customerOrdersTable"
                     items="{ path: 'customerOrdersModel>/orders' }"
@@ -99,7 +124,7 @@
             </ScrollContainer>
 
             <!-- Customer Invoices Table -->
-            <ScrollContainer height="400px" vertical="true" horizontal="false" class="sapUiResponsiveMargin sapUiMediumMarginTop">
+            <ScrollContainer height="400px" vertical="true" horizontal="false" class="sapUiResponsiveMargin">
                 <Table
                     id="customerInvoicesTable"
                     items="{ path: 'customerInvoicesModel>/invoices' }"

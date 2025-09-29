@@ -34,9 +34,8 @@ sap.ui.define(
                 });
                 
                 if (oCustomer) {
-                    // Set it to a local model for binding
-                    var oCustomerModel = this.loadCustomerProperties(oCustomer);
-                    this.getView().setModel(oCustomerModel, "customerModel");
+                    // Set customer data directly to model
+                    this.getView().setModel(new sap.ui.model.json.JSONModel(oCustomer), "customerModel");
                     
                     // Fetch orders for this customer from API
                     await this.loadCustomerOrders(sCustomerId);
@@ -96,6 +95,14 @@ sap.ui.define(
                 return parseFloat(value).toFixed(2);
             },
 
+            formatFax: function(value) {
+                return value || "N/A";
+            },
+
+            formatRegion: function(value) {
+                return value || "N/A";
+            },
+
             loadCustomerById: async function(customerId) {
                 try {
                     // Escape single quotes for OData filter
@@ -109,9 +116,8 @@ sap.ui.define(
                     if (data.value && data.value.length > 0) {
                         const oCustomer = data.value[0];
                         
-                        // Set customer details
-                        var oCustomerModel = this.loadCustomerProperties(oCustomer);
-                        this.getView().setModel(oCustomerModel, "customerModel");
+                        // Set customer data directly to model
+                        this.getView().setModel(new sap.ui.model.json.JSONModel(oCustomer), "customerModel");
                         
                         // Fetch orders and invoices for this customer
                         await this.loadCustomerOrders(customerId);
@@ -120,15 +126,15 @@ sap.ui.define(
                         this.updateStatusStyle();
                     } else {
                         console.error("Customer not found:", customerId);
-                        // Set empty models
-                        this.getView().setModel(new sap.ui.model.json.JSONModel({customerDetails: []}), "customerModel");
+                        // Set empty model
+                        this.getView().setModel(new sap.ui.model.json.JSONModel({}), "customerModel");
                         this.getView().setModel(new sap.ui.model.json.JSONModel({orders: []}), "customerOrdersModel");
                         this.getView().setModel(new sap.ui.model.json.JSONModel({invoices: []}), "customerInvoicesModel");
                     }
                 } catch (error) {
                     console.error("Error loading customer by ID:", error);
-                    // Set empty models on error
-                    this.getView().setModel(new sap.ui.model.json.JSONModel({customerDetails: []}), "customerModel");
+                    // Set empty model on error
+                    this.getView().setModel(new sap.ui.model.json.JSONModel({}), "customerModel");
                     this.getView().setModel(new sap.ui.model.json.JSONModel({orders: []}), "customerOrdersModel");
                     this.getView().setModel(new sap.ui.model.json.JSONModel({invoices: []}), "customerInvoicesModel");
                 }
@@ -211,13 +217,55 @@ sap.ui.define(
                 oRouter.navTo("overview");
             },
 
-            onSettingsPress: function() {
-                sap.m.MessageToast.show("Settings functionality not implemented yet");
+            onSettingsPress: async function () {
+                this.settingsDialog ??= await this.loadFragment({
+                    name: "appiuimodule.views.CoreDialog"
+                });
+
+                // Set title dynamically for settings
+                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                this.settingsDialog.setTitle("Settings");
+
+                // Clear previous content
+                this.settingsDialog.removeAllContent();
+
+                // Add settings placeholder content
+                this.settingsDialog.addContent(
+                    new sap.m.VBox({
+                        alignItems: "Center",
+                        items: [
+                            new sap.ui.core.Icon({ src: "sap-icon://settings" }),
+                            new sap.m.Text({
+                                text: "Some settings should be manipulated here... to be implemented.",
+                                textAlign: "Center",
+                                width: "100%"
+                            })
+                        ]
+                    })
+                );
+
+                this.settingsDialog.setBeginButton(new sap.m.Button({
+                    text: "Save",
+                    press: function () {
+                        // Placeholder for save functionality
+                        sap.m.MessageToast.show("Settings saved (placeholder)");
+                        this.settingsDialog.close();
+                    }.bind(this)
+                }));
+
+                this.settingsDialog.setEndButton(new sap.m.Button({
+                    text: "Close",
+                    press: function () {
+                        this.settingsDialog.close();
+                    }.bind(this)
+                }));
+
+                this.settingsDialog.open();
             },
 
             onLogoutPress: async function() {
                 this.logoutDialog ??= await this.loadFragment({
-                    name: "appiuimodule.views.TaskDecision"
+                    name: "appiuimodule.views.CoreDialog"
                 });
 
                 // Set title dynamically for logout
@@ -261,25 +309,6 @@ sap.ui.define(
                 this.logoutDialog.open();
             },
 
-            loadCustomerProperties(customer) {
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-
-                return new sap.ui.model.json.JSONModel({
-                    customerDetails: [
-                        { label: bundle.getText("customerIdColumn"), value: customer.CustomerID },
-                        { label: bundle.getText("companyNameColumn"), value: customer.CompanyName },
-                        { label: bundle.getText("contactNameColumn"), value: customer.ContactName },
-                        { label: bundle.getText("contactTitleLabel"), value: customer.ContactTitle },
-                        { label: bundle.getText("addressLabel"), value: customer.Address },
-                        { label: bundle.getText("cityColumn"), value: customer.City },
-                        { label: bundle.getText("regionLabel"), value: customer.Region || "N/A" },
-                        { label: bundle.getText("postalCodeLabel"), value: customer.PostalCode },
-                        { label: bundle.getText("countryColumn"), value: customer.Country },
-                        { label: bundle.getText("phoneColumn"), value: customer.Phone },
-                        { label: bundle.getText("faxLabel"), value: customer.Fax || "N/A" }
-                    ]
-                });
-            }
 
         });
     }
