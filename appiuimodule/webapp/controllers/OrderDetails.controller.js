@@ -54,21 +54,9 @@ sap.ui.define(
              * @memberOf appiuimodule.ext.overview.Overview
              */
             updateStatusStyle: function () {
-                var oTable = this.byId("orderTable");
-                var aItems = oTable.getItems();
-
-                aItems.forEach(function (oItem) {
-                    var aCells = oItem.getCells();
-                    var sLabel = aCells[0].getText();
-
-                    if (sLabel === "Status" || sLabel.includes("Status")) {
-                        var sStatus = aCells[1].getText();
-                        // Remove any previous status classes
-                        clearStatysStyle(aCells);
-                        // Add class based on status value
-                        setNewStatusStyle(sStatus, aCells);
-                    }
-                });
+                // No longer needed with ObjectListItem - semantic styling handled by control
+                // ObjectListItem handles status styling automatically
+                return;
             },
 
             onNavBack() {
@@ -168,6 +156,42 @@ sap.ui.define(
                 if (!dateString) return "";
                 var date = new Date(dateString);
                 return date.toLocaleDateString();
+            },
+
+            formatCustomerRowType: function(label) {
+                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                var customerIdLabel = bundle.getText("customerIdColumn");
+                return (label === customerIdLabel) ? "Navigation" : "Inactive";
+            },
+
+            formatStatusColor: function(label, value) {
+                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                var statusLabel = bundle.getText("statusLabel");
+                
+                if (label === statusLabel) {
+                    if (value === "Shipped" || value === "Approved") {
+                        return "Success";
+                    } else if (value === "Pending") {
+                        return "Warning";
+                    } else if (value === "Declined" || value === "Rejected") {
+                        return "Error";
+                    }
+                }
+                return "None";
+            },
+
+            onCustomerRowPress: function(oEvent) {
+                var oItem = oEvent.getSource();
+                var oBindingContext = oItem.getBindingContext("orderModel");
+                var oRowData = oBindingContext.getObject();
+                
+                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                var customerIdLabel = bundle.getText("customerIdColumn");
+                
+                if (oRowData.label === customerIdLabel && oRowData.value) {
+                    const oRouter = this.getOwnerComponent().getRouter();
+                    oRouter.navTo("customerdetails", { CustomerID: oRowData.value });
+                }
             },
 
             onGoToCustomerDetails: function() {
@@ -435,6 +459,7 @@ sap.ui.define(
                     ]
                 });
             },
+
         });
     }
 );

@@ -2,6 +2,8 @@
     xmlns:core="sap.ui.core"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:card="sap.f.cards"
     xmlns:macros="sap.fe.macros"
     xmlns:html="http://www.w3.org/1999/xhtml"
     controllerName="appiuimodule.controllers.InvoiceDetails">
@@ -14,37 +16,49 @@
             <core:Fragment fragmentName="appiuimodule.views.HeaderButtons" type="XML" />
         </headerContent>
         <content class="sapUiSmallMarginBottom sapUiMediumMarginBegin sapUiMediumMarginEnd">
-            
-            <!-- Invoice Details Table -->
-            <Table
-                id="invoiceTable"
-                items="{ path: 'invoiceModel>/invoiceDetails' }"
-                class="sapUiResponsiveMargin"
-                width="auto">
-                <headerToolbar>
-                    <Toolbar>
-                        <Title text="{i18n>invoiceDetailsTitle}" />
-                        <ToolbarSpacer />
-                        <core:Fragment fragmentName="appiuimodule.views.CustomerDetailsButton" type="XML" />
-                    </Toolbar>
-                </headerToolbar>
-                <columns>
-                    <Column width="8em">
-                        <Text text="{i18n>fieldColumn}" />
-                    </Column>
-                    <Column>
-                        <Text text="{i18n>valueColumn}" />
-                    </Column>
-                </columns>
-                <items>
-                    <ColumnListItem>
-                        <cells>
-                            <Text text="{invoiceModel>label}" />
-                            <Text text="{invoiceModel>value}" />
-                        </cells>
-                    </ColumnListItem>
-                </items>
-            </Table>
+
+            <!-- Invoice Details Card -->
+            <VBox class="sapUiResponsiveMargin sapUiMediumMarginTop">
+                <f:Card>
+                    <f:header>
+                        <card:Header
+                            title="{i18n>invoiceDetailsTitle}"
+                            iconSrc="sap-icon://document" />
+                    </f:header>
+                    <f:content>
+                        <VBox class="sapUiResponsiveMargin" width="100%">
+                            <HBox justifyContent="End" class="sapUiSmallMarginBottom">
+                                <core:Fragment
+                                    fragmentName="appiuimodule.views.CustomerDetailsButton"
+                                    type="XML" />
+                            </HBox>
+                            <HBox wrap="Wrap" width="100%"
+                                justifyContent="SpaceBetween">
+                                <!-- Left Column -->
+                                <VBox width="48%">
+                                    <List items="{path: 'invoiceModel>/invoiceDetails', length: 6}"
+                                        class="sapUiSizeCompact" width="100%">
+                                        <StandardListItem
+                                            title="{invoiceModel>label}"
+                                            info="{invoiceModel>value}" />
+                                    </List>
+                                </VBox>
+
+                                <!-- Right Column -->
+                                <VBox width="48%">
+                                    <List
+                                        items="{path: 'invoiceModel>/invoiceDetails', startIndex: 6}"
+                                        class="sapUiSizeCompact" width="100%">
+                                        <StandardListItem
+                                            title="{invoiceModel>label}"
+                                            info="{invoiceModel>value}" />
+                                    </List>
+                                </VBox>
+                            </HBox>
+                        </VBox>
+                    </f:content>
+                </f:Card>
+            </VBox>
 
             <!-- Products Table -->
             <Table
@@ -79,15 +93,18 @@
                         <cells>
                             <Text text="{productsModel>ProductName}" />
                             <Text text="{productsModel>Quantity}" />
-                            <Text text="{
+                            <Text
+                                text="{
                                 parts: ['productsModel>UnitPrice'],
                                 formatter: '.formatCurrency'
                             }" />
-                            <Text text="{
+                            <Text
+                                text="{
                                 parts: ['productsModel>Discount'],
                                 formatter: '.formatDiscount'
                             }" />
-                            <Text text="{
+                            <Text
+                                text="{
                                 parts: ['productsModel>ExtendedPrice'],
                                 formatter: '.formatCurrency'
                             }" />
