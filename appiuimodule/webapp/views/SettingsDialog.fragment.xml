@@ -1,0 +1,22 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    <Dialog
+        id="settingsDialog"
+        title=""
+        icon="">
+        <content>
+        </content>
+        <beginButton>
+            <Button
+                text="Cancel"
+                press=".onCloseDialog" />
+        </beginButton>
+        <endButton>
+            <Button
+                text="Save"
+                type="Emphasized"
+                press=".onSettingsSave" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

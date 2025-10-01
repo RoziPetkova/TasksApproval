@@ -1,0 +1,22 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    <Dialog
+        id="logoutDialog"
+        title=""
+        icon="">
+        <content>
+        </content>
+        <beginButton>
+            <Button
+                text="Cancel"
+                press=".onCloseDialog" />
+        </beginButton>
+        <endButton>
+            <Button
+                text="Log Out"
+                type="Emphasized"
+                press=".onLogoutConfirm" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

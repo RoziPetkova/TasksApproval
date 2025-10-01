@@ -1,0 +1,22 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    <Dialog
+        id="approveDialog"
+        title=""
+        icon="">
+        <content>
+        </content>
+        <beginButton>
+            <Button
+                text="Cancel"
+                press=".onCloseDialog" />
+        </beginButton>
+        <endButton>
+            <Button
+                text="Approve"
+                type="Emphasized"
+                press=".onApproveConfirm" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

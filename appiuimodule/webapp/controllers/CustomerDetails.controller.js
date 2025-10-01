@@ -218,69 +218,69 @@ sap.ui.define(
             },
 
             onSettingsPress: async function () {
-                this.settingsDialog ??= await this.loadFragment({
-                    name: "appiuimodule.views.CoreDialog"
-                });
+                if (!this.settingsDialog) {
+                    this.settingsDialog = await this.loadFragment({
+                        name: "appiuimodule.views.SettingsDialog"
+                    });
+                }
 
-                // Set title dynamically for settings
+                // Set title and icon dynamically for settings
                 var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
                 this.settingsDialog.setTitle("Settings");
+                this.settingsDialog.setIcon("sap-icon://settings");
 
-                // Clear previous content
+                // Clear previous content and add settings content
                 this.settingsDialog.removeAllContent();
-
-                // Add settings placeholder content
                 this.settingsDialog.addContent(
                     new sap.m.VBox({
                         alignItems: "Center",
                         items: [
-                            new sap.ui.core.Icon({ src: "sap-icon://settings" }),
                             new sap.m.Text({
                                 text: "Some settings should be manipulated here... to be implemented.",
-                                textAlign: "Center",
-                                width: "100%"
+                                textAlign: "Center"
                             })
                         ]
                     })
                 );
-
-                this.settingsDialog.setBeginButton(new sap.m.Button({
-                    text: "Save",
-                    press: function () {
-                        // Placeholder for save functionality
-                        sap.m.MessageToast.show("Settings saved (placeholder)");
-                        this.settingsDialog.close();
-                    }.bind(this)
-                }));
-
-                this.settingsDialog.setEndButton(new sap.m.Button({
-                    text: "Close",
-                    press: function () {
-                        this.settingsDialog.close();
-                    }.bind(this)
-                }));
-
+                
+                this.settingsDialog.addStyleClass("sapUiResponsivePadding");
                 this.settingsDialog.open();
             },
 
-            onLogoutPress: async function() {
-                this.logoutDialog ??= await this.loadFragment({
-                    name: "appiuimodule.views.CoreDialog"
-                });
+            onSettingsSave: function() {
+                // Placeholder for save functionality
+                sap.m.MessageToast.show("Settings saved (placeholder)");
+                this.settingsDialog.close();
+            },
 
-                // Set title dynamically for logout
+            onCloseDialog: function() {
+                // Generic close function for all dialogs
+                if (this.settingsDialog && this.settingsDialog.isOpen()) {
+                    this.settingsDialog.close();
+                }
+                if (this.logoutDialog && this.logoutDialog.isOpen()) {
+                    this.logoutDialog.close();
+                }
+            },
+
+            onLogoutPress: async function() {
+                if (!this.logoutDialog) {
+                    this.logoutDialog = await this.loadFragment({
+                        name: "appiuimodule.views.LogoutDialog"
+                    });
+                }
+
+                // Set title and icon dynamically for logout
                 var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
                 this.logoutDialog.setTitle(bundle.getText("logoutTitle"));
+                this.logoutDialog.setIcon("sap-icon://log");
 
-                // Clear previous content
+                // Clear previous content and add logout confirmation content
                 this.logoutDialog.removeAllContent();
-
-                // Add logout confirmation content
                 this.logoutDialog.addContent(
                     new sap.m.VBox({
                         alignItems: "Center",
                         items: [
-                            new sap.ui.core.Icon({ src: "sap-icon://log" }),
                             new sap.m.Text({
                                 text: bundle.getText("logoutConfirmationMessage"),
                                 textAlign: "Center",
@@ -290,23 +290,13 @@ sap.ui.define(
                     })
                 );
 
-                this.logoutDialog.setBeginButton(new sap.m.Button({
-                    text: bundle.getText("confirmLogoutButton"),
-                    press: function () {
-                        const oRouter = this.getOwnerComponent().getRouter();
-                        oRouter.navTo("logout");
-                        this.logoutDialog.close();
-                    }.bind(this)
-                }));
-
-                this.logoutDialog.setEndButton(new sap.m.Button({
-                    text: bundle.getText("dialogCloseButtonText"),
-                    press: function () {
-                        this.logoutDialog.close();
-                    }.bind(this)
-                }));
-
                 this.logoutDialog.open();
+            },
+
+            onLogoutConfirm: function() {
+                const oRouter = this.getOwnerComponent().getRouter();
+                oRouter.navTo("logout");
+                this.logoutDialog.close();
             },
 
 

@@ -66,11 +66,13 @@
                     id="ApproveButton"
                     icon="sap-icon://accept"
                     text="{i18n>Approve}"
+                    enabled="{= ${orderModel>/taskDetails/7/value} === 'Pending' }"
                     press=".onApprove" />
                 <Button
                     id="DeclineButton"
                     icon="sap-icon://decline"
                     text="{i18n>Decline}"
+                    enabled="{= ${orderModel>/taskDetails/7/value} === 'Pending' }"
                     press=".onDecline" />
             </Toolbar>
         </footer>

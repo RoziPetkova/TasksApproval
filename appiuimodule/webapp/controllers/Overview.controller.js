@@ -20,25 +20,201 @@ sap.ui.define(
             // Store original orders data for filtering
             _originalOrdersData: null,
 
+            // Track customers loading for growing functionality
+            _customersSkip: 0,
+            _customersHasMore: true,
+
+            // Track invoices loading for growing functionality
+            _invoicesSkip: 0,
+            _invoicesHasMore: true,
+
             onInit: function () {
-                // Listen for orders model data changes and store original data
-                const oOrdersModel = this.getOwnerComponent().getModel("orders");
-                if (oOrdersModel) {
-                    oOrdersModel.attachPropertyChange(this.onOrdersDataChanged, this);
-                    // Also check if data is already loaded
-                    this.onOrdersDataChanged();
+                // Load all data models when overview controller initializes
+                this._loadCustomersModel();
+                this._loadInvoicesModel();
+                this._loadAllOrders();
+            },
+
+            /**
+             * Load the customers JSON model - first 10 records only
+             * @private
+             */
+            _loadCustomersModel: async function () {
+                var oCustomersModel = new sap.ui.model.json.JSONModel();
+
+                try {
+                    const response = await fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$top=10");
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    
+                    // Add hasMore property for button visibility
+                    data.hasMore = data.value && data.value.length === 10;
+                    
+                    oCustomersModel.setData(data);
+                    
+                    // Initialize skip counter and check if there are more records
+                    this._customersSkip = 10;
+                    this._customersHasMore = data.hasMore;
+                } catch (error) {
+                    console.error("Error loading customers data: ", error);
+                    // Set empty model with hasMore false
+                    oCustomersModel.setData({ value: [], hasMore: false });
+                }
+
+                this.getOwnerComponent().setModel(oCustomersModel, "customers");
+            },
+
+            /**
+             * Handle "Load More Customers" button click
+             */
+            onLoadMoreCustomers: async function () {
+                if (!this._customersHasMore) {
+                    return;
+                }
+
+                const oCustomersModel = this.getOwnerComponent().getModel("customers");
+                const currentData = oCustomersModel.getData();
+
+                try {
+                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$top=10&$skip=${this._customersSkip}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const newData = await response.json();
+                    
+                    // Append new data to existing data
+                    if (newData.value && newData.value.length > 0) {
+                        currentData.value = currentData.value.concat(newData.value);
+                        
+                        // Update skip counter and check if there are more records
+                        this._customersSkip += newData.value.length;
+                        this._customersHasMore = newData.value.length === 10;
+                        currentData.hasMore = this._customersHasMore;
+                        
+                        oCustomersModel.setData(currentData);
+                    } else {
+                        // No more data available
+                        this._customersHasMore = false;
+                        currentData.hasMore = false;
+                        oCustomersModel.setData(currentData);
+                    }
+                } catch (error) {
+                    console.error("Error loading more customers data: ", error);
+                    this._customersHasMore = false;
+                    currentData.hasMore = false;
+                    oCustomersModel.setData(currentData);
                 }
             },
 
-            onOrdersDataChanged: function() {
-                const oOrdersModel = this.getOwnerComponent().getModel("orders");
-                if (oOrdersModel && oOrdersModel.getProperty("/value") && oOrdersModel.getProperty("/value").length > 0) {
-                    // Store original data for filtering/search if not already stored
-                    if (!this._originalOrdersData) {
-                        this._originalOrdersData = oOrdersModel.getProperty("/value");
+            /**
+             * Handle "Load More Invoices" button click
+             */
+            onLoadMoreInvoices: async function () {
+                if (!this._invoicesHasMore) {
+                    return;
+                }
+
+                const oInvoicesModel = this.getOwnerComponent().getModel("invoices");
+                const currentData = oInvoicesModel.getData();
+
+                try {
+                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$top=10&$skip=${this._invoicesSkip}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
                     }
+                    const newData = await response.json();
+                    
+                    // Append new data to existing data
+                    if (newData.value && newData.value.length > 0) {
+                        currentData.value = currentData.value.concat(newData.value);
+                        
+                        // Update skip counter and check if there are more records
+                        this._invoicesSkip += newData.value.length;
+                        this._invoicesHasMore = newData.value.length === 10;
+                        currentData.hasMore = this._invoicesHasMore;
+                        
+                        oInvoicesModel.setData(currentData);
+                    } else {
+                        // No more data available
+                        this._invoicesHasMore = false;
+                        currentData.hasMore = false;
+                        oInvoicesModel.setData(currentData);
+                    }
+                } catch (error) {
+                    console.error("Error loading more invoices data: ", error);
+                    this._invoicesHasMore = false;
+                    currentData.hasMore = false;
+                    oInvoicesModel.setData(currentData);
                 }
             },
+
+            /**
+             * Load the invoices JSON model - first 10 records only
+             * @private
+             */
+            _loadInvoicesModel: async function () {
+                var oInvoicesModel = new sap.ui.model.json.JSONModel();
+
+                try {
+                    const response = await fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$top=10");
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    
+                    // Add hasMore property for button visibility
+                    data.hasMore = data.value && data.value.length === 10;
+                    
+                    oInvoicesModel.setData(data);
+                    
+                    // Initialize skip counter and check if there are more records
+                    this._invoicesSkip = 10;
+                    this._invoicesHasMore = data.hasMore;
+                } catch (error) {
+                    console.error("Error loading invoices data:", error);
+                    // Set empty model with hasMore false
+                    oInvoicesModel.setData({ value: [], hasMore: false });
+                }
+
+                this.getOwnerComponent().setModel(oInvoicesModel, "invoices");
+            },
+
+            /**
+             * Load all orders and save them in the model
+             * @private
+             */
+            _loadAllOrders: async function () {
+                try {
+                    // Load ALL orders without any limit
+                    let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Orders";
+
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+
+                    // Add Status property to each order
+                    if (data.value) {
+                        data.value.forEach(function (order) {
+                            order.Status = order.ShippedDate ? "Shipped" : "Pending";
+                        });
+                    }
+
+                    // Store original data for filtering/search
+                    this._originalOrdersData = data.value;
+
+                    // Create and set the model
+                    const oOrdersModel = new sap.ui.model.json.JSONModel();
+                    oOrdersModel.setData(data);
+                    this.getOwnerComponent().setModel(oOrdersModel, "orders");
+                } catch (error) {
+                    console.error("Error loading all orders:", error);
+                }
+            },
+
 
             onOrderPress(oEvent) {
                 const oItem = oEvent.getSource();
@@ -316,99 +492,327 @@ sap.ui.define(
                 });
             },
 
+            /**
+             * Special sort function for customers table with separate header and data tables
+             */
+            onSortCustomersColumn(fieldPath, columnIndex) {
+                const dataTable = this.byId("customersTable");
+                const headerTable = this.byId("customersTableHeader");
+                const binding = dataTable.getBinding("items");
+
+                // Initialize sort state for customers table if it doesn't exist
+                if (!this._sortState["customersTable"]) {
+                    this._sortState["customersTable"] = {};
+                }
+
+                // Reset all other icons in header table to neutral state
+                this._resetCustomersHeaderIcons();
+
+                // Initialize sort state for this field if it doesn't exist (start with descending first click)
+                if (this._sortState["customersTable"][fieldPath] === undefined) {
+                    this._sortState["customersTable"][fieldPath] = false; // false = descending first
+                }
+
+                // Toggle sort direction
+                this._sortState["customersTable"][fieldPath] = !this._sortState["customersTable"][fieldPath];
+                const isAscending = this._sortState["customersTable"][fieldPath];
+
+                // Create sorter
+                const sorter = new Sorter(fieldPath, !isAscending);
+
+                // Apply sorting to data table
+                binding.sort(sorter);
+
+                // Update icon in header table to show current sort direction
+                const headerColumns = headerTable.getColumns();
+                const headerColumn = headerColumns[columnIndex];
+                const header = headerColumn.getHeader();
+
+                // Handle different header structures
+                let icon = null;
+                if (header.getMetadata().getName() === "sap.m.HBox") {
+                    // Header is an HBox containing items
+                    const headerItems = header.getItems();
+                    if (headerItems && headerItems[1]) {
+                        icon = headerItems[1];
+                    }
+                }
+
+                if (icon && icon.getMetadata().getName() === "sap.ui.core.Icon") {
+                    if (isAscending) {
+                        icon.setSrc("sap-icon://sort-ascending");
+                    } else {
+                        icon.setSrc("sap-icon://sort-descending");
+                    }
+                }
+            },
+
+            /**
+             * Reset all sort icons in customers header table to neutral state
+             */
+            _resetCustomersHeaderIcons() {
+                const headerTable = this.byId("customersTableHeader");
+                const columns = headerTable.getColumns();
+
+                columns.forEach(function (column) {
+                    const header = column.getHeader();
+
+                    if (header && header.getMetadata().getName() === "sap.m.HBox") {
+                        // Header is an HBox containing items
+                        const headerItems = header.getItems();
+                        if (headerItems) {
+                            headerItems.forEach(function (item) {
+                                if (item.getMetadata().getName() === "sap.ui.core.Icon" &&
+                                    (item.getSrc().includes("sort") || item.getSrc() === "sap-icon://text-align-center")) {
+                                    item.setSrc("sap-icon://text-align-center");
+                                }
+                            });
+                        }
+                    }
+                });
+            },
+
+            /**
+             * Special sort function for invoices table with separate header and data tables
+             */
+            onSortInvoicesColumn(fieldPath, columnIndex) {
+                const dataTable = this.byId("invoicesTable");
+                const headerTable = this.byId("invoicesTableHeader");
+                const binding = dataTable.getBinding("items");
+
+                // Initialize sort state for invoices table if it doesn't exist
+                if (!this._sortState["invoicesTable"]) {
+                    this._sortState["invoicesTable"] = {};
+                }
+
+                // Reset all other icons in header table to neutral state
+                this._resetInvoicesHeaderIcons();
+
+                // Initialize sort state for this field if it doesn't exist (start with descending first click)
+                if (this._sortState["invoicesTable"][fieldPath] === undefined) {
+                    this._sortState["invoicesTable"][fieldPath] = false; // false = descending first
+                }
+
+                // Toggle sort direction
+                this._sortState["invoicesTable"][fieldPath] = !this._sortState["invoicesTable"][fieldPath];
+                const isAscending = this._sortState["invoicesTable"][fieldPath];
+
+                // Create sorter
+                const sorter = new Sorter(fieldPath, !isAscending);
+
+                // Apply sorting to data table
+                binding.sort(sorter);
+
+                // Update icon in header table to show current sort direction
+                const headerColumns = headerTable.getColumns();
+                const headerColumn = headerColumns[columnIndex];
+                const header = headerColumn.getHeader();
+
+                // Handle different header structures
+                let icon = null;
+                if (header.getMetadata().getName() === "sap.m.HBox") {
+                    // Header is an HBox containing items
+                    const headerItems = header.getItems();
+                    if (headerItems && headerItems[1]) {
+                        icon = headerItems[1];
+                    }
+                }
+
+                if (icon && icon.getMetadata().getName() === "sap.ui.core.Icon") {
+                    if (isAscending) {
+                        icon.setSrc("sap-icon://sort-ascending");
+                    } else {
+                        icon.setSrc("sap-icon://sort-descending");
+                    }
+                }
+            },
+
+            /**
+             * Reset all sort icons in invoices header table to neutral state
+             */
+            _resetInvoicesHeaderIcons() {
+                const headerTable = this.byId("invoicesTableHeader");
+                const columns = headerTable.getColumns();
+
+                columns.forEach(function (column) {
+                    const header = column.getHeader();
+
+                    if (header && header.getMetadata().getName() === "sap.m.HBox") {
+                        // Header is an HBox containing items
+                        const headerItems = header.getItems();
+                        if (headerItems) {
+                            headerItems.forEach(function (item) {
+                                if (item.getMetadata().getName() === "sap.ui.core.Icon" &&
+                                    (item.getSrc().includes("sort") || item.getSrc() === "sap-icon://text-align-center")) {
+                                    item.setSrc("sap-icon://text-align-center");
+                                }
+                            });
+                        }
+                    }
+                });
+            },
+
+            /**
+             * Special sort function for orders table with separate header and data tables
+             */
+            onSortOrdersColumn(fieldPath, columnIndex) {
+                const dataTable = this.byId("ordersTable");
+                const headerTable = this.byId("ordersTableHeader");
+                const binding = dataTable.getBinding("items");
+
+                // Initialize sort state for orders table if it doesn't exist
+                if (!this._sortState["ordersTable"]) {
+                    this._sortState["ordersTable"] = {};
+                }
+
+                // Reset all other icons in header table to neutral state
+                this._resetOrdersHeaderIcons();
+
+                // Initialize sort state for this field if it doesn't exist (start with descending first click)
+                if (this._sortState["ordersTable"][fieldPath] === undefined) {
+                    this._sortState["ordersTable"][fieldPath] = false; // false = descending first
+                }
+
+                // Toggle sort direction
+                this._sortState["ordersTable"][fieldPath] = !this._sortState["ordersTable"][fieldPath];
+                const isAscending = this._sortState["ordersTable"][fieldPath];
+
+                // Create sorter
+                const sorter = new Sorter(fieldPath, !isAscending);
+
+                // Apply sorting to data table
+                binding.sort(sorter);
+
+                // Update icon in header table to show current sort direction
+                const headerColumns = headerTable.getColumns();
+                const headerColumn = headerColumns[columnIndex];
+                const header = headerColumn.getHeader();
+
+                // Handle different header structures
+                let icon = null;
+                if (header.getMetadata().getName() === "sap.m.HBox") {
+                    // Header is an HBox containing items
+                    const headerItems = header.getItems();
+                    if (headerItems && headerItems[1]) {
+                        icon = headerItems[1];
+                    }
+                }
+
+                if (icon && icon.getMetadata().getName() === "sap.ui.core.Icon") {
+                    if (isAscending) {
+                        icon.setSrc("sap-icon://sort-ascending");
+                    } else {
+                        icon.setSrc("sap-icon://sort-descending");
+                    }
+                }
+            },
+
+            /**
+             * Reset all sort icons in orders header table to neutral state
+             */
+            _resetOrdersHeaderIcons() {
+                const headerTable = this.byId("ordersTableHeader");
+                const columns = headerTable.getColumns();
+
+                columns.forEach(function (column) {
+                    const header = column.getHeader();
+
+                    if (header && header.getMetadata().getName() === "sap.m.HBox") {
+                        // Header is an HBox containing items
+                        const headerItems = header.getItems();
+                        if (headerItems) {
+                            headerItems.forEach(function (item) {
+                                if (item.getMetadata().getName() === "sap.ui.core.Icon" &&
+                                    (item.getSrc().includes("sort") || item.getSrc() === "sap-icon://text-align-center")) {
+                                    item.setSrc("sap-icon://text-align-center");
+                                }
+                            });
+                        }
+                    }
+                });
+            },
+
             // Specific sort handlers for allowed columns only
 
             // Customers table - CustomerID and Country sorting allowed
             onSortCustomerId() {
-                this.onSortColumn("customersTable", "CustomerID", 0);
+                this.onSortCustomersColumn("CustomerID", 0);
             },
 
             onSortCountry() {
-                this.onSortColumn("customersTable", "Country", 3);
+                this.onSortCustomersColumn("Country", 3);
             },
 
             // Invoice table - only Product Name and Customer sorting allowed  
             onSortProductName() {
-                this.onSortColumn("invoicesTable", "ProductName", 1);
+                this.onSortInvoicesColumn("ProductName", 1);
             },
 
             onSortCustomerName() {
-                this.onSortColumn("invoicesTable", "CustomerName", 2);
+                this.onSortInvoicesColumn("CustomerName", 2);
             },
 
             // Orders table - CustomerID and Status sorting allowed
             onSortCustomerIdOrders() {
-                this.onSortColumn("ordersTable", "CustomerID", 2);
+                this.onSortOrdersColumn("CustomerID", 2);
+            },
+
+            onSortOrderDate() {
+                this.onSortOrdersColumn("OrderDate", 4);
             },
 
             onSortStatus() {
-                this.onSortColumn("ordersTable", "Status", 6);
+                this.onSortOrdersColumn("Status", 6);
             },
 
             onSettingsPress: async function () {
-                this.settingsDialog ??= await this.loadFragment({
-                    name: "appiuimodule.views.CoreDialog"
-                });
+                if (!this.settingsDialog) {
+                    this.settingsDialog = await this.loadFragment({
+                        name: "appiuimodule.views.SettingsDialog"
+                    });
+                }
 
-                // Set title dynamically for settings
+                // Set title and icon dynamically for settings
                 var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
                 this.settingsDialog.setTitle("Settings");
+                this.settingsDialog.setIcon("sap-icon://settings");
 
-                // Clear previous content
+                // Clear previous content and add settings content
                 this.settingsDialog.removeAllContent();
-
-                // Add settings placeholder content
                 this.settingsDialog.addContent(
                     new sap.m.VBox({
                         alignItems: "Center",
                         items: [
-                            new sap.ui.core.Icon({ src: "sap-icon://settings" }),
                             new sap.m.Text({
                                 text: "Some settings should be manipulated here... to be implemented.",
-                                textAlign: "Center",
-                                width: "100%"
+                                textAlign: "Center"
                             })
                         ]
                     })
                 );
-
-                this.settingsDialog.setBeginButton(new sap.m.Button({
-                    text: "Save",
-                    press: function () {
-                        // Placeholder for save functionality
-                        sap.m.MessageToast.show("Settings saved (placeholder)");
-                        this.settingsDialog.close();
-                    }.bind(this)
-                }));
-
-                this.settingsDialog.setEndButton(new sap.m.Button({
-                    text: "Close",
-                    press: function () {
-                        this.settingsDialog.close();
-                    }.bind(this)
-                }));
-
+                
+                this.settingsDialog.addStyleClass("sapUiResponsivePadding");
                 this.settingsDialog.open();
             },
 
-            onLogoutPress: async function () {
-                this.logoutDialog ??= await this.loadFragment({
-                    name: "appiuimodule.views.CoreDialog"
-                });
+            onLogoutPress: async function() {
+                if (!this.logoutDialog) {
+                    this.logoutDialog = await this.loadFragment({
+                        name: "appiuimodule.views.LogoutDialog"
+                    });
+                }
 
-                // Set title dynamically for logout
+                // Set title and icon dynamically for logout
                 var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
                 this.logoutDialog.setTitle(bundle.getText("logoutTitle"));
+                this.logoutDialog.setIcon("sap-icon://log");
 
-                // Clear previous content
+                // Clear previous content and add logout confirmation content
                 this.logoutDialog.removeAllContent();
-
-                // Add logout confirmation content
                 this.logoutDialog.addContent(
                     new sap.m.VBox({
                         alignItems: "Center",
                         items: [
-                            new sap.ui.core.Icon({ src: "sap-icon://log" }),
                             new sap.m.Text({
                                 text: bundle.getText("logoutConfirmationMessage"),
                                 textAlign: "Center",
@@ -418,23 +822,29 @@ sap.ui.define(
                     })
                 );
 
-                this.logoutDialog.setBeginButton(new sap.m.Button({
-                    text: bundle.getText("confirmLogoutButton"),
-                    press: function () {
-                        const oRouter = this.getOwnerComponent().getRouter();
-                        oRouter.navTo("logout");
-                        this.logoutDialog.close();
-                    }.bind(this)
-                }));
-
-                this.logoutDialog.setEndButton(new sap.m.Button({
-                    text: bundle.getText("dialogCloseButtonText"),
-                    press: function () {
-                        this.logoutDialog.close();
-                    }.bind(this)
-                }));
-
                 this.logoutDialog.open();
+            },
+
+            onSettingsSave: function() {
+                // Placeholder for save functionality
+                sap.m.MessageToast.show("Settings saved (placeholder)");
+                this.settingsDialog.close();
+            },
+
+            onCloseDialog: function() {
+                // Generic close function for all dialogs
+                if (this.settingsDialog && this.settingsDialog.isOpen()) {
+                    this.settingsDialog.close();
+                }
+                if (this.logoutDialog && this.logoutDialog.isOpen()) {
+                    this.logoutDialog.close();
+                }
+            },
+
+            onLogoutConfirm: function() {
+                const oRouter = this.getOwnerComponent().getRouter();
+                oRouter.navTo("logout");
+                this.logoutDialog.close();
             },
         });
     }
