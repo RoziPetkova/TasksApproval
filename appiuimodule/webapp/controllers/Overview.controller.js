@@ -30,9 +30,45 @@ sap.ui.define(
 
             onInit: function () {
                 // Load all data models when overview controller initializes
-                this._loadCustomersModel();
-                this._loadInvoicesModel();
-                this._loadAllOrders();
+                Promise.all([
+                    this._loadCustomersModel(),
+                    this._loadInvoicesModel(),
+                    this._loadAllOrders()
+                ]).then(() => {
+                    // Set sticky header for customers table after data is loaded
+                    this._setStickyHeaderForCustomersTable();
+                });
+            },
+
+            /**
+             * Set sticky headers for all tables
+             * @private
+             */
+            _setStickyHeaderForCustomersTable: function() {
+                // Import Sticky enum and set column headers as sticky for all tables
+                sap.ui.require([
+                    "sap/m/library"
+                ], function(mobileLibrary) {
+                    const Sticky = mobileLibrary.Sticky;
+                    
+                    // Set sticky for customers table
+                    const oCustomersTable = this.byId("customersTable");
+                    if (oCustomersTable) {
+                        oCustomersTable.setSticky([Sticky.ColumnHeaders]);
+                    }
+                    
+                    // Set sticky for orders table
+                    const oOrdersTable = this.byId("ordersTable");
+                    if (oOrdersTable) {
+                        oOrdersTable.setSticky([Sticky.ColumnHeaders]);
+                    }
+                    
+                    // Set sticky for invoices table
+                    const oInvoicesTable = this.byId("invoicesTable");
+                    if (oInvoicesTable) {
+                        oInvoicesTable.setSticky([Sticky.ColumnHeaders]);
+                    }
+                }.bind(this));
             },
 
             /**
@@ -224,21 +260,16 @@ sap.ui.define(
             },
 
             onCustomerPress(oEvent) {
-                const oItem = oEvent.getSource();
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("customerdetails",
                     { CustomerID: oEvent.getSource().getBindingContext("customers").getObject().CustomerID });
             },
 
             onInvoicePress(oEvent) {
-                const oItem = oEvent.getSource();
                 const oRouter = this.getOwnerComponent().getRouter();
                 const oInvoice = oEvent.getSource().getBindingContext("invoices").getObject();
-                // Encode ProductName to handle special characters in URL
-                const encodedProductName = encodeURIComponent(oInvoice.ProductName);
                 oRouter.navTo("invoicedetails", {
-                    OrderID: oInvoice.OrderID,
-                    ProductName: encodedProductName
+                    OrderID: oInvoice.OrderID
                 });
             },
 
@@ -493,19 +524,18 @@ sap.ui.define(
             },
 
             /**
-             * Special sort function for customers table with separate header and data tables
+             * Sort function for customers table (single table with sticky headers)
              */
             onSortCustomersColumn(fieldPath, columnIndex) {
-                const dataTable = this.byId("customersTable");
-                const headerTable = this.byId("customersTableHeader");
-                const binding = dataTable.getBinding("items");
+                const table = this.byId("customersTable");
+                const binding = table.getBinding("items");
 
                 // Initialize sort state for customers table if it doesn't exist
                 if (!this._sortState["customersTable"]) {
                     this._sortState["customersTable"] = {};
                 }
 
-                // Reset all other icons in header table to neutral state
+                // Reset all other icons to neutral state
                 this._resetCustomersHeaderIcons();
 
                 // Initialize sort state for this field if it doesn't exist (start with descending first click)
@@ -520,13 +550,13 @@ sap.ui.define(
                 // Create sorter
                 const sorter = new Sorter(fieldPath, !isAscending);
 
-                // Apply sorting to data table
+                // Apply sorting to table
                 binding.sort(sorter);
 
-                // Update icon in header table to show current sort direction
-                const headerColumns = headerTable.getColumns();
-                const headerColumn = headerColumns[columnIndex];
-                const header = headerColumn.getHeader();
+                // Update icon to show current sort direction
+                const columns = table.getColumns();
+                const column = columns[columnIndex];
+                const header = column.getHeader();
 
                 // Handle different header structures
                 let icon = null;
@@ -548,11 +578,11 @@ sap.ui.define(
             },
 
             /**
-             * Reset all sort icons in customers header table to neutral state
+             * Reset all sort icons in customers table to neutral state
              */
             _resetCustomersHeaderIcons() {
-                const headerTable = this.byId("customersTableHeader");
-                const columns = headerTable.getColumns();
+                const table = this.byId("customersTable");
+                const columns = table.getColumns();
 
                 columns.forEach(function (column) {
                     const header = column.getHeader();
@@ -564,7 +594,7 @@ sap.ui.define(
                             headerItems.forEach(function (item) {
                                 if (item.getMetadata().getName() === "sap.ui.core.Icon" &&
                                     (item.getSrc().includes("sort") || item.getSrc() === "sap-icon://text-align-center")) {
-                                    item.setSrc("sap-icon://text-align-center");
+                                    item.setSrc("sap-icon://sort");
                                 }
                             });
                         }
@@ -573,19 +603,18 @@ sap.ui.define(
             },
 
             /**
-             * Special sort function for invoices table with separate header and data tables
+             * Sort function for invoices table (single table with sticky headers)
              */
             onSortInvoicesColumn(fieldPath, columnIndex) {
-                const dataTable = this.byId("invoicesTable");
-                const headerTable = this.byId("invoicesTableHeader");
-                const binding = dataTable.getBinding("items");
+                const table = this.byId("invoicesTable");
+                const binding = table.getBinding("items");
 
                 // Initialize sort state for invoices table if it doesn't exist
                 if (!this._sortState["invoicesTable"]) {
                     this._sortState["invoicesTable"] = {};
                 }
 
-                // Reset all other icons in header table to neutral state
+                // Reset all other icons to neutral state
                 this._resetInvoicesHeaderIcons();
 
                 // Initialize sort state for this field if it doesn't exist (start with descending first click)
@@ -600,13 +629,13 @@ sap.ui.define(
                 // Create sorter
                 const sorter = new Sorter(fieldPath, !isAscending);
 
-                // Apply sorting to data table
+                // Apply sorting to table
                 binding.sort(sorter);
 
-                // Update icon in header table to show current sort direction
-                const headerColumns = headerTable.getColumns();
-                const headerColumn = headerColumns[columnIndex];
-                const header = headerColumn.getHeader();
+                // Update icon to show current sort direction
+                const columns = table.getColumns();
+                const column = columns[columnIndex];
+                const header = column.getHeader();
 
                 // Handle different header structures
                 let icon = null;
@@ -628,11 +657,11 @@ sap.ui.define(
             },
 
             /**
-             * Reset all sort icons in invoices header table to neutral state
+             * Reset all sort icons in invoices table to neutral state
              */
             _resetInvoicesHeaderIcons() {
-                const headerTable = this.byId("invoicesTableHeader");
-                const columns = headerTable.getColumns();
+                const table = this.byId("invoicesTable");
+                const columns = table.getColumns();
 
                 columns.forEach(function (column) {
                     const header = column.getHeader();
@@ -644,7 +673,7 @@ sap.ui.define(
                             headerItems.forEach(function (item) {
                                 if (item.getMetadata().getName() === "sap.ui.core.Icon" &&
                                     (item.getSrc().includes("sort") || item.getSrc() === "sap-icon://text-align-center")) {
-                                    item.setSrc("sap-icon://text-align-center");
+                                    item.setSrc("sap-icon://sort");
                                 }
                             });
                         }
@@ -653,19 +682,18 @@ sap.ui.define(
             },
 
             /**
-             * Special sort function for orders table with separate header and data tables
+             * Sort function for orders table (single table with sticky headers)
              */
             onSortOrdersColumn(fieldPath, columnIndex) {
-                const dataTable = this.byId("ordersTable");
-                const headerTable = this.byId("ordersTableHeader");
-                const binding = dataTable.getBinding("items");
+                const table = this.byId("ordersTable");
+                const binding = table.getBinding("items");
 
                 // Initialize sort state for orders table if it doesn't exist
                 if (!this._sortState["ordersTable"]) {
                     this._sortState["ordersTable"] = {};
                 }
 
-                // Reset all other icons in header table to neutral state
+                // Reset all other icons to neutral state
                 this._resetOrdersHeaderIcons();
 
                 // Initialize sort state for this field if it doesn't exist (start with descending first click)
@@ -680,13 +708,13 @@ sap.ui.define(
                 // Create sorter
                 const sorter = new Sorter(fieldPath, !isAscending);
 
-                // Apply sorting to data table
+                // Apply sorting to table
                 binding.sort(sorter);
 
-                // Update icon in header table to show current sort direction
-                const headerColumns = headerTable.getColumns();
-                const headerColumn = headerColumns[columnIndex];
-                const header = headerColumn.getHeader();
+                // Update icon to show current sort direction
+                const columns = table.getColumns();
+                const column = columns[columnIndex];
+                const header = column.getHeader();
 
                 // Handle different header structures
                 let icon = null;
@@ -708,11 +736,11 @@ sap.ui.define(
             },
 
             /**
-             * Reset all sort icons in orders header table to neutral state
+             * Reset all sort icons in orders table to neutral state
              */
             _resetOrdersHeaderIcons() {
-                const headerTable = this.byId("ordersTableHeader");
-                const columns = headerTable.getColumns();
+                const table = this.byId("ordersTable");
+                const columns = table.getColumns();
 
                 columns.forEach(function (column) {
                     const header = column.getHeader();
@@ -724,7 +752,7 @@ sap.ui.define(
                             headerItems.forEach(function (item) {
                                 if (item.getMetadata().getName() === "sap.ui.core.Icon" &&
                                     (item.getSrc().includes("sort") || item.getSrc() === "sap-icon://text-align-center")) {
-                                    item.setSrc("sap-icon://text-align-center");
+                                    item.setSrc("sap-icon://sort");
                                 }
                             });
                         }
@@ -771,27 +799,6 @@ sap.ui.define(
                         name: "appiuimodule.views.SettingsDialog"
                     });
                 }
-
-                // Set title and icon dynamically for settings
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                this.settingsDialog.setTitle("Settings");
-                this.settingsDialog.setIcon("sap-icon://settings");
-
-                // Clear previous content and add settings content
-                this.settingsDialog.removeAllContent();
-                this.settingsDialog.addContent(
-                    new sap.m.VBox({
-                        alignItems: "Center",
-                        items: [
-                            new sap.m.Text({
-                                text: "Some settings should be manipulated here... to be implemented.",
-                                textAlign: "Center"
-                            })
-                        ]
-                    })
-                );
-                
-                this.settingsDialog.addStyleClass("sapUiResponsivePadding");
                 this.settingsDialog.open();
             },
 
@@ -845,6 +852,11 @@ sap.ui.define(
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("logout");
                 this.logoutDialog.close();
+            },
+
+            onHomepagePress: function() {
+                const oRouter = this.getOwnerComponent().getRouter();
+                oRouter.navTo("entrypanel");
             },
         });
     }

@@ -22,7 +22,7 @@
                 <f:header>
                     <card:Header 
                         title="{i18n>customerDetailsTitle}"
-                        subtitle="{customerModel>/CompanyName}"
+                        subtitle="{customerModel>/CustomerID}"
                         iconSrc="sap-icon://customer" />
                 </f:header>
                 <f:content>
@@ -87,7 +87,8 @@
                                     id="customerOrdersTableHeader"
                                     width="100%"
                                     showNoData="false"
-                                    mode="None">
+                                    mode="None"
+                                    class="sapUiTableHeaderScrollbarCompensation">
                                     <columns>
                                         <Column width="8em">
                                             <Text text="{i18n>orderIdColumn}" />
@@ -179,7 +180,8 @@
                                     id="customerInvoicesTableHeader"
                                     width="100%"
                                     showNoData="false"
-                                    mode="None">
+                                    mode="None"
+                                    class="sapUiTableHeaderScrollbarCompensation">
                                     <columns>
                                         <Column width="8em">
                                             <Text text="{i18n>orderIdColumn}" />

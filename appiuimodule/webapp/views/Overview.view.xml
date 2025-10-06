@@ -26,23 +26,21 @@
                             <card:toolbar>
                                 <Toolbar>
                                     <ToolbarSpacer />
-
                                     <SearchField
-                                        width="200px"
+                                        width="100%"
                                         placeholder="{i18n>searchCustomersPlaceholder}"
                                         search=".onFilterCustomers" />
-
                                 </Toolbar>
                             </card:toolbar>
                         </card:Header>
                     </f:header>
                     <f:content>
                         <VBox class="sapUiResponsiveMargin" width="100%">
-                            <!-- Table with Fixed Headers and Scrollable Rows -->
-                            <VBox width="100%">
-                                <!-- Fixed Table Header -->
+                            <!-- Single Table with Programmatic Sticky Headers -->
+                            <ScrollContainer height="300px" vertical="true" horizontal="false">
                                 <Table
-                                    id="customersTableHeader"
+                                    id="customersTable"
+                                    items="{ path: 'customers>/value' }"
                                     width="100%"
                                     showNoData="false"
                                     mode="None">
@@ -74,44 +72,20 @@
                                             </HBox>
                                         </Column>
                                     </columns>
+                                    <items>
+                                        <ColumnListItem
+                                            type="Navigation"
+                                            press=".onCustomerPress">
+                                            <cells>
+                                                <Text text="{customers>CustomerID}" />
+                                                <Text text="{customers>CompanyName}" />
+                                                <Text text="{customers>ContactName}" />
+                                                <Text text="{customers>Country}" />
+                                            </cells>
+                                        </ColumnListItem>
+                                    </items>
                                 </Table>
-
-                                <!-- Scrollable Table Rows -->
-                                <ScrollContainer height="240px" vertical="true" horizontal="false">
-                                    <Table
-                                        id="customersTable"
-                                        items="{ path: 'customers>/value' }"
-                                        width="100%"
-                                        showNoData="false"
-                                        showColumnHeaders="false"
-                                        mode="None">
-                                        <columns>
-                                            <Column
-                                                minScreenWidth="Small"
-                                                width="6em">
-                                            </Column>
-                                            <Column>
-                                            </Column>
-                                            <Column>
-                                            </Column>
-                                            <Column minScreenWidth="Small">
-                                            </Column>
-                                        </columns>
-                                        <items>
-                                            <ColumnListItem
-                                                type="Navigation"
-                                                press=".onCustomerPress">
-                                                <cells>
-                                                    <Text text="{customers>CustomerID}" />
-                                                    <Text text="{customers>CompanyName}" />
-                                                    <Text text="{customers>ContactName}" />
-                                                    <Text text="{customers>Country}" />
-                                                </cells>
-                                            </ColumnListItem>
-                                        </items>
-                                    </Table>
-                                </ScrollContainer>
-                            </VBox>
+                            </ScrollContainer>
 
                             <!-- Load More Button at Bottom -->
                             <Button
@@ -140,11 +114,11 @@
                         <card:Header
                             title="{i18n>orderListTitle}"
                             subtitle="Browse all orders with filters">
-                            <card:toolbar>
-                                <Toolbar>
+                            <card:toolbar >
+                                <Toolbar >
                                     <ToolbarSpacer />
                                     <SearchField
-                                        width="150px"
+                                        width="100%"
                                         placeholder="{i18n>searchOrdersPlaceholder}"
                                         search=".onFilterOrders" />
                                     <Select
@@ -162,11 +136,11 @@
                     </f:header>
                     <f:content>
                         <VBox class="sapUiResponsiveMargin" width="100%">
-                            <!-- Table with Fixed Headers and Scrollable Rows -->
-                            <VBox width="100%">
-                                <!-- Fixed Table Header -->
+                            <!-- Single Table with Programmatic Sticky Headers -->
+                            <ScrollContainer height="380px" vertical="true" horizontal="false">
                                 <Table
-                                    id="ordersTableHeader"
+                                    id="ordersTable"
+                                    items="{ path: 'orders>/value' }"
                                     width="100%"
                                     showNoData="false"
                                     mode="None">
@@ -213,55 +187,25 @@
                                             </HBox>
                                         </Column>
                                     </columns>
+                                    <items>
+                                        <ColumnListItem
+                                            type="Navigation"
+                                            press=".onOrderPress">
+                                            <cells>
+                                                <Text text="{orders>OrderID}" />
+                                                <Text text="Order" />
+                                                <Text text="{orders>CustomerID}" />
+                                                <Text text="{orders>ShipCountry}" />
+                                                <Text text="{path: 'orders>OrderDate', formatter: '.formatDate'}" />
+                                                <Text text="{path: 'orders>ShippedDate', formatter: '.formatDate'}" />
+                                                <ObjectStatus
+                                                    text="{orders>Status}"
+                                                    state="{path: 'orders>Status', formatter: '.formatStatusState'}" />
+                                            </cells>
+                                        </ColumnListItem>
+                                    </items>
                                 </Table>
-                                
-                                <!-- Scrollable Table Rows -->
-                                <ScrollContainer height="280px" vertical="true" horizontal="false">
-                                    <Table
-                                        id="ordersTable"
-                                        items="{ path: 'orders>/value' }"
-                                        width="100%"
-                                        showNoData="false"
-                                        showColumnHeaders="false"
-                                        mode="None">
-                                        <columns>
-                                            <Column
-                                                minScreenWidth="Small"
-                                                width="5em">
-                                            </Column>
-                                            <Column>
-                                            </Column>
-                                            <Column>
-                                            </Column>
-                                            <Column minScreenWidth="Small">
-                                            </Column>
-                                            <Column minScreenWidth="Small">
-                                            </Column>
-                                            <Column minScreenWidth="Small">
-                                            </Column>
-                                            <Column minScreenWidth="Small">
-                                            </Column>
-                                        </columns>
-                                        <items>
-                                            <ColumnListItem
-                                                type="Navigation"
-                                                press=".onOrderPress">
-                                                <cells>
-                                                    <Text text="{orders>OrderID}" />
-                                                    <Text text="Order" />
-                                                    <Text text="{orders>CustomerID}" />
-                                                    <Text text="{orders>ShipCountry}" />
-                                                    <Text text="{path: 'orders>OrderDate', formatter: '.formatDate'}" />
-                                                    <Text text="{path: 'orders>ShippedDate', formatter: '.formatDate'}" />
-                                                    <ObjectStatus
-                                                        text="{orders>Status}"
-                                                        state="{path: 'orders>Status', formatter: '.formatStatusState'}" />
-                                                </cells>
-                                            </ColumnListItem>
-                                        </items>
-                                    </Table>
-                                </ScrollContainer>
-                            </VBox>
+                            </ScrollContainer>
                         </VBox>
                     </f:content>
                 </f:Card>
@@ -278,7 +222,7 @@
                                 <Toolbar>
                                     <ToolbarSpacer />
                                     <SearchField
-                                        width="200px"
+                                        width="100%"
                                         placeholder="{i18n>searchInvoicesPlaceholder}"
                                         search=".onFilterInvoices" />
                                 </Toolbar>
@@ -287,11 +231,11 @@
                     </f:header>
                     <f:content>
                         <VBox class="sapUiResponsiveMargin" width="100%">
-                            <!-- Table with Fixed Headers and Scrollable Rows -->
-                            <VBox width="100%">
-                                <!-- Fixed Table Header -->
+                            <!-- Single Table with Programmatic Sticky Headers -->
+                            <ScrollContainer height="300px" vertical="true" horizontal="false">
                                 <Table
-                                    id="invoicesTableHeader"
+                                    id="invoicesTable"
+                                    items="{ path: 'invoices>/value' }"
                                     width="100%"
                                     showNoData="false"
                                     mode="None">
@@ -329,50 +273,22 @@
                                             <Text text="{i18n>priceColumn}" />
                                         </Column>
                                     </columns>
+                                    <items>
+                                        <ColumnListItem
+                                            type="Navigation"
+                                            press=".onInvoicePress">
+                                            <cells>
+                                                <Text text="{invoices>OrderID}" />
+                                                <Text text="{invoices>ProductName}" />
+                                                <Text text="{invoices>CustomerName}" />
+                                                <Text text="{path: 'invoices>OrderDate', formatter: '.formatDate'}" />
+                                                <Text text="Active" />
+                                                <Text text="{invoices>ExtendedPrice}" />
+                                            </cells>
+                                        </ColumnListItem>
+                                    </items>
                                 </Table>
-                                
-                                <!-- Scrollable Table Rows -->
-                                <ScrollContainer height="240px" vertical="true" horizontal="false">
-                                    <Table
-                                        id="invoicesTable"
-                                        items="{ path: 'invoices>/value' }"
-                                        width="100%"
-                                        showNoData="false"
-                                        showColumnHeaders="false"
-                                        mode="None">
-                                        <columns>
-                                            <Column
-                                                minScreenWidth="Small"
-                                                width="5em">
-                                            </Column>
-                                            <Column>
-                                            </Column>
-                                            <Column>
-                                            </Column>
-                                            <Column minScreenWidth="Small">
-                                            </Column>
-                                            <Column minScreenWidth="Small">
-                                            </Column>
-                                            <Column minScreenWidth="Small">
-                                            </Column>
-                                        </columns>
-                                        <items>
-                                            <ColumnListItem
-                                                type="Navigation"
-                                                press=".onInvoicePress">
-                                                <cells>
-                                                    <Text text="{invoices>OrderID}" />
-                                                    <Text text="{invoices>ProductName}" />
-                                                    <Text text="{invoices>CustomerName}" />
-                                                    <Text text="{path: 'invoices>OrderDate', formatter: '.formatDate'}" />
-                                                    <Text text="Active" />
-                                                    <Text text="{invoices>ExtendedPrice}" />
-                                                </cells>
-                                            </ColumnListItem>
-                                        </items>
-                                    </Table>
-                                </ScrollContainer>
-                            </VBox>
+                            </ScrollContainer>
                             
                             <!-- Load More Button at Bottom -->
                             <Button

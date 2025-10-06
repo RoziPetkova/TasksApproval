@@ -14,10 +14,10 @@ sap.ui.define(
              */
             onInit() {
                 const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.getRoute("customerdetails").attachPatternMatched(this.onObjectMatched, this);
+                oRouter.getRoute("customerdetails").attachPatternMatched(this.onPatternMatched, this);
             },
 
-            onObjectMatched: async function(oEvent) {
+            onPatternMatched: async function(oEvent) {
                 var sCustomerId = oEvent.getParameter("arguments").CustomerID;
                 var oModel = this.getOwnerComponent().getModel("customers");
                 
@@ -75,8 +75,10 @@ sap.ui.define(
             onNavBack() {
                 const oHistory = History.getInstance();
                 const sPreviousHash = oHistory.getPreviousHash();
-
+                
                 if (sPreviousHash !== undefined) {
+                    //cannot be done by router - we need to split the history and then check what
+                    //is the property key of the previous hash
                     window.history.go(-1);
                 } else {
                     const oRouter = this.getOwnerComponent().getRouter();
@@ -194,14 +196,12 @@ sap.ui.define(
             },
 
             onCustomerOrderPress(oEvent) {
-                const oItem = oEvent.getSource();
                 const oRouter = this.getOwnerComponent().getRouter();
                 const oOrder = oEvent.getSource().getBindingContext("customerOrdersModel").getObject();
                 oRouter.navTo("orderdetails", { OrderID: oOrder.OrderID });
             },
 
             onCustomerInvoicePress(oEvent) {
-                const oItem = oEvent.getSource();
                 const oRouter = this.getOwnerComponent().getRouter();
                 const oInvoice = oEvent.getSource().getBindingContext("customerInvoicesModel").getObject();
                 // Encode ProductName to handle special characters in URL
@@ -223,33 +223,12 @@ sap.ui.define(
                         name: "appiuimodule.views.SettingsDialog"
                     });
                 }
-
-                // Set title and icon dynamically for settings
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                this.settingsDialog.setTitle("Settings");
-                this.settingsDialog.setIcon("sap-icon://settings");
-
-                // Clear previous content and add settings content
-                this.settingsDialog.removeAllContent();
-                this.settingsDialog.addContent(
-                    new sap.m.VBox({
-                        alignItems: "Center",
-                        items: [
-                            new sap.m.Text({
-                                text: "Some settings should be manipulated here... to be implemented.",
-                                textAlign: "Center"
-                            })
-                        ]
-                    })
-                );
-                
-                this.settingsDialog.addStyleClass("sapUiResponsivePadding");
                 this.settingsDialog.open();
             },
 
             onSettingsSave: function() {
                 // Placeholder for save functionality
-                sap.m.MessageToast.show("Settings saved (placeholder)");
+                sap.m.MessageToast.show("Settings saved");
                 this.settingsDialog.close();
             },
 
@@ -269,27 +248,6 @@ sap.ui.define(
                         name: "appiuimodule.views.LogoutDialog"
                     });
                 }
-
-                // Set title and icon dynamically for logout
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                this.logoutDialog.setTitle(bundle.getText("logoutTitle"));
-                this.logoutDialog.setIcon("sap-icon://log");
-
-                // Clear previous content and add logout confirmation content
-                this.logoutDialog.removeAllContent();
-                this.logoutDialog.addContent(
-                    new sap.m.VBox({
-                        alignItems: "Center",
-                        items: [
-                            new sap.m.Text({
-                                text: bundle.getText("logoutConfirmationMessage"),
-                                textAlign: "Center",
-                                width: "100%"
-                            })
-                        ]
-                    })
-                );
-
                 this.logoutDialog.open();
             },
 
@@ -297,6 +255,11 @@ sap.ui.define(
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("logout");
                 this.logoutDialog.close();
+            },
+
+            onHomepagePress: function() {
+                const oRouter = this.getOwnerComponent().getRouter();
+                oRouter.navTo("entrypanel");
             },
 
 

@@ -1,0 +1,146 @@
+<mvc:View
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:card="sap.f.cards"
+    xmlns:macros="sap.fe.macros"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    controllerName="appiuimodule.controllers.ReviewOrders">
+    <Page
+        id="ReviewOrders"
+        title="{i18n>reviewOrdersTitle}"
+        showNavButton="true"
+        navButtonPress=".onNavBack">
+        <customHeader>
+            <core:Fragment fragmentName="appiuimodule.views.Header" type="XML" />
+        </customHeader>
+        <content class="sapUiSmallMarginBottom sapUiMediumMarginBegin sapUiMediumMarginEnd">
+
+            <!-- Orders Review Card with Larger Height -->
+            <VBox class="sapUiResponsiveMargin sapUiLargeMarginTop" renderType="Bare" height="35rem">
+                <f:Card height="100%">
+                    <f:header>
+                        <card:Header
+                            title="{i18n>reviewOrdersTitle}"
+                            subtitle="Review all orders with filters">
+                            <card:toolbar>
+                                <Toolbar>
+                                    <ToolbarSpacer />
+                                    <SearchField
+                                        width="100%"
+                                        placeholder="{i18n>searchOrdersPlaceholder}"
+                                        search=".onFilterOrders" />
+                                    <Select
+                                        selectedKey="All"
+                                        change=".onStatusFilterChange"
+                                        class="sapUiTinyMarginBegin"
+                                        width="120px">
+                                        <core:Item key="All" text="{i18n>allStatusFilter}" />
+                                        <core:Item key="Pending" text="{i18n>pendingStatusFilter}" />
+                                        <core:Item key="Shipped" text="{i18n>shippedStatusFilter}" />
+                                    </Select>
+                                </Toolbar>
+                            </card:toolbar>
+                        </card:Header>
+                    </f:header>
+                    <f:content>
+                        <VBox class="sapUiResponsiveMargin" width="100%" height="100%"
+                            renderType="Bare">
+                            <!-- Single Table with Programmatic Sticky Headers -->
+                            <VBox renderType="Bare" height="80%">
+                                <ScrollContainer height="100%" vertical="true" horizontal="false">
+                                    <Table
+                                        id="reviewOrdersTable"
+                                        items="{ path: 'orders>/value' }"
+                                        width="100%"
+                                        showNoData="false"
+                                        mode="None">
+                                        <columns>
+                                            <Column
+                                                minScreenWidth="Small"
+                                                width="5em">
+                                                <Text text="{i18n>orderIdColumn}" />
+                                            </Column>
+                                            <Column>
+                                                <Text text="{i18n>taskTypeColumn}" />
+                                            </Column>
+                                            <Column>
+                                                <HBox alignItems="Center">
+                                                    <Text text="{i18n>customerIdColumn}" />
+                                                    <core:Icon
+                                                        src="sap-icon://sort"
+                                                        press=".onSortCustomerIdOrders"
+                                                        class="sapUiTinyMarginBegin sortIcon" />
+                                                </HBox>
+                                            </Column>
+                                            <Column minScreenWidth="Small">
+                                                <Text text="{i18n>countryColumn}" />
+                                            </Column>
+                                            <Column minScreenWidth="Small">
+                                                <HBox alignItems="Center">
+                                                    <Text text="{i18n>orderDateColumn}" />
+                                                    <core:Icon
+                                                        src="sap-icon://sort"
+                                                        press=".onSortOrderDate"
+                                                        class="sapUiTinyMarginBegin sortIcon" />
+                                                </HBox>
+                                            </Column>
+                                            <Column minScreenWidth="Small">
+                                                <Text text="{i18n>shippedDateColumn}" />
+                                            </Column>
+                                            <Column minScreenWidth="Small">
+                                                <HBox alignItems="Center">
+                                                    <Text text="{i18n>statusColumn}" />
+                                                    <core:Icon
+                                                        src="sap-icon://sort"
+                                                        press=".onSortStatus"
+                                                        class="sapUiTinyMarginBegin sortIcon" />
+                                                </HBox>
+                                            </Column>
+                                        </columns>
+                                        <items>
+                                            <ColumnListItem
+                                                type="Navigation"
+                                                press=".onOrderPress">
+                                                <cells>
+                                                    <Text text="{orders>OrderID}" />
+                                                    <Text text="Order" />
+                                                    <Text text="{orders>CustomerID}" />
+                                                    <Text text="{orders>ShipCountry}" />
+                                                    <Text
+                                                        text="{path: 'orders>OrderDate', formatter: '.formatDate'}" />
+                                                    <Text
+                                                        text="{path: 'orders>ShippedDate', formatter: '.formatDate'}" />
+                                                    <ObjectStatus
+                                                        text="{orders>Status}"
+                                                        state="{path: 'orders>Status', formatter: '.formatStatusState'}" />
+                                                </cells>
+                                            </ColumnListItem>
+                                        </items>
+                                    </Table>
+                                </ScrollContainer>
+                            </VBox>
+
+                            <HBox renderType="Bare" alignItems="Center" justifyContent="Center"
+                                height="20%">
+                                <!-- Load More Button at Bottom -->
+                                <Button
+                                    id="loadMoreOrdersBtn"
+                                    text="Load More Orders"
+                                    type="Emphasized"
+                                    press=".onLoadMoreOrders"
+                                    visible="{orders>/hasMore}"
+                                    class="sapUiSmallMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd" />
+                            </HBox>
+                        </VBox>
+                    </f:content>
+                </f:Card>
+            </VBox>
+
+        </content>
+        <footer>
+            <core:Fragment fragmentName="appiuimodule.views.Footer" type="XML" />
+        </footer>
+    </Page>
+</mvc:View>

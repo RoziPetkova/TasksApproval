@@ -1,0 +1,63 @@
+<mvc:View
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:card="sap.f.cards"
+    xmlns:macros="sap.fe.macros"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    controllerName="appiuimodule.controllers.EntryPanel">
+    <Page
+        id="EntryPanel"
+        title="{i18n>entryPanelTitle}">
+        <customHeader>
+            <core:Fragment fragmentName="appiuimodule.views.Header" type="XML" />
+        </customHeader>
+        <content class="sapUiSmallMarginBottom sapUiMediumMarginBegin sapUiMediumMarginEnd">
+            <!-- First Row - Overview Tile -->
+            <HBox justifyContent="Start" class="sapUiMediumMarginBottom">
+                <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" 
+                    header="{i18n>overviewTileTitle}"
+                    subheader="Main overview with summary tables" 
+                    press=".onOverviewPress">
+                    <TileContent>
+                        <ImageContent src="sap-icon://overview-chart" />
+                    </TileContent>
+                </GenericTile>
+            </HBox>
+
+            <!-- Second Row - Review Tiles -->
+            <HBox justifyContent="Start" wrap="Wrap" class="sapUiMediumMarginTop">
+                <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" 
+                    header="{i18n>allCustomersTileTitle}"
+                    subheader="Review all customers with search and sorting" 
+                    press=".onReviewCustomersPress">
+                    <TileContent>
+                        <ImageContent src="sap-icon://customer" />
+                    </TileContent>
+                </GenericTile>
+
+                <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" 
+                    header="{i18n>allOrdersTileTitle}"
+                    subheader="Review all orders with filtering and sorting" 
+                    press=".onReviewOrdersPress">
+                    <TileContent>
+                        <ImageContent src="sap-icon://order-status" />
+                    </TileContent>
+                </GenericTile>
+
+                <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout" 
+                    header="{i18n>allInvoicesTileTitle}"
+                    subheader="Review all invoices with detailed information" 
+                    press=".onReviewInvoicesPress">
+                    <TileContent>
+                        <ImageContent src="sap-icon://document" />
+                    </TileContent>
+                </GenericTile>
+            </HBox>
+        </content>
+        <footer>
+            <core:Fragment fragmentName="appiuimodule.views.Footer" type="XML" />
+        </footer>
+    </Page>
+</mvc:View>

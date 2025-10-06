@@ -75,8 +75,13 @@
                 "controlAggregation": "pages"
             },
             "routes": [
-                {
+                 {
                     "pattern": "",
+                    "name": "entrypanel",
+                    "target": "targetentrypanel"
+                },
+                {
+                    "pattern": "overview",
                     "name": "overview",
                     "target": "targetoverview"
                 },
@@ -91,9 +96,24 @@
                     "target": "targetcustomerdetails"
                 },
                 {
-                    "pattern": "invoicedetails/{OrderID}/{ProductName}",
+                    "pattern": "invoicedetails/{OrderID}",
                     "name": "invoicedetails",
                     "target": "targetinvoicedetails"
+                },
+                {
+                    "pattern": "revieworders",
+                    "name": "revieworders",
+                    "target": "targetrevieworders"
+                },
+                {
+                    "pattern": "reviewcustomers",
+                    "name": "reviewcustomers",
+                    "target": "targetreviewcustomers"
+                },
+                {
+                    "pattern": "reviewinvoices",
+                    "name": "reviewinvoices",
+                    "target": "targetreviewinvoices"
                 },
                 {
                     "pattern": "logout",
@@ -102,6 +122,10 @@
                 }
             ],
             "targets": {
+                "targetentrypanel": {
+                    "id": "entrypanel",
+                    "name": "EntryPanel"
+                },
                 "targetoverview": {
                     "id": "overview",
                     "name": "Overview"
@@ -117,6 +141,18 @@
                 "targetinvoicedetails": {
                     "id": "invoicedetails",
                     "name": "InvoiceDetails"
+                },
+                "targetrevieworders": {
+                    "id": "revieworders",
+                    "name": "ReviewOrders"
+                },
+                "targetreviewcustomers": {
+                    "id": "reviewcustomers",
+                    "name": "ReviewCustomers"
+                },
+                "targetreviewinvoices": {
+                    "id": "reviewinvoices",
+                    "name": "ReviewInvoices"
                 },
                 "targetlogout": {
                     "id": "logout",

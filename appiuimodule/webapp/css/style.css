@@ -28,6 +28,10 @@ html[dir="rtl"] .myAppDemoWT .myCustomButton.sapMBtn {
     font-weight: bold;
 }
 
+.maxHeight {
+    max-height: 50rem;
+}
+
 .clickableText {
     color: #007bff !important;
     text-decoration: underline !important;
@@ -38,5 +42,21 @@ html[dir="rtl"] .myAppDemoWT .myCustomButton.sapMBtn {
     color: #0056b3 !important;
 }
 
+/* Table header scrollbar compensation for dual-table layouts */
+.sapUiTableHeaderScrollbarCompensation {
+    padding-right: 17px !important; /* Standard scrollbar width */
+    box-sizing: border-box !important;
+}
 
+/* Responsive scrollbar compensation for different browsers */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+    .sapUiTableHeaderScrollbarCompensation {
+        padding-right: 17px !important; /* WebKit browsers */
+    }
+}
 
+@-moz-document url-prefix() {
+    .sapUiTableHeaderScrollbarCompensation {
+        padding-right: 17px !important; /* Firefox */
+    }
+}

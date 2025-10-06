@@ -1,0 +1,121 @@
+<mvc:View
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:card="sap.f.cards"
+    xmlns:macros="sap.fe.macros"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    controllerName="appiuimodule.controllers.ReviewCustomers">
+    <Page
+        id="ReviewCustomers"
+        title="{i18n>reviewCustomersTitle}"
+        showNavButton="true"
+        navButtonPress=".onNavBack">
+        <customHeader>
+            <core:Fragment fragmentName="appiuimodule.views.Header" type="XML" />
+        </customHeader>
+        <content class="sapUiSmallMarginBottom sapUiMediumMarginBegin sapUiMediumMarginEnd">
+
+            <!-- Customers Review Card with Larger Height -->
+            <VBox class="sapUiResponsiveMargin sapUiLargeMarginTop" renderType="Bare" height="35rem">
+                <f:Card height="100%">
+                    <f:header>
+                        <card:Header
+                            title="{i18n>reviewCustomersTitle}"
+                            subtitle="Review and browse all customers">
+                            <card:toolbar>
+                                <Toolbar>
+                                    <ToolbarSpacer />
+                                    <SearchField
+                                        width="100%"
+                                        placeholder="{i18n>searchCustomersPlaceholder}"
+                                        search=".onFilterCustomers" />
+                                </Toolbar>
+                            </card:toolbar>
+                        </card:Header>
+                    </f:header>
+                    <f:content>
+                        <VBox class="sapUiResponsiveMargin" height="100%" width="100%">
+                            <!-- Single Table with Programmatic Sticky Headers -->
+                            <VBox renderType="Bare" height="80%">
+                                <ScrollContainer height="100%" vertical="true" horizontal="false">
+                                    <Table
+                                        id="reviewCustomersTable"
+                                        items="{ path: 'customers>/value' }"
+                                        width="100%"
+                                        showNoData="false"
+                                        mode="None">
+                                        <columns>
+                                            <Column
+                                                minScreenWidth="Small"
+                                                width="6em">
+                                                <HBox alignItems="Center">
+                                                    <Text text="{i18n>customerIdColumn}" />
+                                                    <core:Icon
+                                                        src="sap-icon://sort"
+                                                        press=".onSortCustomerId"
+                                                        class="sapUiTinyMarginBegin sortIcon" />
+                                                </HBox>
+                                            </Column>
+                                            <Column>
+                                                <Text text="{i18n>companyNameColumn}" />
+                                            </Column>
+                                            <Column>
+                                                <Text text="{i18n>contactNameColumn}" />
+                                            </Column>
+                                            <Column minScreenWidth="Small">
+                                                <HBox alignItems="Center">
+                                                    <Text text="{i18n>countryColumn}" />
+                                                    <core:Icon
+                                                        src="sap-icon://sort"
+                                                        press=".onSortCountry"
+                                                        class="sapUiTinyMarginBegin sortIcon" />
+                                                </HBox>
+                                            </Column>
+                                            <Column minScreenWidth="Small">
+                                                <Text text="{i18n>cityColumn}" />
+                                            </Column>
+                                            <Column minScreenWidth="Small">
+                                                <Text text="{i18n>phoneColumn}" />
+                                            </Column>
+                                        </columns>
+                                        <items>
+                                            <ColumnListItem
+                                                type="Navigation"
+                                                press=".onCustomerPress">
+                                                <cells>
+                                                    <Text text="{customers>CustomerID}" />
+                                                    <Text text="{customers>CompanyName}" />
+                                                    <Text text="{customers>ContactName}" />
+                                                    <Text text="{customers>Country}" />
+                                                    <Text text="{customers>City}" />
+                                                    <Text text="{customers>Phone}" />
+                                                </cells>
+                                            </ColumnListItem>
+                                        </items>
+                                    </Table>
+                                </ScrollContainer>
+                            </VBox>
+                            <!-- Load More Button at Bottom -->
+                            <HBox renderType="Bare" alignItems="Center" justifyContent="Center"
+                                height="20%">
+                                <Button
+                                    id="loadMoreCustomersBtn"
+                                    text="Load More Customers"
+                                    type="Emphasized"
+                                    press=".onLoadMoreCustomers"
+                                    visible="{customers>/hasMore}"
+                                    class="sapUiSmallMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd" />
+                            </HBox>
+                        </VBox>
+                    </f:content>
+                </f:Card>
+            </VBox>
+
+        </content>
+        <footer>
+            <core:Fragment fragmentName="appiuimodule.views.Footer" type="XML" />
+        </footer>
+    </Page>
+</mvc:View>

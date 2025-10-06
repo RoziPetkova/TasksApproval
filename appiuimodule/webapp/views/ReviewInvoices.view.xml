@@ -1,0 +1,135 @@
+<mvc:View
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:card="sap.f.cards"
+    xmlns:macros="sap.fe.macros"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    controllerName="appiuimodule.controllers.ReviewInvoices">
+    <Page
+        id="ReviewInvoices"
+        title="{i18n>reviewInvoicesTitle}"
+        showNavButton="true"
+        navButtonPress=".onNavBack">
+        <customHeader>
+            <core:Fragment fragmentName="appiuimodule.views.Header" type="XML" />
+        </customHeader>
+        <content class="sapUiSmallMarginBottom sapUiMediumMarginBegin sapUiMediumMarginEnd">
+
+            <!-- Invoices Review Card with Larger Height -->
+            <VBox class="sapUiResponsiveMargin sapUiLargeMarginTop" renderType="Bare" height="35rem">
+                <f:Card height="100%">
+                    <f:header>
+                        <card:Header
+                            title="{i18n>reviewInvoicesTitle}"
+                            subtitle="Review and browse all invoices">
+                            <card:toolbar>
+                                <Toolbar>
+                                    <ToolbarSpacer />
+                                    <SearchField
+                                        width="100%"
+                                        placeholder="{i18n>searchInvoicesPlaceholder}"
+                                        search=".onFilterInvoices" />
+                                </Toolbar>
+                            </card:toolbar>
+                        </card:Header>
+                    </f:header>
+                    <f:content>
+                        <VBox class="sapUiResponsiveMargin" height="100%" renderType="Bare">
+                            <VBox  renderType="Bare" height="80%">
+                                <!-- Single Table with Programmatic Sticky Headers -->
+                                <ScrollContainer vertical="true"
+                                    horizontal="false" height="100%">
+                                    <Table
+                                        id="reviewInvoicesTable"
+                                        items="{ path: 'invoices>/value' }"
+                                        width="100%"
+                                        showNoData="false"
+                                        mode="None">
+                                        <columns>
+                                            <Column
+                                                minScreenWidth="Small"
+                                                width="5em">
+                                                <Text text="{i18n>orderIdColumn}" />
+                                            </Column>
+                                            <Column>
+                                                <HBox alignItems="Center">
+                                                    <Text text="{i18n>productNameColumn}" />
+                                                    <core:Icon
+                                                        src="sap-icon://sort"
+                                                        press=".onSortProductName"
+                                                        class="sapUiTinyMarginBegin sortIcon" />
+                                                </HBox>
+                                            </Column>
+                                            <Column>
+                                                <HBox alignItems="Center">
+                                                    <Text text="{i18n>customerColumn}" />
+                                                    <core:Icon
+                                                        src="sap-icon://sort"
+                                                        press=".onSortCustomerName"
+                                                        class="sapUiTinyMarginBegin sortIcon" />
+                                                </HBox>
+                                            </Column>
+                                            <Column minScreenWidth="Small">
+                                                <Text text="{i18n>orderDateColumn}" />
+                                            </Column>
+                                            <Column minScreenWidth="Small">
+                                                <Text text="{i18n>statusColumn}" />
+                                            </Column>
+                                            <Column minScreenWidth="Small">
+                                                <Text text="{i18n>priceColumn}" />
+                                            </Column>
+                                            <Column minScreenWidth="Small">
+                                                <Text text="{i18n>quantityLabel}" />
+                                            </Column>
+                                            <Column minScreenWidth="Small">
+                                                <Text text="{i18n>unitPriceLabel}" />
+                                            </Column>
+                                        </columns>
+                                        <items>
+                                            <ColumnListItem
+                                                type="Navigation"
+                                                press=".onInvoicePress">
+                                                <cells>
+                                                    <Text text="{invoices>OrderID}" />
+                                                    <Text text="{invoices>ProductName}" />
+                                                    <Text text="{invoices>CustomerName}" />
+                                                    <Text
+                                                        text="{path: 'invoices>OrderDate', formatter: '.formatDate'}" />
+                                                    <Text text="Active" />
+                                                    <Text
+                                                        text="{path: 'invoices>ExtendedPrice', formatter: '.formatCurrency'}" />
+                                                    <Text text="{invoices>Quantity}" />
+                                                    <Text
+                                                        text="{path: 'invoices>UnitPrice', formatter: '.formatCurrency'}" />
+                                                </cells>
+                                            </ColumnListItem>
+                                        </items>
+                                    </Table>
+                                </ScrollContainer>
+
+                                <!-- Load More Button at Bottom -->
+
+                            </VBox>
+                            <HBox renderType="Bare" alignItems="Center" justifyContent="Center" height="20%">
+                                <Button
+                                    width="auto"
+                                    id="loadMoreInvoicesBtn"
+                                    text="Load More Invoices"
+                                    type="Emphasized"
+                                    press=".onLoadMoreInvoices"
+                                    visible="{invoices>/hasMore}"
+                                    class="sapUiSmallMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd" />
+                            </HBox>
+                        </VBox>
+                    </f:content>
+                </f:Card>
+            </VBox>
+
+        </content>
+        <footer>
+            <core:Fragment fragmentName="appiuimodule.views.Footer" type="XML" />
+        </footer>
+    </Page>
+</mvc:View>

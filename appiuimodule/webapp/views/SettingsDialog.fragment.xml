@@ -3,9 +3,15 @@
     xmlns:core="sap.ui.core">
     <Dialog
         id="settingsDialog"
-        title=""
-        icon="">
+        title="Settings"
+        icon="sap-icon://settings"
+        class="sapUiResponsiveMargin">
         <content>
+            <VBox class="sapUiResponsiveMargin" alignItems="Center">
+                <Text
+                    text="Some settings should be manipulated here... to be implemented."
+                    textAlign="Center" />
+            </VBox>
         </content>
         <beginButton>
             <Button

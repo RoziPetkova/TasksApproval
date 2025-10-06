@@ -78,7 +78,8 @@
                                     id="productsTableHeader"
                                     width="100%"
                                     showNoData="false"
-                                    mode="None">
+                                    mode="None"
+                                    class="sapUiTableHeaderScrollbarCompensation">
                                     <columns>
                                         <Column width="12em">
                                             <Text text="{i18n>productNameColumn}" />

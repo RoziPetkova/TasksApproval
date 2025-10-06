@@ -280,27 +280,6 @@ sap.ui.define(
                         name: "appiuimodule.views.SettingsDialog"
                     });
                 }
-
-                // Set title and icon dynamically for settings
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                this.settingsDialog.setTitle("Settings");
-                this.settingsDialog.setIcon("sap-icon://settings");
-
-                // Clear previous content and add settings content
-                this.settingsDialog.removeAllContent();
-                this.settingsDialog.addContent(
-                    new sap.m.VBox({
-                        alignItems: "Center",
-                        items: [
-                            new sap.m.Text({
-                                text: "Some settings should be manipulated here... to be implemented.",
-                                textAlign: "Center"
-                            })
-                        ]
-                    })
-                );
-                
-                this.settingsDialog.addStyleClass("sapUiResponsivePadding");
                 this.settingsDialog.open();
             },
 
@@ -316,27 +295,6 @@ sap.ui.define(
                         name: "appiuimodule.views.LogoutDialog"
                     });
                 }
-
-                // Set title and icon dynamically for logout
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                this.logoutDialog.setTitle(bundle.getText("logoutTitle"));
-                this.logoutDialog.setIcon("sap-icon://log");
-
-                // Clear previous content and add logout confirmation content
-                this.logoutDialog.removeAllContent();
-                this.logoutDialog.addContent(
-                    new sap.m.VBox({
-                        alignItems: "Center",
-                        items: [
-                            new sap.m.Text({
-                                text: bundle.getText("logoutConfirmationMessage"),
-                                textAlign: "Center",
-                                width: "100%"
-                            })
-                        ]
-                    })
-                );
-
                 this.logoutDialog.open();
             },
 
@@ -344,6 +302,11 @@ sap.ui.define(
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("logout");
                 this.logoutDialog.close();
+            },
+
+            onHomepagePress: function() {
+                const oRouter = this.getOwnerComponent().getRouter();
+                oRouter.navTo("entrypanel");
             },
 
             handleApproveOrder: async function() {

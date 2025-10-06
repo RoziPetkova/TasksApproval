@@ -5,6 +5,11 @@
         class="sapUiSmallMarginBottom">
         <Title text="{i18n>appTitle}" level="H2" />
         <ToolbarSpacer />
+        <Button 
+            icon="sap-icon://home" 
+            tooltip="{i18n>Homepage}" 
+            press=".onHomepagePress"
+            visible="{= ${view>/showHomepageButton} !== false}" />
         <Button icon="sap-icon://settings" tooltip="{i18n>Settings}" press=".onSettingsPress" />
         <Button icon="sap-icon://log" tooltip="{i18n>LogOut}" press=".onLogoutPress" />
     </Toolbar>
