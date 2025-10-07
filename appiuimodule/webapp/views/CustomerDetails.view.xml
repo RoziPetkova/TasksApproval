@@ -6,209 +6,232 @@
     xmlns:card="sap.f.cards"
     xmlns:macros="sap.fe.macros"
     xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:layout="sap.ui.layout"
     controllerName="appiuimodule.controllers.CustomerDetails">
-    <Page
-        id="CustomerDetails"
-        title="{i18n>customerDetailsTitle}"
-        showNavButton="true"
-        navButtonPress=".onNavBack">
-        <headerContent>
-            <core:Fragment fragmentName="appiuimodule.views.HeaderButtons" type="XML" />
-        </headerContent>
-        <content class="sapUiResponsiveMargin">
-            
-            <!-- Customer Information Card -->
-            <f:Card class="sapUiResponsiveMargin" width="auto">
-                <f:header>
-                    <card:Header 
-                        title="{i18n>customerDetailsTitle}"
-                        subtitle="{customerModel>/CustomerID}"
-                        iconSrc="sap-icon://customer" />
-                </f:header>
+
+    <f:DynamicPage
+        id="CustomerDetailsDynamicPage">
+        <f:title>
+            <f:DynamicPageTitle>
+                <f:heading>
+                    <HBox>
+                        <Button type="Transparent" icon="sap-icon://nav-back"
+                            press=".onNavBack" />
+                        <Title class="sapUiTinyMarginTop sapUiSmallMarginBegin"
+                            text="{customerModel>/CompanyName}" />
+                    </HBox>
+                </f:heading>
+                <f:expandedContent>
+                    <Label class=" sapUiLargeMarginBegin" text="{customerModel>/CustomerID}" />
+                </f:expandedContent>
+                <f:snappedContent>
+                    <Label class=" sapUiLargeMarginBegin" text="{customerModel>/CustomerID}" />
+                </f:snappedContent>
+                <f:actions>
+                    <core:Fragment fragmentName="appiuimodule.views.HeaderButtons" type="XML" />
+                </f:actions>
+            </f:DynamicPageTitle>
+        </f:title>
+        <f:header>
+            <f:DynamicPageHeader
+                pinnable="true">
                 <f:content>
-                    <VBox class="sapUiMediumMargin">
-                        <!-- Company Name as main title -->
-                        <Title text="{customerModel>/CompanyName}" 
-                               level="H2" 
-                               class="sapUiMediumMarginBottom" />
-                        
-                        <!-- Three Column Layout -->
-                        <HBox wrap="Wrap" justifyContent="SpaceBetween">
-                            <!-- General Information Column -->
-                            <VBox width="30%">
-                                <Label text="{i18n>generalInformationLabel}" class="sapUiSmallMarginBottom" />
-                                <VBox class="sapUiSmallMarginBottom sapUiMediumMarginStart">
-                                    <Text text="{i18n>customerIdColumn}: {customerModel>/CustomerID}" />
-                                    <Text text="{i18n>companyNameColumn}: {customerModel>/CompanyName}" />
-                                </VBox>
+                    <layout:HorizontalLayout allowWrapping="true" class="sapUiLargeMarginBegin">
+                        <!-- General Information -->
+                        <layout:VerticalLayout class="sapUiLargeMarginEnd sapUiSmallMarginBottom">
+                            <Label text="{i18n>generalInformationLabel}"
+                                class="sapUiTinyMarginBottom" />
+                            <VBox>
+                                <ObjectAttribute title="{i18n>customerIdColumn}"
+                                    text="{customerModel>/CustomerID}" />
+                                <ObjectAttribute title="{i18n>companyNameColumn}"
+                                    text="{customerModel>/CompanyName}" />
                             </VBox>
-                            
-                            <!-- Contact Information Column -->
-                            <VBox width="30%">
-                                <Label text="{i18n>contactInformationLabel}" class="sapUiSmallMarginBottom" />
-                                <VBox class="sapUiSmallMarginBottom sapUiMediumMarginStart">
-                                    <Text text="{i18n>contactNameColumn}: {customerModel>/ContactName}" />
-                                    <Text text="{i18n>contactTitleLabel}: {customerModel>/ContactTitle}" />
-                                    <Text text="{i18n>phoneColumn}: {customerModel>/Phone}" />
-                                    <Text text="{i18n>faxLabel}: {path: 'customerModel>/Fax', formatter: '.formatFax'}" />
-                                </VBox>
+                        </layout:VerticalLayout>
+
+                        <!-- Contact Information -->
+                        <layout:VerticalLayout class="sapUiLargeMarginEnd sapUiSmallMarginBottom">
+                            <Label text="{i18n>contactInformationLabel}"
+                                class="sapUiTinyMarginBottom" />
+                            <VBox>
+                                <ObjectAttribute title="{i18n>contactNameColumn}"
+                                    text="{customerModel>/ContactName}" />
+                                <ObjectAttribute title="{i18n>contactTitleLabel}"
+                                    text="{customerModel>/ContactTitle}" />
+                                <ObjectAttribute title="{i18n>phoneColumn}"
+                                    text="{customerModel>/Phone}" />
+                                <ObjectAttribute title="{i18n>faxLabel}"
+                                    text="{path: 'customerModel>/Fax', formatter: '.formatFax'}" />
                             </VBox>
-                            
-                            <!-- Address Column -->
-                            <VBox width="30%">
-                                <Label text="{i18n>addressLabel}" class="sapUiSmallMarginBottom" />
-                                <VBox class="sapUiSmallMarginBottom sapUiMediumMarginStart">
-                                    <Text text="{customerModel>/Address}" />
-                                    <Text text="{customerModel>/City}, {path: 'customerModel>/Region', formatter: '.formatRegion'}" />
-                                    <Text text="{customerModel>/PostalCode}" />
-                                    <Text text="{customerModel>/Country}" />
-                                </VBox>
+                        </layout:VerticalLayout>
+
+                        <!-- Address Information -->
+                        <layout:VerticalLayout class="sapUiLargeMarginEnd sapUiSmallMarginBottom">
+                            <Label text="{i18n>addressLabel}" class="sapUiTinyMarginBottom" />
+                            <VBox>
+                                <ObjectAttribute title="Address" text="{customerModel>/Address}" />
+                                <ObjectAttribute title="City"
+                                    text="{customerModel>/City}, {path: 'customerModel>/Region', formatter: '.formatRegion'}" />
+                                <ObjectAttribute title="Postal Code"
+                                    text="{customerModel>/PostalCode}" />
+                                <ObjectAttribute title="Country" text="{customerModel>/Country}" />
                             </VBox>
-                        </HBox>
-                    </VBox>
+                        </layout:VerticalLayout>
+
+                    </layout:HorizontalLayout>
                 </f:content>
-            </f:Card>
+            </f:DynamicPageHeader>
+        </f:header>
+        <f:content>
+            <VBox class="sapUiResponsiveMargin">
+                <!-- Customer Orders Card with Fixed Height -->
+                <VBox>
+                    <f:Card height="450px">
+                        <f:header>
+                            <card:Header
+                                title="{i18n>customerOrdersTitle}"
+                                subtitle="All orders from this customer">
+                            </card:Header>
+                        </f:header>
+                        <f:content>
+                            <VBox width="100%">
+                                <!-- Single Table with Programmatic Sticky Headers -->
+                                <ScrollContainer height="340px" vertical="true" horizontal="false">
+                                    <Table
+                                        id="customerOrdersTable"
+                                        items="{ path: 'customerOrdersModel>/orders' }"
+                                        width="100%"
+                                        showNoData="false"
+                                        mode="None"
+                                        busyIndicatorDelay="0">
+                                        <columns>
+                                            <Column
+                                                minScreenWidth="Small"
+                                                width="5em"
+                                                demandPopin="true">
+                                                <Text text="{i18n>orderIdColumn}" />
+                                            </Column>
+                                            <Column>
+                                                <Text text="{i18n>taskTypeColumn}" />
+                                            </Column>
+                                            <Column demandPopin="true" minScreenWidth="Small">
+                                                <Text text="{i18n>countryColumn}" />
+                                            </Column>
+                                            <Column demandPopin="true" minScreenWidth="Small">
+                                                <Text text="{i18n>orderDateColumn}" />
+                                            </Column>
+                                            <Column minScreenWidth="Small">
+                                                <Text text="{i18n>shippedDateColumn}" />
+                                            </Column>
+                                            <Column demandPopin="true" minScreenWidth="Small">
+                                                <Text text="{i18n>statusColumn}" />
+                                            </Column>
+                                        </columns>
+                                        <items>
+                                            <ColumnListItem
+                                                type="Navigation"
+                                                press=".onCustomerOrderPress">
+                                                <cells>
+                                                    <Text text="{customerOrdersModel>OrderID}" />
+                                                    <Text text="Order" />
+                                                    <Text text="{customerOrdersModel>ShipCountry}" />
+                                                    <Text
+                                                        text="{path: 'customerOrdersModel>OrderDate', formatter: '.formatDate'}" />
+                                                    <Text
+                                                        text="{path: 'customerOrdersModel>ShippedDate', formatter: '.formatDate'}" />
+                                                    <ObjectStatus
+                                                        text="{customerOrdersModel>Status}"
+                                                        state="{path: 'customerOrdersModel>Status', formatter: '.formatStatusState'}" />
+                                                </cells>
+                                            </ColumnListItem>
+                                        </items>
+                                    </Table>
+                                </ScrollContainer>
+                            </VBox>
+                        </f:content>
+                    </f:Card>
+                </VBox>
 
-            <!-- Customer Orders Card with Fixed Height -->
-            <VBox class="sapUiResponsiveMargin sapUiLargeMarginTop">
-                <f:Card height="450px">
-                    <f:header>
-                        <card:Header
-                            title="{i18n>customerOrdersTitle}"
-                            subtitle="All orders from this customer">
-                        </card:Header>
-                    </f:header>
-                    <f:content>
-                        <VBox class="sapUiResponsiveMargin" width="100%">
-                            <!-- Single Table with Programmatic Sticky Headers -->
-                            <ScrollContainer height="340px" vertical="true" horizontal="false">
-                                <Table
-                                    id="customerOrdersTable"
-                                    items="{ path: 'customerOrdersModel>/orders' }"
-                                    width="100%"
-                                    showNoData="false"
-                                    mode="None"
-                                    busyIndicatorDelay="0">
-                                    <columns>
-                                        <Column
-                                            minScreenWidth="Small"
-                                            width="5em">
-                                            <Text text="{i18n>orderIdColumn}" />
-                                        </Column>
-                                        <Column>
-                                            <Text text="{i18n>taskTypeColumn}" />
-                                        </Column>
-                                        <Column minScreenWidth="Small">
-                                            <Text text="{i18n>countryColumn}" />
-                                        </Column>
-                                        <Column minScreenWidth="Small">
-                                            <Text text="{i18n>orderDateColumn}" />
-                                        </Column>
-                                        <Column minScreenWidth="Small">
-                                            <Text text="{i18n>shippedDateColumn}" />
-                                        </Column>
-                                        <Column minScreenWidth="Small">
-                                            <Text text="{i18n>statusColumn}" />
-                                        </Column>
-                                    </columns>
-                                    <items>
-                                        <ColumnListItem
-                                            type="Navigation"
-                                            press=".onCustomerOrderPress">
-                                            <cells>
-                                                <Text text="{customerOrdersModel>OrderID}" />
-                                                <Text text="Order" />
-                                                <Text text="{customerOrdersModel>ShipCountry}" />
-                                                <Text text="{path: 'customerOrdersModel>OrderDate', formatter: '.formatDate'}" />
-                                                <Text text="{path: 'customerOrdersModel>ShippedDate', formatter: '.formatDate'}" />
-                                                <ObjectStatus
-                                                    text="{customerOrdersModel>Status}"
-                                                    state="{path: 'customerOrdersModel>Status', formatter: '.formatStatusState'}" />
-                                            </cells>
-                                        </ColumnListItem>
-                                    </items>
-                                </Table>
-                            </ScrollContainer>
-                        </VBox>
-                    </f:content>
-                </f:Card>
-            </VBox>
-
-            <!-- Customer Invoices Card with Fixed Height -->
-            <VBox class="sapUiResponsiveMargin sapUiLargeMarginTop">
-                <f:Card height="450px">
-                    <f:header>
-                        <card:Header
-                            title="{i18n>customerInvoicesTitle}"
-                            subtitle="All invoices from this customer">
-                        </card:Header>
-                    </f:header>
-                    <f:content>
-                        <VBox class="sapUiResponsiveMargin" width="100%">
-                            <!-- Single Table with Programmatic Sticky Headers -->
-                            <ScrollContainer height="340px" vertical="true" horizontal="false">
-                                <Table
-                                    id="customerInvoicesTable"
-                                    items="{ path: 'customerInvoicesModel>/invoices' }"
-                                    width="100%"
-                                    showNoData="false"
-                                    mode="None"
-                                    busyIndicatorDelay="0">
-                                    <columns>
-                                        <Column
-                                            minScreenWidth="Small"
-                                            width="5em">
-                                            <Text text="{i18n>orderIdColumn}" />
-                                        </Column>
-                                        <Column>
-                                            <Text text="{i18n>productNameColumn}" />
-                                        </Column>
-                                        <Column minScreenWidth="Small">
-                                            <Text text="{i18n>quantityLabel}" />
-                                        </Column>
-                                        <Column minScreenWidth="Small">
-                                            <Text text="{i18n>unitPriceLabel}" />
-                                        </Column>
-                                        <Column minScreenWidth="Small">
-                                            <Text text="{i18n>extendedPriceLabel}" />
-                                        </Column>
-                                        <Column minScreenWidth="Small">
-                                            <Text text="{i18n>orderDateColumn}" />
-                                        </Column>
-                                    </columns>
-                                    <items>
-                                        <ColumnListItem
-                                            type="Navigation"
-                                            press=".onCustomerInvoicePress">
-                                            <cells>
-                                                <Text text="{customerInvoicesModel>OrderID}" />
-                                                <Text text="{customerInvoicesModel>ProductName}" />
-                                                <Text text="{customerInvoicesModel>Quantity}" />
-                                                <Text text="{
+                <!-- Customer Invoices Card with Fixed Height -->
+                <VBox class="sapUiLargeMarginTop">
+                    <f:Card height="450px">
+                        <f:header>
+                            <card:Header
+                                title="{i18n>customerInvoicesTitle}"
+                                subtitle="All invoices from this customer">
+                            </card:Header>
+                        </f:header>
+                        <f:content>
+                            <VBox width="100%">
+                                <!-- Single Table with Programmatic Sticky Headers -->
+                                <ScrollContainer height="340px" vertical="true" horizontal="false">
+                                    <Table
+                                        id="customerInvoicesTable"
+                                        items="{ path: 'customerInvoicesModel>/invoices' }"
+                                        width="100%"
+                                        showNoData="false"
+                                        mode="None"
+                                        busyIndicatorDelay="0">
+                                        <columns>
+                                            <Column
+                                                minScreenWidth="Small"
+                                                width="5em"
+                                                demandPopin="true">
+                                                <Text text="{i18n>orderIdColumn}" />
+                                            </Column>
+                                            <Column demandPopin="true">
+                                                <Text text="{i18n>productNameColumn}" />
+                                            </Column>
+                                            <Column minScreenWidth="Small">
+                                                <Text text="{i18n>quantityLabel}" />
+                                            </Column>
+                                            <Column minScreenWidth="Small">
+                                                <Text text="{i18n>unitPriceLabel}" />
+                                            </Column>
+                                            <Column minScreenWidth="Small">
+                                                <Text text="{i18n>extendedPriceLabel}" />
+                                            </Column>
+                                            <Column minScreenWidth="Small">
+                                                <Text text="{i18n>orderDateColumn}" />
+                                            </Column>
+                                        </columns>
+                                        <items>
+                                            <ColumnListItem
+                                                type="Navigation"
+                                                press=".onCustomerInvoicePress">
+                                                <cells>
+                                                    <Text text="{customerInvoicesModel>OrderID}" />
+                                                    <Text text="{customerInvoicesModel>ProductName}" />
+                                                    <Text text="{customerInvoicesModel>Quantity}" />
+                                                    <Text
+                                                        text="{
                                                     parts: ['customerInvoicesModel>UnitPrice'],
                                                     formatter: '.formatCurrency'
                                                 }" />
-                                                <Text text="{
+                                                    <Text
+                                                        text="{
                                                     parts: ['customerInvoicesModel>ExtendedPrice'],
                                                     formatter: '.formatCurrency'
                                                 }" />
-                                                <Text text="{
+                                                    <Text
+                                                        text="{
                                                     parts: ['customerInvoicesModel>OrderDate'],
                                                     formatter: '.formatDate'
                                                 }" />
-                                            </cells>
-                                        </ColumnListItem>
-                                    </items>
-                                </Table>
-                            </ScrollContainer>
-                        </VBox>
-                    </f:content>
-                </f:Card>
-            </VBox>
+                                                </cells>
+                                            </ColumnListItem>
+                                        </items>
+                                    </Table>
+                                </ScrollContainer>
+                            </VBox>
+                        </f:content>
+                    </f:Card>
+                </VBox>
 
-        </content>
-        <footer>
+            </VBox>
+        </f:content>
+        <f:footer>
             <core:Fragment fragmentName="appiuimodule.views.Footer" type="XML" />
-        </footer>
-    </Page>
+        </f:footer>
+    </f:DynamicPage>
 </mvc:View>
