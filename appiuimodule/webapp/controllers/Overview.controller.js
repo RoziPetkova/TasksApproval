@@ -270,10 +270,8 @@ sap.ui.define(
                     const data = await response.json();
 
                     // Add Status property to each order
-                    if (data.value) {
-                        data.value.forEach(function (order) {
-                            order.Status = order.ShippedDate ? "Shipped" : "Pending";
-                        });
+                    if (data && data.value) {
+                        this.handleStatusProperty(data);
                     }
 
                     // Store original data for filtering/search
@@ -292,6 +290,15 @@ sap.ui.define(
                 }
             },
 
+
+            handleStatusProperty(data) {
+                data.value.forEach(function (order) {
+                    if (order.OrderID % 2 == 0) {
+                       order.ShippedDate = null;
+                    }
+                     order.Status = order.ShippedDate ? "Shipped" : "Pending";
+                });
+            },
 
             onOrderPress(oEvent) {
                 const oItem = oEvent.getSource();

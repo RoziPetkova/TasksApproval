@@ -62,7 +62,7 @@ sap.ui.define(
                     await this.loadCustomerOrders(sCustomerId);
 
                     // Fetch invoices for this customer from API
-                    await this.loadCustomerInvoices(oCustomer.CompanyName);
+                    await this.loadCustomerInvoices(sCustomerId);
                 }
 
                 this.updateStatusStyle();
@@ -154,14 +154,6 @@ sap.ui.define(
 
                         // Set customer data directly to model
                         this.getView().setModel(new sap.ui.model.json.JSONModel(oCustomer), "customerModel");
-
-                        // Fetch orders and invoices for this customer
-                        await this.loadCustomerOrders(customerId);
-                        await this.loadCustomerInvoices(oCustomer.CompanyName);
-
-                        this.updateStatusStyle();
-                        // Set sticky headers after data is loaded
-                        this._setStickyHeadersForTables();
                     } else {
                         console.error("Customer not found:", customerId);
                         // Set empty model
@@ -178,30 +170,30 @@ sap.ui.define(
                 }
             },
 
-            loadCustomerOrders: async function (customerId) {
+            loadCustomerOrders: function (customerId) {
                 const oTable = this.byId("customerOrdersTable");
-                oTable.setBusy(true);
-
+                if (oTable) {
+                    oTable.setBusy(true);
+                }
                 try {
-                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Orders?$filter=CustomerID eq '${customerId}'`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-
-                    // Add Status property to each order
-                    if (data.value) {
-                        data.value.forEach(function (order) {
-                            order.Status = order.ShippedDate ? "Shipped" : "Pending";
+                    // Get orders from local orders model
+                    const oOrdersModel = this.getOwnerComponent().getModel("orders");
+                    let customerOrders = [];
+                    
+                    if (oOrdersModel && oOrdersModel.getProperty("/value")) {
+                        const allOrders = oOrdersModel.getProperty("/value");
+                        // Filter orders for this customer
+                        customerOrders = allOrders.filter(function (order) {
+                            return order.CustomerID === customerId;
                         });
                     }
 
                     var oCustomerOrdersModel = new sap.ui.model.json.JSONModel({
-                        orders: data.value || []
+                        orders: customerOrders
                     });
                     this.getView().setModel(oCustomerOrdersModel, "customerOrdersModel");
                 } catch (error) {
-                    console.error("Error loading customer orders:", error);
+                    console.error("Error loading customer orders from local model:", error);
                     // Set empty model on error
                     var oCustomerOrdersModel = new sap.ui.model.json.JSONModel({
                         orders: []
@@ -212,13 +204,11 @@ sap.ui.define(
                 }
             },
 
-            loadCustomerInvoices: async function (companyName) {
+            loadCustomerInvoices: async function (sCustomerId) {
                 const oTable = this.byId("customerInvoicesTable");
                 oTable.setBusy(true);
                 try {
-                    // Escape single quotes in OData filter by doubling them
-                    const escapedCompanyName = companyName.replace(/'/g, "''");
-                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$filter=CustomerName eq '${escapedCompanyName}'`);
+                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$filter=CustomerID eq '${sCustomerId}'`);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
