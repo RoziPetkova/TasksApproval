@@ -44,19 +44,6 @@ sap.ui.define(
                 // oOrder found in model - use it
                 var oOrderModel = this.loadOrderProperties(oOrder);
                 this.getView().setModel(oOrderModel, "orderModel");
-                this.updateStatusStyle();
-            },
-
-
-            /**
-             * Called when the View has been rendered (so its HTML is part of the document). Post-rendering manipulations of the HTML could be done here.
-             * This hook is the same one that SAPUI5 controls get after being rendered.
-             * @memberOf appiuimodule.ext.overview.Overview
-             */
-            updateStatusStyle: function () {
-                // No longer needed with ObjectListItem - semantic styling handled by control
-                // ObjectListItem handles status styling automatically
-                return;
             },
 
             onNavBack() {
@@ -246,7 +233,6 @@ sap.ui.define(
                         // Set order details
                         var oOrderModel = this.loadOrderProperties(oOrder);
                         this.getView().setModel(oOrderModel, "orderModel");
-                        this.updateStatusStyle();
                     } else {
                         console.error("Order not found in API:", orderId);
                         // Show error message to user

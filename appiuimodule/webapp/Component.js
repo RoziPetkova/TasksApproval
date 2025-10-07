@@ -29,7 +29,19 @@ sap.ui.define(
                 //this.getRouter() gets the router instance defined in your app's manifest.
                 //.initialize() starts the router, enabling navigation and view handling
                 // based on the URL/hash.
-                this.getRouter().initialize();
+                const oRouter = this.getRouter();
+                
+                // Show global busy indicator before route matched
+                oRouter.attachBeforeRouteMatched(function() {
+                    sap.ui.core.BusyIndicator.show(0);
+                });
+                
+                // Hide global busy indicator after route matched
+                oRouter.attachRouteMatched(function() {
+                    sap.ui.core.BusyIndicator.hide();
+                });
+                
+                oRouter.initialize();
             }
         },
         );
