@@ -48,6 +48,10 @@ sap.ui.define(
              */
             _loadCustomersModel: async function () {
                 var oCustomersModel = new sap.ui.model.json.JSONModel();
+                const oTable = this.byId("reviewCustomersTable");
+                if (oTable) {
+                    oTable.setBusy(true);
+                }
 
                 try {
                     const response = await fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$top=50");
@@ -68,6 +72,11 @@ sap.ui.define(
                     console.error("Error loading customers data: ", error);
                     // Set empty model with hasMore false
                     oCustomersModel.setData({ value: [], hasMore: false });
+                } finally {
+                    const oTable = this.byId("reviewCustomersTable");
+                    if (oTable) {
+                        oTable.setBusy(false);
+                    }
                 }
 
                 this.getOwnerComponent().setModel(oCustomersModel, "customers");
@@ -83,6 +92,10 @@ sap.ui.define(
 
                 const oCustomersModel = this.getOwnerComponent().getModel("customers");
                 const currentData = oCustomersModel.getData();
+                const oTable = this.byId("reviewCustomersTable");
+                if (oTable) {
+                    oTable.setBusy(true);
+                }
 
                 try {
                     const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$top=50&$skip=${this._customersSkip}`);
@@ -112,6 +125,11 @@ sap.ui.define(
                     this._customersHasMore = false;
                     currentData.hasMore = false;
                     oCustomersModel.setData(currentData);
+                } finally {
+                    const oTable = this.byId("reviewCustomersTable");
+                    if (oTable) {
+                        oTable.setBusy(false);
+                    }
                 }
             },
 
@@ -145,6 +163,10 @@ sap.ui.define(
              */
             searchCustomers: async function (query) {
                 const oCustomersModel = this.getOwnerComponent().getModel("customers");
+                const oTable = this.byId("reviewCustomersTable");
+                if (oTable) {
+                    oTable.setBusy(true);
+                }
 
                 try {
                     let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Customers";
@@ -175,6 +197,11 @@ sap.ui.define(
                     this._customersHasMore = data.hasMore;
                 } catch (error) {
                     console.error("Error searching customers:", error);
+                } finally {
+                    const oTable = this.byId("reviewCustomersTable");
+                    if (oTable) {
+                        oTable.setBusy(false);
+                    }
                 }
             },
 

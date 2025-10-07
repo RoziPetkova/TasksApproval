@@ -12,9 +12,9 @@
         title="{i18n>customerDetailsTitle}"
         showNavButton="true"
         navButtonPress=".onNavBack">
-        <headerContent>
-            <core:Fragment fragmentName="appiuimodule.views.HeaderButtons" type="XML" />
-        </headerContent>
+        <customHeader>
+            <core:Fragment fragmentName="appiuimodule.views.Header" type="XML" />
+        </customHeader>
         <content class="sapUiResponsiveMargin">
             
             <!-- Customer Information Card -->
@@ -80,83 +80,55 @@
                     </f:header>
                     <f:content>
                         <VBox class="sapUiResponsiveMargin" width="100%">
-                            <!-- Table with Fixed Headers and Scrollable Rows -->
-                            <VBox width="100%">
-                                <!-- Fixed Table Header -->
+                            <!-- Single Table with Programmatic Sticky Headers -->
+                            <ScrollContainer height="340px" vertical="true" horizontal="false">
                                 <Table
-                                    id="customerOrdersTableHeader"
+                                    id="customerOrdersTable"
+                                    items="{ path: 'customerOrdersModel>/orders' }"
                                     width="100%"
                                     showNoData="false"
                                     mode="None"
-                                    class="sapUiTableHeaderScrollbarCompensation">
+                                    busyIndicatorDelay="0">
                                     <columns>
-                                        <Column width="8em">
+                                        <Column
+                                            minScreenWidth="Small"
+                                            width="5em">
                                             <Text text="{i18n>orderIdColumn}" />
                                         </Column>
-                                        <Column width="10em">
-                                            <Text text="{i18n>orderDateColumn}" />
+                                        <Column>
+                                            <Text text="{i18n>taskTypeColumn}" />
                                         </Column>
-                                        <Column width="10em">
-                                            <Text text="{i18n>shippedDateColumn}" />
-                                        </Column>
-                                        <Column width="8em">
-                                            <Text text="{i18n>statusColumn}" />
-                                        </Column>
-                                        <Column width="8em">
+                                        <Column minScreenWidth="Small">
                                             <Text text="{i18n>countryColumn}" />
                                         </Column>
-                                        <Column>
-                                            <Text text="{i18n>cityColumn}" />
+                                        <Column minScreenWidth="Small">
+                                            <Text text="{i18n>orderDateColumn}" />
+                                        </Column>
+                                        <Column minScreenWidth="Small">
+                                            <Text text="{i18n>shippedDateColumn}" />
+                                        </Column>
+                                        <Column minScreenWidth="Small">
+                                            <Text text="{i18n>statusColumn}" />
                                         </Column>
                                     </columns>
+                                    <items>
+                                        <ColumnListItem
+                                            type="Navigation"
+                                            press=".onCustomerOrderPress">
+                                            <cells>
+                                                <Text text="{customerOrdersModel>OrderID}" />
+                                                <Text text="Order" />
+                                                <Text text="{customerOrdersModel>ShipCountry}" />
+                                                <Text text="{path: 'customerOrdersModel>OrderDate', formatter: '.formatDate'}" />
+                                                <Text text="{path: 'customerOrdersModel>ShippedDate', formatter: '.formatDate'}" />
+                                                <ObjectStatus
+                                                    text="{customerOrdersModel>Status}"
+                                                    state="{path: 'customerOrdersModel>Status', formatter: '.formatStatusState'}" />
+                                            </cells>
+                                        </ColumnListItem>
+                                    </items>
                                 </Table>
-
-                                <!-- Scrollable Table Rows -->
-                                <ScrollContainer height="340px" vertical="true" horizontal="false">
-                                    <Table
-                                        id="customerOrdersTable"
-                                        items="{ path: 'customerOrdersModel>/orders' }"
-                                        width="100%"
-                                        showNoData="false"
-                                        showColumnHeaders="false"
-                                        mode="None">
-                                        <columns>
-                                            <Column width="8em">
-                                            </Column>
-                                            <Column width="10em">
-                                            </Column>
-                                            <Column width="10em">
-                                            </Column>
-                                            <Column width="8em">
-                                            </Column>
-                                            <Column width="8em">
-                                            </Column>
-                                            <Column>
-                                            </Column>
-                                        </columns>
-                                        <items>
-                                            <ColumnListItem
-                                                type="Navigation"
-                                                press=".onCustomerOrderPress">
-                                                <cells>
-                                                    <Text text="{customerOrdersModel>OrderID}" />
-                                                    <Text text="{
-                                                        parts: ['customerOrdersModel>OrderDate'],
-                                                        formatter: '.formatDate'
-                                                    }" />
-                                                    <Text text="{
-                                                        parts: ['customerOrdersModel>ShippedDate'],
-                                                        formatter: '.formatDate'
-                                                    }" />
-                                                    <Text text="{customerOrdersModel>Status}" />
-                                                    <Text text="{customerOrdersModel>ShipCountry}" />
-                                                    <Text text="{customerOrdersModel>ShipCity}" />
-                                                </cells>
-                                            </ColumnListItem>
-                                        </items>
-                                    </Table>
-                                </ScrollContainer>
-                            </VBox>
+                            </ScrollContainer>
                         </VBox>
                     </f:content>
                 </f:Card>
@@ -173,86 +145,62 @@
                     </f:header>
                     <f:content>
                         <VBox class="sapUiResponsiveMargin" width="100%">
-                            <!-- Table with Fixed Headers and Scrollable Rows -->
-                            <VBox width="100%">
-                                <!-- Fixed Table Header -->
+                            <!-- Single Table with Programmatic Sticky Headers -->
+                            <ScrollContainer height="340px" vertical="true" horizontal="false">
                                 <Table
-                                    id="customerInvoicesTableHeader"
+                                    id="customerInvoicesTable"
+                                    items="{ path: 'customerInvoicesModel>/invoices' }"
                                     width="100%"
                                     showNoData="false"
                                     mode="None"
-                                    class="sapUiTableHeaderScrollbarCompensation">
+                                    busyIndicatorDelay="0">
                                     <columns>
-                                        <Column width="8em">
+                                        <Column
+                                            minScreenWidth="Small"
+                                            width="5em">
                                             <Text text="{i18n>orderIdColumn}" />
                                         </Column>
-                                        <Column width="12em">
+                                        <Column>
                                             <Text text="{i18n>productNameColumn}" />
                                         </Column>
-                                        <Column width="6em">
+                                        <Column minScreenWidth="Small">
                                             <Text text="{i18n>quantityLabel}" />
                                         </Column>
-                                        <Column width="8em">
+                                        <Column minScreenWidth="Small">
                                             <Text text="{i18n>unitPriceLabel}" />
                                         </Column>
-                                        <Column width="8em">
+                                        <Column minScreenWidth="Small">
                                             <Text text="{i18n>extendedPriceLabel}" />
                                         </Column>
-                                        <Column width="10em">
+                                        <Column minScreenWidth="Small">
                                             <Text text="{i18n>orderDateColumn}" />
                                         </Column>
                                     </columns>
+                                    <items>
+                                        <ColumnListItem
+                                            type="Navigation"
+                                            press=".onCustomerInvoicePress">
+                                            <cells>
+                                                <Text text="{customerInvoicesModel>OrderID}" />
+                                                <Text text="{customerInvoicesModel>ProductName}" />
+                                                <Text text="{customerInvoicesModel>Quantity}" />
+                                                <Text text="{
+                                                    parts: ['customerInvoicesModel>UnitPrice'],
+                                                    formatter: '.formatCurrency'
+                                                }" />
+                                                <Text text="{
+                                                    parts: ['customerInvoicesModel>ExtendedPrice'],
+                                                    formatter: '.formatCurrency'
+                                                }" />
+                                                <Text text="{
+                                                    parts: ['customerInvoicesModel>OrderDate'],
+                                                    formatter: '.formatDate'
+                                                }" />
+                                            </cells>
+                                        </ColumnListItem>
+                                    </items>
                                 </Table>
-
-                                <!-- Scrollable Table Rows -->
-                                <ScrollContainer height="340px" vertical="true" horizontal="false">
-                                    <Table
-                                        id="customerInvoicesTable"
-                                        items="{ path: 'customerInvoicesModel>/invoices' }"
-                                        width="100%"
-                                        showNoData="false"
-                                        showColumnHeaders="false"
-                                        mode="None">
-                                        <columns>
-                                            <Column width="8em">
-                                            </Column>
-                                            <Column width="12em">
-                                            </Column>
-                                            <Column width="6em">
-                                            </Column>
-                                            <Column width="8em">
-                                            </Column>
-                                            <Column width="8em">
-                                            </Column>
-                                            <Column width="10em">
-                                            </Column>
-                                        </columns>
-                                        <items>
-                                            <ColumnListItem
-                                                type="Navigation"
-                                                press=".onCustomerInvoicePress">
-                                                <cells>
-                                                    <Text text="{customerInvoicesModel>OrderID}" />
-                                                    <Text text="{customerInvoicesModel>ProductName}" />
-                                                    <Text text="{customerInvoicesModel>Quantity}" />
-                                                    <Text text="{
-                                                        parts: ['customerInvoicesModel>UnitPrice'],
-                                                        formatter: '.formatCurrency'
-                                                    }" />
-                                                    <Text text="{
-                                                        parts: ['customerInvoicesModel>ExtendedPrice'],
-                                                        formatter: '.formatCurrency'
-                                                    }" />
-                                                    <Text text="{
-                                                        parts: ['customerInvoicesModel>OrderDate'],
-                                                        formatter: '.formatDate'
-                                                    }" />
-                                                </cells>
-                                            </ColumnListItem>
-                                        </items>
-                                    </Table>
-                                </ScrollContainer>
-                            </VBox>
+                            </ScrollContainer>
                         </VBox>
                     </f:content>
                 </f:Card>

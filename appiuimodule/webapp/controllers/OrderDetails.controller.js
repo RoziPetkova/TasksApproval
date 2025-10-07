@@ -225,6 +225,11 @@ sap.ui.define(
             },
 
             loadOrderById: async function(orderId) {
+                card = this.byId("orderCard");
+                if (card) {
+                    card.setBusyIndicatorDelay(0); 
+                    card.setBusy(true);
+                }
                 try {
                     const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Orders?$filter=OrderID eq ${orderId}`);
                     if (!response.ok) {
@@ -266,6 +271,8 @@ sap.ui.define(
                             { label: "Status", value: "Error" }
                         ]
                     }), "orderModel");
+                } finally {
+                    card.setBusy(false);
                 }
             },
 

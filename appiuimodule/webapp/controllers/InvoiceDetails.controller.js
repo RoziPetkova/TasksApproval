@@ -17,8 +17,26 @@ sap.ui.define(
                 oRouter.getRoute("invoicedetails").attachPatternMatched(this.onObjectMatched, this);
             },
 
-            onObjectMatched: async function(oEvent) {
-                var sOrderID = oEvent.getParameter("arguments").OrderID;                
+            /**
+             * Set sticky headers for products table
+             * @private
+             */
+            _setStickyHeaderForProductsTable: function () {
+                sap.ui.require([
+                    "sap/m/library"
+                ], function (mobileLibrary) {
+                    const Sticky = mobileLibrary.Sticky;
+
+                    // Set sticky for products table
+                    const oProductsTable = this.byId("productsTable");
+                    if (oProductsTable) {
+                        oProductsTable.setSticky([Sticky.ColumnHeaders]);
+                    }
+                }.bind(this));
+            },
+
+            onObjectMatched: async function (oEvent) {
+                var sOrderID = oEvent.getParameter("arguments").OrderID;
                 // Fetch all products for this OrderID and extract current invoice from the result
                 await this.loadOrderData(sOrderID);
             },
@@ -71,28 +89,41 @@ sap.ui.define(
                 });
             },
 
-            loadOrderData: async function(orderID) {
+            loadOrderData: async function (orderID) {
+                const table = this.byId("productsTable");
+                const card = this.byId("invoiceCard");
+                if (table) {
+                    table.setBusy(true);
+                }
+                if (card) {
+                    card.setBusyIndicatorDelay(0); 
+                    card.setBusy(true);
+                }
+
                 try {
                     const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$filter=OrderID eq ${orderID}`);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const data = await response.json();
-                    
+
                     if (data.value && data.value.length > 0) {
                         // Use any entry for invoice details
                         // since they all share the same order information (OrderID, CustomerName, OrderDate, etc.)
-                        const oInvoice = data.value[0]; 
+                        const oInvoice = data.value[0];
 
                         // Set invoice details model using the selected entry
                         var oInvoiceModel = this.loadInvoiceProperties(oInvoice);
                         this.getView().setModel(oInvoiceModel, "invoiceModel");
-                        
+
                         // Set products model with all entries - each entry represents one product line
                         var oProductsModel = new sap.ui.model.json.JSONModel({
                             products: data.value
                         });
                         this.getView().setModel(oProductsModel, "productsModel");
+
+                        // Set sticky headers after data is loaded
+                        this._setStickyHeaderForProductsTable();
                     }
                 } catch (error) {
                     console.error("Error loading order data:", error);
@@ -101,28 +132,31 @@ sap.ui.define(
                         products: []
                     });
                     this.getView().setModel(oProductsModel, "productsModel");
+                } finally {
+                    card.setBusy(false);
+                    table.setBusy(false);
                 }
             },
 
-            onGoToCustomerDetails: function() {
+            onGoToCustomerDetails: function () {
                 const oInvoiceModel = this.getView().getModel("invoiceModel");
                 const aInvoiceDetails = oInvoiceModel.getProperty("/invoiceDetails");
-                
+
                 // Find customer name from the invoice details
-                const oCustomerDetail = aInvoiceDetails.find(function(detail) {
+                const oCustomerDetail = aInvoiceDetails.find(function (detail) {
                     return detail.label === this.getOwnerComponent().getModel("i18n").getResourceBundle().getText("customerColumn");
                 }.bind(this));
-                
+
                 if (oCustomerDetail && oCustomerDetail.value) {
                     const customerName = oCustomerDetail.value;
-                    
+
                     // Find CustomerID from CustomerName
                     const oCustomersModel = this.getOwnerComponent().getModel("customers");
                     const aCustomers = oCustomersModel.getProperty("/value");
                     const oCustomer = aCustomers.find(function (customer) {
                         return customer.CompanyName === customerName;
                     });
-                    
+
                     if (oCustomer) {
                         const oRouter = this.getOwnerComponent().getRouter();
                         oRouter.navTo("customerdetails", { CustomerID: oCustomer.CustomerID });
@@ -130,7 +164,7 @@ sap.ui.define(
                 }
             },
 
-            onHomePress: function() {
+            onHomePress: function () {
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("overview");
             },
@@ -144,13 +178,13 @@ sap.ui.define(
                 this.settingsDialog.open();
             },
 
-            onSettingsSave: function() {
+            onSettingsSave: function () {
                 // Placeholder for save functionality
                 sap.m.MessageToast.show("Settings saved (placeholder)");
                 this.settingsDialog.close();
             },
 
-            onCloseDialog: function() {
+            onCloseDialog: function () {
                 // Generic close function for all dialogs
                 if (this.settingsDialog && this.settingsDialog.isOpen()) {
                     this.settingsDialog.close();
@@ -160,7 +194,7 @@ sap.ui.define(
                 }
             },
 
-            onLogoutPress: async function() {
+            onLogoutPress: async function () {
                 if (!this.logoutDialog) {
                     this.logoutDialog = await this.loadFragment({
                         name: "appiuimodule.views.LogoutDialog"
@@ -169,13 +203,13 @@ sap.ui.define(
                 this.logoutDialog.open();
             },
 
-            onLogoutConfirm: function() {
+            onLogoutConfirm: function () {
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("logout");
                 this.logoutDialog.close();
             },
 
-            onHomepagePress: function() {
+            onHomepagePress: function () {
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("entrypanel");
             }

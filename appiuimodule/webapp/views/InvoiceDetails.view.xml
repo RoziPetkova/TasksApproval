@@ -12,14 +12,14 @@
         title="{i18n>invoiceDetailsTitle}"
         showNavButton="true"
         navButtonPress=".onNavBack">
-        <headerContent>
-            <core:Fragment fragmentName="appiuimodule.views.HeaderButtons" type="XML" />
-        </headerContent>
+        <customHeader>
+            <core:Fragment fragmentName="appiuimodule.views.Header" type="XML" />
+        </customHeader>
         <content class="sapUiSmallMarginBottom sapUiMediumMarginBegin sapUiMediumMarginEnd">
 
             <!-- Invoice Details Card -->
             <VBox class="sapUiResponsiveMargin sapUiMediumMarginTop">
-                <f:Card>
+                <f:Card id="invoiceCard">
                     <f:header>
                         <card:Header
                             title="{i18n>invoiceDetailsTitle}"
@@ -71,15 +71,15 @@
                     </f:header>
                     <f:content>
                         <VBox class="sapUiResponsiveMargin" width="100%">
-                            <!-- Table with Fixed Headers and Scrollable Rows -->
-                            <VBox width="100%">
-                                <!-- Fixed Table Header -->
+                            <!-- Single Table with Programmatic Sticky Headers -->
+                            <ScrollContainer height="340px" vertical="true" horizontal="false">
                                 <Table
-                                    id="productsTableHeader"
+                                    id="productsTable"
+                                    items="{ path: 'productsModel>/products' }"
                                     width="100%"
                                     showNoData="false"
                                     mode="None"
-                                    class="sapUiTableHeaderScrollbarCompensation">
+                                    busyIndicatorDelay="0">
                                     <columns>
                                         <Column width="12em">
                                             <Text text="{i18n>productNameColumn}" />
@@ -97,55 +97,31 @@
                                             <Text text="{i18n>extendedPriceLabel}" />
                                         </Column>
                                     </columns>
+                                    <items>
+                                        <ColumnListItem>
+                                            <cells>
+                                                <Text text="{productsModel>ProductName}" />
+                                                <Text text="{productsModel>Quantity}" />
+                                                <Text
+                                                    text="{
+                                                    parts: ['productsModel>UnitPrice'],
+                                                    formatter: '.formatCurrency'
+                                                }" />
+                                                <Text
+                                                    text="{
+                                                    parts: ['productsModel>Discount'],
+                                                    formatter: '.formatDiscount'
+                                                }" />
+                                                <Text
+                                                    text="{
+                                                    parts: ['productsModel>ExtendedPrice'],
+                                                    formatter: '.formatCurrency'
+                                                }" />
+                                            </cells>
+                                        </ColumnListItem>
+                                    </items>
                                 </Table>
-
-                                <!-- Scrollable Table Rows -->
-                                <ScrollContainer height="340px" vertical="true" horizontal="false">
-                                    <Table
-                                        id="productsTable"
-                                        items="{ path: 'productsModel>/products' }"
-                                        width="100%"
-                                        showNoData="false"
-                                        showColumnHeaders="false"
-                                        mode="None">
-                                        <columns>
-                                            <Column width="12em">
-                                            </Column>
-                                            <Column width="6em">
-                                            </Column>
-                                            <Column width="8em">
-                                            </Column>
-                                            <Column width="6em">
-                                            </Column>
-                                            <Column width="8em">
-                                            </Column>
-                                        </columns>
-                                        <items>
-                                            <ColumnListItem>
-                                                <cells>
-                                                    <Text text="{productsModel>ProductName}" />
-                                                    <Text text="{productsModel>Quantity}" />
-                                                    <Text
-                                                        text="{
-                                                        parts: ['productsModel>UnitPrice'],
-                                                        formatter: '.formatCurrency'
-                                                    }" />
-                                                    <Text
-                                                        text="{
-                                                        parts: ['productsModel>Discount'],
-                                                        formatter: '.formatDiscount'
-                                                    }" />
-                                                    <Text
-                                                        text="{
-                                                        parts: ['productsModel>ExtendedPrice'],
-                                                        formatter: '.formatCurrency'
-                                                    }" />
-                                                </cells>
-                                            </ColumnListItem>
-                                        </items>
-                                    </Table>
-                                </ScrollContainer>
-                            </VBox>
+                            </ScrollContainer>
                         </VBox>
                     </f:content>
                 </f:Card>

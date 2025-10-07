@@ -29,12 +29,12 @@ sap.ui.define(
              * Set sticky headers for invoices table
              * @private
              */
-            _setStickyHeaderForInvoicesTable: function() {
+            _setStickyHeaderForInvoicesTable: function () {
                 sap.ui.require([
                     "sap/m/library"
-                ], function(mobileLibrary) {
+                ], function (mobileLibrary) {
                     const Sticky = mobileLibrary.Sticky;
-                    
+
                     const oInvoicesTable = this.byId("reviewInvoicesTable");
                     if (oInvoicesTable) {
                         oInvoicesTable.setSticky([Sticky.ColumnHeaders]);
@@ -48,6 +48,10 @@ sap.ui.define(
              */
             _loadInvoicesModel: async function () {
                 var oInvoicesModel = new sap.ui.model.json.JSONModel();
+                const oTable = this.byId("reviewInvoicesTable");
+                if (oTable) {
+                    oTable.setBusy(true);
+                }
 
                 try {
                     const response = await fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$top=50");
@@ -55,12 +59,12 @@ sap.ui.define(
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const data = await response.json();
-                    
+
                     // Add hasMore property for button visibility
                     data.hasMore = data.value && data.value.length === 50;
-                    
+
                     oInvoicesModel.setData(data);
-                    
+
                     // Initialize skip counter and check if there are more records
                     this._invoicesSkip = 50;
                     this._invoicesHasMore = data.hasMore;
@@ -68,6 +72,8 @@ sap.ui.define(
                     console.error("Error loading invoices data:", error);
                     // Set empty model with hasMore false
                     oInvoicesModel.setData({ value: [], hasMore: false });
+                } finally {
+                    oTable.setBusy(false);
                 }
 
                 this.getOwnerComponent().setModel(oInvoicesModel, "invoices");
@@ -83,6 +89,10 @@ sap.ui.define(
 
                 const oInvoicesModel = this.getOwnerComponent().getModel("invoices");
                 const currentData = oInvoicesModel.getData();
+                const oTable = this.byId("reviewInvoicesTable");
+                if (oTable) {
+                    oTable.setBusy(true);
+                }
 
                 try {
                     const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$top=50&$skip=${this._invoicesSkip}`);
@@ -90,16 +100,16 @@ sap.ui.define(
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const newData = await response.json();
-                    
+
                     // Append new data to existing data
                     if (newData.value && newData.value.length > 0) {
                         currentData.value = currentData.value.concat(newData.value);
-                        
+
                         // Update skip counter and check if there are more records
                         this._invoicesSkip += newData.value.length;
                         this._invoicesHasMore = newData.value.length === 50;
                         currentData.hasMore = this._invoicesHasMore;
-                        
+
                         oInvoicesModel.setData(currentData);
                     } else {
                         // No more data available
@@ -112,6 +122,8 @@ sap.ui.define(
                     this._invoicesHasMore = false;
                     currentData.hasMore = false;
                     oInvoicesModel.setData(currentData);
+                } finally {
+                    oTable.setBusy(false);
                 }
             },
 
@@ -185,12 +197,12 @@ sap.ui.define(
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const data = await response.json();
-                    
+
                     // Add hasMore property based on result count
                     data.hasMore = data.value && data.value.length === 50;
-                    
+
                     oInvoicesModel.setData(data);
-                    
+
                     // Reset pagination state when searching
                     this._invoicesSkip = data.value ? data.value.length : 0;
                     this._invoicesHasMore = data.hasMore;
@@ -282,7 +294,7 @@ sap.ui.define(
                 this.settingsDialog.open();
             },
 
-            onLogoutPress: async function() {
+            onLogoutPress: async function () {
                 if (!this.logoutDialog) {
                     this.logoutDialog = await this.loadFragment({
                         name: "appiuimodule.views.LogoutDialog"
@@ -291,12 +303,12 @@ sap.ui.define(
                 this.logoutDialog.open();
             },
 
-            onSettingsSave: function() {
+            onSettingsSave: function () {
                 sap.m.MessageToast.show("Settings saved (placeholder)");
                 this.settingsDialog.close();
             },
 
-            onCloseDialog: function() {
+            onCloseDialog: function () {
                 if (this.settingsDialog && this.settingsDialog.isOpen()) {
                     this.settingsDialog.close();
                 }
@@ -305,13 +317,13 @@ sap.ui.define(
                 }
             },
 
-            onLogoutConfirm: function() {
+            onLogoutConfirm: function () {
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("logout");
                 this.logoutDialog.close();
             },
 
-            onHomepagePress: function() {
+            onHomepagePress: function () {
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("entrypanel");
             },

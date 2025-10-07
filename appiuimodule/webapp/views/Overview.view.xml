@@ -10,7 +10,9 @@
     controllerName="appiuimodule.controllers.Overview">
     <Page
         id="Overview"
-        title="{i18n>OverviewTitle}">
+        title="{i18n>OverviewTitle}"
+        showNavButton="true"
+        navButtonPress=".onNavBack">
         <customHeader>
             <core:Fragment fragmentName="appiuimodule.views.Header" type="XML" />
         </customHeader>
@@ -36,14 +38,15 @@
                     </f:header>
                     <f:content>
                         <VBox class="sapUiResponsiveMargin" width="100%">
-                            <!-- Single Table with Programmatic Sticky Headers -->
+                            <!-- Programmatic Sticky Headers -->
                             <ScrollContainer height="300px" vertical="true" horizontal="false">
                                 <Table
                                     id="customersTable"
                                     items="{ path: 'customers>/value' }"
                                     width="100%"
                                     showNoData="false"
-                                    mode="None">
+                                    mode="None"
+                                    busyIndicatorDelay="0">
                                     <columns>
                                         <Column
                                             minScreenWidth="Small"
@@ -143,7 +146,8 @@
                                     items="{ path: 'orders>/value' }"
                                     width="100%"
                                     showNoData="false"
-                                    mode="None">
+                                    mode="None"
+                                    busyIndicatorDelay="0">
                                     <columns>
                                         <Column
                                             minScreenWidth="Small"
@@ -238,7 +242,8 @@
                                     items="{ path: 'invoices>/value' }"
                                     width="100%"
                                     showNoData="false"
-                                    mode="None">
+                                    mode="None"
+                                    busyIndicatorDelay="0">
                                     <columns>
                                         <Column
                                             minScreenWidth="Small"

@@ -32,12 +32,12 @@ sap.ui.define(
              * Set sticky headers for orders table
              * @private
              */
-            _setStickyHeaderForOrdersTable: function() {
+            _setStickyHeaderForOrdersTable: function () {
                 sap.ui.require([
                     "sap/m/library"
-                ], function(mobileLibrary) {
+                ], function (mobileLibrary) {
                     const Sticky = mobileLibrary.Sticky;
-                    
+
                     const oOrdersTable = this.byId("reviewOrdersTable");
                     if (oOrdersTable) {
                         oOrdersTable.setSticky([Sticky.ColumnHeaders]);
@@ -50,6 +50,11 @@ sap.ui.define(
              * @private
              */
             _loadOrdersModel: async function () {
+                const oTable = this.byId("reviewOrdersTable");
+                if (oTable) {
+                    oTable.setBusy(true);
+                }
+
                 try {
                     // Load first 50 orders
                     let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Orders?$top=50";
@@ -77,7 +82,7 @@ sap.ui.define(
                     const oOrdersModel = new sap.ui.model.json.JSONModel();
                     oOrdersModel.setData(data);
                     this.getOwnerComponent().setModel(oOrdersModel, "orders");
-                    
+
                     // Initialize skip counter and check if there are more records
                     this._ordersSkip = 50;
                     this._ordersHasMore = data.hasMore;
@@ -86,6 +91,8 @@ sap.ui.define(
                     const oOrdersModel = new sap.ui.model.json.JSONModel();
                     oOrdersModel.setData({ value: [], hasMore: false });
                     this.getOwnerComponent().setModel(oOrdersModel, "orders");
+                } finally {
+                    oTable.setBusy(false);
                 }
             },
 
@@ -99,6 +106,10 @@ sap.ui.define(
 
                 const oOrdersModel = this.getOwnerComponent().getModel("orders");
                 const currentData = oOrdersModel.getData();
+                const oTable = this.byId("reviewOrdersTable");
+                if (oTable) {
+                    oTable.setBusy(true);
+                }
 
                 try {
                     const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Orders?$top=50&$skip=${this._ordersSkip}`);
@@ -106,26 +117,26 @@ sap.ui.define(
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const newData = await response.json();
-                    
+
                     // Add Status property to new orders
                     if (newData.value) {
                         newData.value.forEach(function (order) {
                             order.Status = order.ShippedDate ? "Shipped" : "Pending";
                         });
                     }
-                    
+
                     // Append new data to existing data
                     if (newData.value && newData.value.length > 0) {
                         currentData.value = currentData.value.concat(newData.value);
-                        
+
                         // Update original data for filtering
                         this._originalOrdersData = currentData.value;
-                        
+
                         // Update skip counter and check if there are more records
                         this._ordersSkip += newData.value.length;
                         this._ordersHasMore = newData.value.length === 50;
                         currentData.hasMore = this._ordersHasMore;
-                        
+
                         oOrdersModel.setData(currentData);
                     } else {
                         // No more data available
@@ -138,6 +149,8 @@ sap.ui.define(
                     this._ordersHasMore = false;
                     currentData.hasMore = false;
                     oOrdersModel.setData(currentData);
+                } finally {
+                    oTable.setBusy(false);
                 }
             },
 
@@ -194,7 +207,7 @@ sap.ui.define(
              */
             searchOrders: function (query) {
                 const oOrdersModel = this.getOwnerComponent().getModel("orders");
-                
+
                 if (!this._originalOrdersData) {
                     if (oOrdersModel && oOrdersModel.getProperty("/value")) {
                         this._originalOrdersData = oOrdersModel.getProperty("/value");
@@ -203,26 +216,26 @@ sap.ui.define(
                         return;
                     }
                 }
-                
+
                 const allOrders = this._originalOrdersData || [];
                 let filteredOrders;
-                
+
                 if (query && query.trim()) {
                     const queryLower = query.toLowerCase();
-                    filteredOrders = allOrders.filter(function(order) {
+                    filteredOrders = allOrders.filter(function (order) {
                         return order.CustomerID.toLowerCase().includes(queryLower);
                     });
                 } else {
                     filteredOrders = allOrders;
                 }
-                
+
                 oOrdersModel.setProperty("/value", filteredOrders);
             },
 
             /**
              * Handle status filter change
              */
-            onStatusFilterChange: function(oEvent) {
+            onStatusFilterChange: function (oEvent) {
                 const selectedKey = oEvent.getParameter("selectedItem").getKey();
                 this.filterOrdersByStatus(selectedKey);
             },
@@ -230,9 +243,9 @@ sap.ui.define(
             /**
              * Filter orders by status
              */
-            filterOrdersByStatus: function(status) {
+            filterOrdersByStatus: function (status) {
                 const oOrdersModel = this.getOwnerComponent().getModel("orders");
-                
+
                 if (!this._originalOrdersData) {
                     if (oOrdersModel && oOrdersModel.getProperty("/value")) {
                         this._originalOrdersData = oOrdersModel.getProperty("/value");
@@ -241,22 +254,22 @@ sap.ui.define(
                         return;
                     }
                 }
-                
+
                 const allOrders = this._originalOrdersData || [];
                 let filteredOrders;
-                
+
                 if (status === "Shipped") {
-                    filteredOrders = allOrders.filter(function(order) {
+                    filteredOrders = allOrders.filter(function (order) {
                         return order.Status === "Shipped";
                     });
                 } else if (status === "Pending") {
-                    filteredOrders = allOrders.filter(function(order) {
+                    filteredOrders = allOrders.filter(function (order) {
                         return order.Status === "Pending";
                     });
                 } else {
                     filteredOrders = allOrders;
                 }
-                
+
                 oOrdersModel.setProperty("/value", filteredOrders);
             },
 
@@ -347,7 +360,7 @@ sap.ui.define(
                 this.settingsDialog.open();
             },
 
-            onLogoutPress: async function() {
+            onLogoutPress: async function () {
                 if (!this.logoutDialog) {
                     this.logoutDialog = await this.loadFragment({
                         name: "appiuimodule.views.LogoutDialog"
@@ -356,12 +369,12 @@ sap.ui.define(
                 this.logoutDialog.open();
             },
 
-            onSettingsSave: function() {
+            onSettingsSave: function () {
                 sap.m.MessageToast.show("Settings saved (placeholder)");
                 this.settingsDialog.close();
             },
 
-            onCloseDialog: function() {
+            onCloseDialog: function () {
                 if (this.settingsDialog && this.settingsDialog.isOpen()) {
                     this.settingsDialog.close();
                 }
@@ -370,13 +383,13 @@ sap.ui.define(
                 }
             },
 
-            onLogoutConfirm: function() {
+            onLogoutConfirm: function () {
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("logout");
                 this.logoutDialog.close();
             },
 
-            onHomepagePress: function() {
+            onHomepagePress: function () {
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("entrypanel");
             },

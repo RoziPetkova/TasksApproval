@@ -55,7 +55,8 @@
                                         items="{ path: 'orders>/value' }"
                                         width="100%"
                                         showNoData="false"
-                                        mode="None">
+                                        mode="None"
+                                        busyIndicatorDelay="0">
                                         <columns>
                                             <Column
                                                 minScreenWidth="Small"

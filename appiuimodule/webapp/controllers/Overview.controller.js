@@ -1,11 +1,13 @@
 sap.ui.define(
     [
         'sap/ui/core/mvc/Controller',
+        "sap/ui/core/routing/History",
         "sap/ui/model/Filter",
         "sap/ui/model/FilterOperator",
-        "sap/ui/model/Sorter"
+        "sap/ui/model/Sorter",
+        "sap/m/library"
     ],
-    function (Controller, Filter, FilterOperator, Sorter) {
+    function (Controller, History, Filter, FilterOperator, Sorter, mobileLibrary) {
         'use strict';
 
         return Controller.extend('appiuimodule.controllers.Overview', {
@@ -44,31 +46,25 @@ sap.ui.define(
              * Set sticky headers for all tables
              * @private
              */
-            _setStickyHeaderForCustomersTable: function() {
-                // Import Sticky enum and set column headers as sticky for all tables
-                sap.ui.require([
-                    "sap/m/library"
-                ], function(mobileLibrary) {
-                    const Sticky = mobileLibrary.Sticky;
-                    
-                    // Set sticky for customers table
-                    const oCustomersTable = this.byId("customersTable");
-                    if (oCustomersTable) {
-                        oCustomersTable.setSticky([Sticky.ColumnHeaders]);
-                    }
-                    
-                    // Set sticky for orders table
-                    const oOrdersTable = this.byId("ordersTable");
-                    if (oOrdersTable) {
-                        oOrdersTable.setSticky([Sticky.ColumnHeaders]);
-                    }
-                    
-                    // Set sticky for invoices table
-                    const oInvoicesTable = this.byId("invoicesTable");
-                    if (oInvoicesTable) {
-                        oInvoicesTable.setSticky([Sticky.ColumnHeaders]);
-                    }
-                }.bind(this));
+            _setStickyHeaderForCustomersTable: function () {
+                // Sticky is enum, not module. That's why its imported like that. 
+                const Sticky = mobileLibrary.Sticky;
+
+                // Set sticky for customers table
+                const oCustomersTable = this.byId("customersTable");
+                if (oCustomersTable) {
+                    oCustomersTable.setSticky([Sticky.ColumnHeaders]);
+                }
+                // Set sticky for orders table
+                const oOrdersTable = this.byId("ordersTable");
+                if (oOrdersTable) {
+                    oOrdersTable.setSticky([Sticky.ColumnHeaders]);
+                }
+                // Set sticky for invoices table
+                const oInvoicesTable = this.byId("invoicesTable");
+                if (oInvoicesTable) {
+                    oInvoicesTable.setSticky([Sticky.ColumnHeaders]);
+                }
             },
 
             /**
@@ -76,6 +72,11 @@ sap.ui.define(
              * @private
              */
             _loadCustomersModel: async function () {
+                const oCustomersTable = this.byId("customersTable");
+                if (oCustomersTable) {
+                    oCustomersTable.setBusy(true);
+                }
+
                 var oCustomersModel = new sap.ui.model.json.JSONModel();
 
                 try {
@@ -84,12 +85,12 @@ sap.ui.define(
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const data = await response.json();
-                    
+
                     // Add hasMore property for button visibility
                     data.hasMore = data.value && data.value.length === 10;
-                    
+
                     oCustomersModel.setData(data);
-                    
+
                     // Initialize skip counter and check if there are more records
                     this._customersSkip = 10;
                     this._customersHasMore = data.hasMore;
@@ -97,6 +98,10 @@ sap.ui.define(
                     console.error("Error loading customers data: ", error);
                     // Set empty model with hasMore false
                     oCustomersModel.setData({ value: [], hasMore: false });
+                } finally {
+                    if (oCustomersTable) {
+                        oCustomersTable.setBusy(false);
+                    }
                 }
 
                 this.getOwnerComponent().setModel(oCustomersModel, "customers");
@@ -110,6 +115,11 @@ sap.ui.define(
                     return;
                 }
 
+                const oCustomersTable = this.byId("customersTable");
+                if (oCustomersTable) {
+                    oCustomersTable.setBusy(true);
+                }
+
                 const oCustomersModel = this.getOwnerComponent().getModel("customers");
                 const currentData = oCustomersModel.getData();
 
@@ -119,16 +129,16 @@ sap.ui.define(
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const newData = await response.json();
-                    
+
                     // Append new data to existing data
                     if (newData.value && newData.value.length > 0) {
                         currentData.value = currentData.value.concat(newData.value);
-                        
+
                         // Update skip counter and check if there are more records
                         this._customersSkip += newData.value.length;
                         this._customersHasMore = newData.value.length === 10;
                         currentData.hasMore = this._customersHasMore;
-                        
+
                         oCustomersModel.setData(currentData);
                     } else {
                         // No more data available
@@ -141,6 +151,10 @@ sap.ui.define(
                     this._customersHasMore = false;
                     currentData.hasMore = false;
                     oCustomersModel.setData(currentData);
+                } finally {
+                    if (oCustomersTable) {
+                        oCustomersTable.setBusy(false);
+                    }
                 }
             },
 
@@ -152,6 +166,11 @@ sap.ui.define(
                     return;
                 }
 
+                const oInvoicesTable = this.byId("invoicesTable");
+                if (oInvoicesTable) {
+                    oInvoicesTable.setBusy(true);
+                }
+
                 const oInvoicesModel = this.getOwnerComponent().getModel("invoices");
                 const currentData = oInvoicesModel.getData();
 
@@ -161,16 +180,16 @@ sap.ui.define(
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const newData = await response.json();
-                    
+
                     // Append new data to existing data
                     if (newData.value && newData.value.length > 0) {
                         currentData.value = currentData.value.concat(newData.value);
-                        
+
                         // Update skip counter and check if there are more records
                         this._invoicesSkip += newData.value.length;
                         this._invoicesHasMore = newData.value.length === 10;
                         currentData.hasMore = this._invoicesHasMore;
-                        
+
                         oInvoicesModel.setData(currentData);
                     } else {
                         // No more data available
@@ -183,6 +202,10 @@ sap.ui.define(
                     this._invoicesHasMore = false;
                     currentData.hasMore = false;
                     oInvoicesModel.setData(currentData);
+                } finally {
+                    if (oInvoicesTable) {
+                        oInvoicesTable.setBusy(false);
+                    }
                 }
             },
 
@@ -191,6 +214,11 @@ sap.ui.define(
              * @private
              */
             _loadInvoicesModel: async function () {
+                const oInvoicesTable = this.byId("invoicesTable");
+                if (oInvoicesTable) {
+                    oInvoicesTable.setBusy(true);
+                }
+
                 var oInvoicesModel = new sap.ui.model.json.JSONModel();
 
                 try {
@@ -199,12 +227,12 @@ sap.ui.define(
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const data = await response.json();
-                    
+
                     // Add hasMore property for button visibility
                     data.hasMore = data.value && data.value.length === 10;
-                    
+
                     oInvoicesModel.setData(data);
-                    
+
                     // Initialize skip counter and check if there are more records
                     this._invoicesSkip = 10;
                     this._invoicesHasMore = data.hasMore;
@@ -212,6 +240,10 @@ sap.ui.define(
                     console.error("Error loading invoices data:", error);
                     // Set empty model with hasMore false
                     oInvoicesModel.setData({ value: [], hasMore: false });
+                } finally {
+                    if (oInvoicesTable) {
+                        oInvoicesTable.setBusy(false);
+                    }
                 }
 
                 this.getOwnerComponent().setModel(oInvoicesModel, "invoices");
@@ -222,6 +254,11 @@ sap.ui.define(
              * @private
              */
             _loadAllOrders: async function () {
+                const oOrdersTable = this.byId("ordersTable");
+                if (oOrdersTable) {
+                    oOrdersTable.setBusy(true);
+                }
+
                 try {
                     // Load ALL orders without any limit
                     let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Orders";
@@ -248,6 +285,10 @@ sap.ui.define(
                     this.getOwnerComponent().setModel(oOrdersModel, "orders");
                 } catch (error) {
                     console.error("Error loading all orders:", error);
+                } finally {
+                    if (oOrdersTable) {
+                        oOrdersTable.setBusy(false);
+                    }
                 }
             },
 
@@ -298,7 +339,7 @@ sap.ui.define(
 
             searchOrders: function (query) {
                 const oOrdersModel = this.getOwnerComponent().getModel("orders");
-                
+
                 // Check if original data exists, if not try to set it
                 if (!this._originalOrdersData) {
                     if (oOrdersModel && oOrdersModel.getProperty("/value")) {
@@ -308,34 +349,34 @@ sap.ui.define(
                         return;
                     }
                 }
-                
+
                 // Use stored original data for search
                 const allOrders = this._originalOrdersData || [];
                 let filteredOrders;
-                
+
                 if (query && query.trim()) {
                     // Filter by CustomerID locally
                     const queryLower = query.toLowerCase();
-                    filteredOrders = allOrders.filter(function(order) {
+                    filteredOrders = allOrders.filter(function (order) {
                         return order.CustomerID.toLowerCase().includes(queryLower);
                     });
                 } else {
                     // Show all orders if no query
                     filteredOrders = allOrders;
                 }
-                
+
                 // Update the model with filtered data
                 oOrdersModel.setProperty("/value", filteredOrders);
             },
 
-            onStatusFilterChange: function(oEvent) {
+            onStatusFilterChange: function (oEvent) {
                 const selectedKey = oEvent.getParameter("selectedItem").getKey();
                 this.filterOrdersByStatus(selectedKey);
             },
 
-            filterOrdersByStatus: function(status) {
+            filterOrdersByStatus: function (status) {
                 const oOrdersModel = this.getOwnerComponent().getModel("orders");
-                
+
                 // Check if original data exists, if not try to set it
                 if (!this._originalOrdersData) {
                     if (oOrdersModel && oOrdersModel.getProperty("/value")) {
@@ -345,24 +386,24 @@ sap.ui.define(
                         return;
                     }
                 }
-                
+
                 // Use stored original data for filtering
                 const allOrders = this._originalOrdersData || [];
                 let filteredOrders;
-                
+
                 if (status === "Shipped") {
-                    filteredOrders = allOrders.filter(function(order) {
+                    filteredOrders = allOrders.filter(function (order) {
                         return order.Status === "Shipped";
                     });
                 } else if (status === "Pending") {
-                    filteredOrders = allOrders.filter(function(order) {
+                    filteredOrders = allOrders.filter(function (order) {
                         return order.Status === "Pending";
                     });
                 } else {
                     // Show all orders for "All" or no selection
                     filteredOrders = allOrders;
                 }
-                
+
                 // Update the model with filtered data
                 oOrdersModel.setProperty("/value", filteredOrders);
             },
@@ -802,7 +843,7 @@ sap.ui.define(
                 this.settingsDialog.open();
             },
 
-            onLogoutPress: async function() {
+            onLogoutPress: async function () {
                 if (!this.logoutDialog) {
                     this.logoutDialog = await this.loadFragment({
                         name: "appiuimodule.views.LogoutDialog"
@@ -832,13 +873,13 @@ sap.ui.define(
                 this.logoutDialog.open();
             },
 
-            onSettingsSave: function() {
+            onSettingsSave: function () {
                 // Placeholder for save functionality
                 sap.m.MessageToast.show("Settings saved (placeholder)");
                 this.settingsDialog.close();
             },
 
-            onCloseDialog: function() {
+            onCloseDialog: function () {
                 // Generic close function for all dialogs
                 if (this.settingsDialog && this.settingsDialog.isOpen()) {
                     this.settingsDialog.close();
@@ -848,15 +889,27 @@ sap.ui.define(
                 }
             },
 
-            onLogoutConfirm: function() {
+            onLogoutConfirm: function () {
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("logout");
                 this.logoutDialog.close();
             },
 
-            onHomepagePress: function() {
+            onHomepagePress: function () {
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("entrypanel");
+            },
+
+            onNavBack: function () {
+                const oHistory = History.getInstance();
+                const sPreviousHash = oHistory.getPreviousHash();
+
+                if (sPreviousHash !== undefined) {
+                    window.history.go(-1);
+                } else {
+                    const oRouter = this.getOwnerComponent().getRouter();
+                    oRouter.navTo("entrypanel", {}, true);
+                }
             },
         });
     }
