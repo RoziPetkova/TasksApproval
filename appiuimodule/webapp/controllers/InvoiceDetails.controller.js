@@ -138,7 +138,7 @@ sap.ui.define(
                 }
             },
 
-            onGoToCustomerDetails: function () {
+            onGoToCustomerDetails: async function () {
                 const oInvoiceModel = this.getView().getModel("invoiceModel");
                 const aInvoiceDetails = oInvoiceModel.getProperty("/invoiceDetails");
 
@@ -149,18 +149,47 @@ sap.ui.define(
 
                 if (oCustomerDetail && oCustomerDetail.value) {
                     const customerName = oCustomerDetail.value;
+                    let oCustomer = null;
 
-                    // Find CustomerID from CustomerName
+                    // Check if customers model exists
                     const oCustomersModel = this.getOwnerComponent().getModel("customers");
-                    const aCustomers = oCustomersModel.getProperty("/value");
-                    const oCustomer = aCustomers.find(function (customer) {
-                        return customer.CompanyName === customerName;
-                    });
+                    if (!oCustomersModel || !oCustomersModel.getProperty("/value")) {
+                        // Model doesn't exist, fetch customer from API
+                        oCustomer = await this.loadCustomerByName(customerName);
+                    } else {
+                        // Find CustomerID from CustomerName in existing model
+                        const aCustomers = oCustomersModel.getProperty("/value");
+                        oCustomer = aCustomers.find(function (customer) {
+                            return customer.CompanyName === customerName;
+                        });
+                    }
 
                     if (oCustomer) {
                         const oRouter = this.getOwnerComponent().getRouter();
                         oRouter.navTo("customerdetails", { CustomerID: oCustomer.CustomerID });
                     }
+                }
+            },
+
+            loadCustomerByName: async function(customerName) {
+                try {
+                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$filter=CompanyName eq '${customerName}'`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    
+                    if (data.value && data.value.length > 0) {
+                        return data.value[0];
+                    } else {
+                        console.error("Customer not found in API:", customerName);
+                        sap.m.MessageToast.show(`Customer ${customerName} not found.`);
+                        return null;
+                    }
+                } catch (error) {
+                    console.error("Error loading customer by name:", error);
+                    sap.m.MessageToast.show(`Failed to load customer ${customerName}. Please try again.`);
+                    return null;
                 }
             },
 

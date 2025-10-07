@@ -3,9 +3,10 @@ sap.ui.define(
         'sap/ui/core/mvc/Controller',
         "sap/ui/model/Filter",
         "sap/ui/model/FilterOperator",
+        "sap/ui/core/routing/History",
         "sap/ui/model/Sorter"
     ],
-    function (Controller, Filter, FilterOperator, Sorter) {
+    function (Controller, Filter, FilterOperator, History, Sorter) {
         'use strict';
 
         return Controller.extend('appiuimodule.controllers.ReviewCustomers', {
@@ -137,8 +138,17 @@ sap.ui.define(
              * Navigate back to previous page
              */
             onNavBack: function () {
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("overview");
+                const oHistory = History.getInstance();
+                const sPreviousHash = oHistory.getPreviousHash();
+
+                if (sPreviousHash !== undefined) {
+                    //cannot be done by router - we need to split the history and then check what
+                    //is the property key of the previous hash
+                    window.history.go(-1);
+                } else {
+                    const oRouter = this.getOwnerComponent().getRouter();
+                    oRouter.navTo("overview", {}, true);
+                }
             },
 
             /**

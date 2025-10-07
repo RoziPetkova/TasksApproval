@@ -12,9 +12,9 @@
         title="{i18n>DetailsTitle}"
         showNavButton="true"
         navButtonPress=".onNavBack">
-        <customHeader>
-            <core:Fragment fragmentName="appiuimodule.views.Header" type="XML" />
-        </customHeader>
+        <headerContent>
+            <core:Fragment fragmentName="appiuimodule.views.HeaderButtons" type="XML" />
+        </headerContent>
         <content  class="sapUiSmallMarginBottom sapUiMediumMarginBegin sapUiMediumMarginEnd">
             <VBox class="sapUiResponsiveMargin sapUiMediumMarginTop">
                 <f:Card id="orderCard">

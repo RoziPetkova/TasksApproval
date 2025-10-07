@@ -212,7 +212,7 @@ sap.ui.define(
             },
 
             loadOrderById: async function(orderId) {
-                card = this.byId("orderCard");
+                const card = this.byId("orderCard");
                 if (card) {
                     card.setBusyIndicatorDelay(0); 
                     card.setBusy(true);
