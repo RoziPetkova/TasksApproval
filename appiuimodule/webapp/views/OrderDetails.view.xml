@@ -15,7 +15,7 @@
         <headerContent>
             <core:Fragment fragmentName="appiuimodule.views.HeaderButtons" type="XML" />
         </headerContent>
-        <content  class="sapUiSmallMarginBottom sapUiMediumMarginBegin sapUiMediumMarginEnd">
+        <content class="sapUiSmallMarginBottom sapUiMediumMarginBegin sapUiMediumMarginEnd">
             <VBox class="sapUiResponsiveMargin sapUiMediumMarginTop">
                 <f:Card id="orderCard">
                     <f:header>
@@ -26,34 +26,47 @@
                     <f:content>
                         <VBox class="sapUiResponsiveMargin" width="100%">
                             <HBox justifyContent="End" class="sapUiSmallMarginBottom">
-                                <core:Fragment fragmentName="appiuimodule.views.CustomerDetailsButton"
+                                <core:Fragment
+                                    fragmentName="appiuimodule.views.CustomerDetailsButton"
                                     type="XML" />
                             </HBox>
-                            <HBox wrap="Wrap" width="100%"
+                            <VBox wrap="Wrap" width="100%"
                                 justifyContent="SpaceBetween">
-                                <!-- Left Column -->
-                                <VBox width="48%">
-                                    <List items="{path: 'orderModel>/taskDetails', length: 4}"
-                                        class="sapUiSizeCompact" width="100%">
-                                        <StandardListItem
-                                            title="{orderModel>label}"
-                                            info="{orderModel>value}"
-                                            type="{path: 'orderModel>label', formatter: '.formatCustomerRowType'}"
-                                            press=".onCustomerRowPress" />
-                                    </List>
-                                </VBox>
+                                <HBox>
+                                    <MessageStrip
+                                        text="Error with default icon and close button:"
+                                        type="Error"
+                                        showIcon="true"
+                                        showCloseButton="true"
+                                        class="sapUiMediumMarginBottom">
+                                    </MessageStrip>
+                                </HBox>
+                                <HBox>
+                                    <!-- Left Column -->
+                                    <VBox width="48%">
+                                        <List items="{path: 'orderModel>/taskDetails', length: 4}"
+                                            class="sapUiSizeCompact" width="100%">
+                                            <StandardListItem
+                                                title="{orderModel>label}"
+                                                info="{orderModel>value}"
+                                                type="{path: 'orderModel>label', formatter: '.formatCustomerRowType'}"
+                                                press=".onCustomerRowPress" />
+                                        </List>
+                                    </VBox>
 
-                                <!-- Right Column -->
-                                <VBox width="48%">
-                                    <List items="{path: 'orderModel>/taskDetails', startIndex: 4}"
-                                        class="sapUiSizeCompact" width="100%">
-                                        <StandardListItem
-                                            title="{orderModel>label}"
-                                            info="{orderModel>value}"
-                                            infoState="{parts: ['orderModel>label', 'orderModel>value'], formatter: '.formatStatusColor'}" />
-                                    </List>
-                                </VBox>
-                            </HBox>
+                                    <!-- Right Column -->
+                                    <VBox width="48%">
+                                        <List
+                                            items="{path: 'orderModel>/taskDetails', startIndex: 4}"
+                                            class="sapUiSizeCompact" width="100%">
+                                            <StandardListItem
+                                                title="{orderModel>label}"
+                                                info="{orderModel>value}"
+                                                infoState="{parts: ['orderModel>label', 'orderModel>value'], formatter: '.formatStatusColor'}" />
+                                        </List>
+                                    </VBox>
+                                </HBox>
+                            </VBox>
                         </VBox>
                     </f:content>
                 </f:Card>

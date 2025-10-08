@@ -134,9 +134,21 @@ sap.ui.define(
                         return "Success";
                     case "Pending":
                         return "Warning";
+                    case "Declined":
+                        return "Error";
                     default:
                         return "None";
                 }
+            },
+
+            formatShippedDate: function (shippedDate, status) {
+                // Show "None" for declined orders
+                if (status === "Declined") {
+                    return "None";
+                }
+                if (!shippedDate) return "";
+                var date = new Date(shippedDate);
+                return date.toLocaleDateString();
             },
 
             loadCustomerById: async function (customerId) {

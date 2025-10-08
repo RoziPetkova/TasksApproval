@@ -339,6 +339,16 @@ sap.ui.define(
                 return date.toLocaleDateString();
             },
 
+            formatShippedDate: function (shippedDate, status) {
+                // Show "None" for declined orders
+                if (status === "Declined") {
+                    return "None";
+                }
+                if (!shippedDate) return "";
+                var date = new Date(shippedDate);
+                return date.toLocaleDateString();
+            },
+
             onFilterOrders: function (oEvent) {
                 const query = oEvent.getParameter("query");
                 this.searchOrders(query);

@@ -138,7 +138,10 @@
                                                     <Text
                                                         text="{path: 'customerOrdersModel>OrderDate', formatter: '.formatDate'}" />
                                                     <Text
-                                                        text="{path: 'customerOrdersModel>ShippedDate', formatter: '.formatDate'}" />
+                                                        text="{
+                                                            parts: ['customerOrdersModel>ShippedDate', 'customerOrdersModel>Status'],
+                                                            formatter: '.formatShippedDate'
+                                                        }" />
                                                     <ObjectStatus
                                                         text="{customerOrdersModel>Status}"
                                                         state="{path: 'customerOrdersModel>Status', formatter: '.formatStatusState'}" />
