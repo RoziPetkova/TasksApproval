@@ -116,7 +116,7 @@
                                                 press=".onOrderPress">
                                                 <cells>
                                                     <Text text="{orders>OrderID}" />
-                                                    <Text text="Order" />
+                                                    <Text text="{i18n>orderTaskTypeValue}" />
                                                     <Text text="{orders>CustomerID}" />
                                                     <Text text="{orders>ShipCountry}" />
                                                     <Text
@@ -138,7 +138,7 @@
                                 <!-- Load More Button at Bottom -->
                                 <Button
                                     id="loadMoreOrdersBtn"
-                                    text="Load More Orders"
+                                    text="{i18n>loadMoreOrdersButton}"
                                     type="Emphasized"
                                     press=".onLoadMoreOrders"
                                     visible="{orders>/hasMore}"

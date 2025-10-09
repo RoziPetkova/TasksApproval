@@ -95,7 +95,7 @@
                         <f:header>
                             <card:Header
                                 title="{i18n>productsInOrderTitle}"
-                                subtitle="Products in this order">
+                                subtitle="{i18n>productsInCurrentInvoiceTitle}">
                             </card:Header>
                         </f:header>
                         <f:content>

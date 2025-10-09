@@ -149,7 +149,7 @@
                                                 press=".onCustomerOrderPress">
                                                 <cells>
                                                     <Text text="{customerOrdersModel>OrderID}" />
-                                                    <Text text="Order" />
+                                                    <Text text="{i18n>orderTaskTypeValue}" />
                                                     <Text text="{customerOrdersModel>CustomerID}" />
                                                     <Text text="{customerOrdersModel>ShipCountry}" />
                                                     <Text
@@ -237,7 +237,7 @@
                                                     <Text text="{customerInvoicesModel>ProductName}" />
                                                     <Text text="{customerInvoicesModel>CustomerName}" />
                                                     <Text text="{path: 'customerInvoicesModel>OrderDate', formatter: '.formatDate'}" />
-                                                    <Text text="Active" />
+                                                    <Text text="{i18n>activeStatusValue}" />
                                                     <Text text="{customerInvoicesModel>ExtendedPrice}" />
                                                 </cells>
                                             </ColumnListItem>

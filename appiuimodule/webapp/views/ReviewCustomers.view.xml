@@ -113,8 +113,8 @@
                                 height="20%">
                                 <Button
                                     id="loadMoreCustomersBtn"
-                                    text="Load More Customers"
-                                    type="Emphasized"
+                                    text="{i18n>loadMoreCustomersButton}"
+                                    type="Transparent"
                                     press=".onLoadMoreCustomers"
                                     visible="{customers>/hasMore}"
                                     class="sapUiSmallMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd" />

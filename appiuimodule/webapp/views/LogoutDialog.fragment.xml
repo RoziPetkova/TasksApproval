@@ -4,23 +4,24 @@
     <Dialog
         id="logoutDialog"
         title="{i18n>logoutTitle}"
-        icon="sap-icon://log">
+        icon="sap-icon://log"
+        type="Message">
         <content>
-            <VBox alignItems="Center">
+            <VBox renderType="Bare" alignItems="Center">
                 <Text
                     text="{i18n>logoutConfirmationMessage}"
                     textAlign="Center"
                     width="100%" />
-            </VBox>
+            </VBox> 
         </content>
         <beginButton>
             <Button
-                text="Cancel"
+                text="{i18n>cancelButton}"
                 press=".onCloseDialog" />
         </beginButton>
         <endButton>
             <Button
-                text="Log Out"
+                text="{i18n>LogOut}"
                 type="Emphasized"
                 press=".onLogoutConfirm" />
         </endButton>

@@ -108,7 +108,7 @@
                                                     <Text text="{invoices>CustomerName}" />
                                                     <Text
                                                         text="{path: 'invoices>OrderDate', formatter: '.formatDate'}" />
-                                                    <Text text="Active" />
+                                                    <Text text="{i18n>activeStatusValue}" />
                                                     <Text
                                                         text="{path: 'invoices>ExtendedPrice', formatter: '.formatCurrency'}" />
                                                     <Text text="{invoices>Quantity}" />
@@ -127,7 +127,7 @@
                                 <Button
                                     width="auto"
                                     id="loadMoreInvoicesBtn"
-                                    text="Load More Invoices"
+                                    text="{i18n>loadMoreInvoicesButton}"
                                     type="Emphasized"
                                     press=".onLoadMoreInvoices"
                                     visible="{invoices>/hasMore}"

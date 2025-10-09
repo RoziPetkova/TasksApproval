@@ -9,12 +9,12 @@
         </content>
         <beginButton>
             <Button
-                text="Cancel"
+                text="{i18n>cancelButton}"
                 press=".onCloseDialog" />
         </beginButton>
         <endButton>
             <Button
-                text="Decline"
+                text="{i18n>Decline}"
                 type="Emphasized"
                 press=".onDeclineConfirm" />
         </endButton>

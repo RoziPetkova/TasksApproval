@@ -73,7 +73,7 @@
                                 <VBox class="sapUiLargeMarginTop" justifyContent="Start"
                                     visible="{= !!${orderModel>/taskDetails/8/value} }">
                                     <MessageStrip
-                                        text="Rejection reason: {orderModel>/taskDetails/8/value}"
+                                        text="{i18n>rejectionReasonPrefix} {orderModel>/taskDetails/8/value}"
                                         type="Error"
                                         class="sapUiMediumMarginBottom">
                                     </MessageStrip>

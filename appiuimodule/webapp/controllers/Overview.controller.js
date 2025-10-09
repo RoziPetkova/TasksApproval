@@ -5,9 +5,10 @@ sap.ui.define(
         "sap/ui/model/Filter",
         "sap/ui/model/FilterOperator",
         "sap/ui/model/Sorter",
-        "sap/m/library"
+        "sap/m/library",
+        "sap/ui/Device"
     ],
-    function (Controller, History, Filter, FilterOperator, Sorter, mobileLibrary) {
+    function (Controller, History, Filter, FilterOperator, Sorter, mobileLibrary, Device) {
         'use strict';
 
         return Controller.extend('appiuimodule.controllers.Overview', {
@@ -32,20 +33,16 @@ sap.ui.define(
 
             onInit: function () {
                 // Load all data models when overview controller initializes
-                Promise.all([
-                    this._loadCustomersModel(),
-                    this._loadInvoicesModel(),
-                    this._loadAllOrders()
-                ]).then(() => {
-                    // Set sticky header for customers table after data is loaded
-                    this._setStickyHeaderForCustomersTable();
-                });
+                this._loadCustomersModel();
+                this._loadInvoicesModel();
+                this._loadAllOrders();
+                // Set sticky header for customers table after data is loaded
+                this._setStickyHeaderForCustomersTable();
+
+                // Device detection
+                this.setViewModel();
             },
 
-            /**
-             * Set sticky headers for all tables
-             * @private
-             */
             _setStickyHeaderForCustomersTable: function () {
                 // Sticky is enum, not module. That's why its imported like that. 
                 const Sticky = mobileLibrary.Sticky;
@@ -67,10 +64,18 @@ sap.ui.define(
                 }
             },
 
-            /**
-             * Load the customers JSON model - first 10 records only
-             * @private
-             */
+            setViewModel() {
+                let isMobile = false;
+                if (Device.system.phone || Device.system.tablet) {
+                    isMobile = true;
+                }
+                // Create view model
+                var viewModel = new sap.ui.model.json.JSONModel({
+                    isMobile: isMobile
+                });
+                this.getView().setModel(viewModel, "viewModel");
+            },
+
             _loadCustomersModel: async function () {
                 const oCustomersTable = this.byId("customersTable");
                 if (oCustomersTable) {
@@ -294,9 +299,9 @@ sap.ui.define(
             handleStatusProperty(data) {
                 data.value.forEach(function (order) {
                     if (order.OrderID % 2 == 0) {
-                       order.ShippedDate = null;
+                        order.ShippedDate = null;
                     }
-                     order.Status = order.ShippedDate ? "Shipped" : "Pending";
+                    order.Status = order.ShippedDate ? "Shipped" : "Pending";
                 });
             },
 
@@ -892,7 +897,8 @@ sap.ui.define(
 
             onSettingsSave: function () {
                 // Placeholder for save functionality
-                sap.m.MessageToast.show("Settings saved (placeholder)");
+                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                sap.m.MessageToast.show(bundle.getText("settingsSavedMessage"));
                 this.settingsDialog.close();
             },
 

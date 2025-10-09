@@ -272,7 +272,8 @@ sap.ui.define(
 
             onSettingsSave: function () {
                 // Placeholder for save functionality
-                sap.m.MessageToast.show("Settings saved");
+                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                sap.m.MessageToast.show(bundle.getText("settingsSavedMessage"));
                 this.settingsDialog.close();
             },
 

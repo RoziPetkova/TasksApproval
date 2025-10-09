@@ -14,7 +14,7 @@ sap.ui.define(
             onLoginAgain: function () {
                 // Navigate back to the overview page (simulate login)
                 const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("overview", {}, true);
+                oRouter.navTo("entrypanel", {}, true);
             }
 
         });

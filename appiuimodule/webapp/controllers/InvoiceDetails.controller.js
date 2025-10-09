@@ -179,12 +179,14 @@ sap.ui.define(
                         return data.value[0];
                     } else {
                         console.error("Customer not found in API:", customerName);
-                        sap.m.MessageToast.show(`Customer ${customerName} not found.`);
+                        var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                        sap.m.MessageToast.show(bundle.getText("customerNotFoundMessage", [customerName]));
                         return null;
                     }
                 } catch (error) {
                     console.error("Error loading customer by name:", error);
-                    sap.m.MessageToast.show(`Failed to load customer ${customerName}. Please try again.`);
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    sap.m.MessageToast.show(bundle.getText("failedToLoadCustomerMessage", [customerName]));
                     return null;
                 }
             },
@@ -205,7 +207,8 @@ sap.ui.define(
 
             onSettingsSave: function () {
                 // Placeholder for save functionality
-                sap.m.MessageToast.show("Settings saved (placeholder)");
+                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                sap.m.MessageToast.show(bundle.getText("settingsSavedMessage"));
                 this.settingsDialog.close();
             },
 

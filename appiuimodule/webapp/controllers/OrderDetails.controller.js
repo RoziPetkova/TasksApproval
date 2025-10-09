@@ -72,12 +72,13 @@ sap.ui.define(
 
                 // Clear previous content and add approve content
                 this.approveDialog.removeAllContent();
+                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
                 this.approveDialog.addContent(
                     new sap.m.VBox({
                         alignItems: "Center",
                         items: [
                             new sap.m.Text({
-                                text: "Confirm Approval",
+                                text: bundle.getText("confirmApprovalText"),
                                 textAlign: "Center",
                                 width: "100%"
                             })
@@ -123,15 +124,19 @@ sap.ui.define(
 
                 // Clear previous content and add decline content
                 this.declineDialog.removeAllContent();
+                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
                 this.declineDialog.addContent(
                     new sap.m.VBox({
                         alignItems: "Center",
+                        renderType: "Bare",
                         items: [
                             new sap.m.TextArea({
                                 id: this.createId("rejectionReasonInput"),
-                                placeholder: "Rejection reason...",
-                                rows: 4,
-                                width: "100%"
+                                placeholder: bundle.getText("rejectionReasonPlaceholder"),
+                                rows: 5,
+                                width: "95%",
+                                growing: true,
+                                growingMaxLines: 7
                             })
                         ]
                     })
@@ -239,25 +244,27 @@ sap.ui.define(
                     } else {
                         console.error("Order not found in API:", orderId);
                         // Show error message to user
-                        sap.m.MessageToast.show(`Order ${orderId} not found. This order may not exist in the system.`);
+                        var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                        sap.m.MessageToast.show(bundle.getText("orderNotFoundMessage", [orderId]));
 
                         // Navigate back or set empty model
                         this.getView().setModel(new sap.ui.model.json.JSONModel({
                             taskDetails: [
-                                { label: "Error", value: `Order ${orderId} not found` },
-                                { label: "Status", value: "Not Available" }
+                                { label: bundle.getText("errorLabel"), value: bundle.getText("orderNotFoundLabel", [orderId]) },
+                                { label: bundle.getText("statusLabel"), value: bundle.getText("notAvailableLabel") }
                             ]
                         }), "orderModel");
                     }
                 } catch (error) {
                     console.error("Error loading order by ID:", error);
-                    sap.m.MessageToast.show(`Failed to load order ${orderId}. Please try again.`);
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    sap.m.MessageToast.show(bundle.getText("failedToLoadOrderMessage", [orderId]));
 
                     // Set error model
                     this.getView().setModel(new sap.ui.model.json.JSONModel({
                         taskDetails: [
-                            { label: "Error", value: `Failed to load order ${orderId}` },
-                            { label: "Status", value: "Error" }
+                            { label: bundle.getText("errorLabel"), value: bundle.getText("failedToLoadOrderLabel", [orderId]) },
+                            { label: bundle.getText("statusLabel"), value: bundle.getText("errorStatusLabel") }
                         ]
                     }), "orderModel");
                 } finally {
@@ -281,7 +288,8 @@ sap.ui.define(
 
             onSettingsSave: function () {
                 // Placeholder for save functionality
-                sap.m.MessageToast.show("Settings saved (placeholder)");
+                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                sap.m.MessageToast.show(bundle.getText("settingsSavedMessage"));
                 this.settingsDialog.close();
             },
 
@@ -332,11 +340,13 @@ sap.ui.define(
                     this.updateOrdersModel(allOrdersModel, updatedOrderData, "Shipped");
 
                     // Show success message
-                    sap.m.MessageToast.show(`Order ${currentOrderId} has been approved and shipped!`);
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    sap.m.MessageToast.show(bundle.getText("orderApprovedMessage", [currentOrderId]));
 
                 } catch (error) {
                     console.error("Error approving order:", error);
-                    sap.m.MessageToast.show("Failed to approve order. Please try again.");
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    sap.m.MessageToast.show(bundle.getText("failedToApproveOrderMessage"));
                 }
             },
 
@@ -358,10 +368,12 @@ sap.ui.define(
                         }
                     });
 
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+
                     // Add rejection reason to taskDetails if provided
                     updatedOrderData.push({
-                        label: "RejectionReason",
-                        value: rejectionReason || "No reason provided"
+                        label: bundle.getText("rejectionReasonLabel"),
+                        value: rejectionReason || bundle.getText("noReasonProvidedLabel")
                     });
 
                     // Update the orderModel
@@ -373,13 +385,14 @@ sap.ui.define(
 
                     // Show success message
                     const message = rejectionReason
-                        ? `Order ${updatedOrderData[0].value} has been declined. Reason: ${rejectionReason}`
-                        : `Order ${updatedOrderData[0].value} has been declined.`;
+                        ? bundle.getText("orderDeclinedWithReasonMessage", [updatedOrderData[0].value, rejectionReason])
+                        : bundle.getText("orderDeclinedMessage", [updatedOrderData[0].value]);
                     sap.m.MessageToast.show(message);
 
                 } catch (error) {
                     console.error("Error declining order:", error);
-                    sap.m.MessageToast.show("Failed to decline order. Please try again.");
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    sap.m.MessageToast.show(bundle.getText("failedToDeclineOrderMessage"));
                 }
             },
 
@@ -406,7 +419,7 @@ sap.ui.define(
 
                 const taskDetails = [
                     { label: bundle.getText("orderIdColumn"), value: order.OrderID },
-                    { label: bundle.getText("taskTypeLabel"), value: "Order" },
+                    { label: bundle.getText("taskTypeLabel"), value: bundle.getText("orderTaskTypeValue") },
                     { label: bundle.getText("customerIdColumn"), value: order.CustomerID },
                     { label: bundle.getText("orderDateColumn"), value: this.formatDate(order.OrderDate) },
                     { label: bundle.getText("shippedDateLabel"), value: this.formatDate(order.ShippedDate) },
@@ -418,7 +431,7 @@ sap.ui.define(
                 // Add rejection reason if it exists
                 if (order.RejectionReason) {
                     taskDetails.push({
-                        label: "RejectionReason",
+                        label: bundle.getText("rejectionReasonLabel"),
                         value: order.RejectionReason
                     });
                 }
