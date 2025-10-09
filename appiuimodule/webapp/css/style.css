@@ -1,5 +1,6 @@
 /* Remove browser scroller */
-html, body {
+html,
+body {
     height: 100%;
     overflow: hidden;
     margin: 0;
@@ -7,11 +8,11 @@ html, body {
 }
 
 html[dir="ltr"] .myAppDemoWT .myCustomButton.sapMBtn {
-   margin-right: 0.125rem
+    margin-right: 0.125rem
 }
 
 html[dir="rtl"] .myAppDemoWT .myCustomButton.sapMBtn {
-   margin-left: 0.125rem
+    margin-left: 0.125rem
 }
 
 
@@ -19,17 +20,20 @@ html[dir="rtl"] .myAppDemoWT .myCustomButton.sapMBtn {
     color: orange;
     font-weight: bold;
 }
+
 .statusApproved {
     color: green;
     font-weight: bold;
 }
+
 .statusRejected {
     color: red;
     font-weight: bold;
 }
 
-.maxHeight {
-    max-height: 50rem;
+.responsiveCard {
+    min-height: 250px;
+    max-height: 450px;
 }
 
 .clickableText {
@@ -44,19 +48,22 @@ html[dir="rtl"] .myAppDemoWT .myCustomButton.sapMBtn {
 
 /* Table header scrollbar compensation for dual-table layouts */
 .sapUiTableHeaderScrollbarCompensation {
-    padding-right: 17px !important; /* Standard scrollbar width */
+    padding-right: 17px !important;
+    /* Standard scrollbar width */
     box-sizing: border-box !important;
 }
 
 /* Responsive scrollbar compensation for different browsers */
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
     .sapUiTableHeaderScrollbarCompensation {
-        padding-right: 17px !important; /* WebKit browsers */
+        padding-right: 17px !important;
+        /* WebKit browsers */
     }
 }
 
 @-moz-document url-prefix() {
     .sapUiTableHeaderScrollbarCompensation {
-        padding-right: 17px !important; /* Firefox */
+        padding-right: 17px !important;
+        /* Firefox */
     }
 }

@@ -8,311 +8,341 @@
     xmlns:card="sap.f.cards"
     xmlns:table="sap.ui.table"
     controllerName="appiuimodule.controllers.Overview">
-    <Page
-        id="Overview"
-        title="{i18n>OverviewTitle}"
-        showNavButton="true"
-        navButtonPress=".onNavBack">
-        <headerContent>
-            <core:Fragment fragmentName="appiuimodule.views.HeaderButtons" type="XML" />
-        </headerContent>
-        <content class="sapUiSmallMarginBottom sapUiMediumMarginBegin sapUiMediumMarginEnd">
 
-            <!-- Customers Card with Fixed Height -->
-            <VBox class="sapUiResponsiveMargin sapUiLargeMarginTop">
-                <f:Card height="450px">
-                    <f:header>
-                        <card:Header
-                            title="{i18n>customersListTitle}"
-                            subtitle="Browse and load customers">
-                            <card:toolbar>
-                                <Toolbar>
-                                    <ToolbarSpacer />
-                                    <SearchField
+    <f:DynamicPage
+        id="OverviewDynamicPage">
+        <f:title>
+            <f:DynamicPageTitle>
+                <f:heading>
+                    <HBox>
+                        <Button type="Transparent" icon="sap-icon://nav-back"
+                            press=".onNavBack" />
+                        <Title class="sapUiTinyMarginTop sapUiSmallMarginBegin"
+                            text="{i18n>OverviewTitle}" />
+                    </HBox>
+                </f:heading>
+                <f:actions>
+                    <core:Fragment fragmentName="appiuimodule.views.HeaderButtons" type="XML" />
+                </f:actions>
+            </f:DynamicPageTitle>
+        </f:title>
+        <f:content>
+            <VBox renderType="Bare" class="sapUiResponsiveMargin">
+                <!-- Customers Card with Fixed Height -->
+                <VBox renderType="Bare">
+                    <f:Card renderType="Bare" height="450px" class="sapUiContentPadding">
+                        <f:header>
+                            <card:Header
+                                title="{i18n>customersListTitle}"
+                                subtitle="Browse and load customers">
+                                <card:toolbar>
+                                    <Toolbar>
+                                        <ToolbarSpacer />
+                                        <SearchField
+                                            width="100%"
+                                            placeholder="{i18n>searchCustomersPlaceholder}"
+                                            search=".onFilterCustomers" />
+                                    </Toolbar>
+                                </card:toolbar>
+                            </card:Header>
+                        </f:header>
+                        <f:content>
+                            <VBox width="100%">
+                                <!-- Programmatic Sticky Headers -->
+                                <ScrollContainer height="285px" vertical="true" horizontal="false">
+                                    <Table
+                                        id="customersTable"
+                                        items="{ path: 'customers>/value' }"
                                         width="100%"
-                                        placeholder="{i18n>searchCustomersPlaceholder}"
-                                        search=".onFilterCustomers" />
-                                </Toolbar>
-                            </card:toolbar>
-                        </card:Header>
-                    </f:header>
-                    <f:content>
-                        <VBox class="sapUiResponsiveMargin" width="100%">
-                            <!-- Programmatic Sticky Headers -->
-                            <ScrollContainer height="300px" vertical="true" horizontal="false">
-                                <Table
-                                    id="customersTable"
-                                    items="{ path: 'customers>/value' }"
-                                    width="100%"
-                                    showNoData="false"
-                                    mode="None"
-                                    busyIndicatorDelay="0">
-                                    <columns>
-                                        <Column
-                                            minScreenWidth="Small"
-                                            width="6em">
-                                            <HBox alignItems="Center">
-                                                <Text text="{i18n>customerIdColumn}" />
-                                                <core:Icon
-                                                    src="sap-icon://sort"
-                                                    press=".onSortCustomerId"
-                                                    class="sapUiTinyMarginBegin sortIcon" />
-                                            </HBox>
-                                        </Column>
-                                        <Column>
-                                            <Text text="{i18n>companyNameColumn}" />
-                                        </Column>
-                                        <Column>
-                                            <Text text="{i18n>contactNameColumn}" />
-                                        </Column>
-                                        <Column minScreenWidth="Small">
-                                            <HBox alignItems="Center">
+                                        showNoData="false"
+                                        mode="None"
+                                        busyIndicatorDelay="0">
+                                        <columns>
+                                            <Column
+                                                minScreenWidth="Small"
+                                                width="7em">
+                                                <HBox alignItems="Center">
+                                                    <Text text="{i18n>customerIdColumn}" />
+                                                    <core:Icon
+                                                        src="sap-icon://sort"
+                                                        press=".onSortCustomerId"
+                                                        class="sapUiTinyMarginBegin sortIcon" />
+                                                </HBox>
+                                            </Column>
+                                            <Column>
+                                                <Text text="{i18n>companyNameColumn}" />
+                                            </Column>
+                                            <Column>
+                                                <Text text="{i18n>contactNameColumn}" />
+                                            </Column>
+                                            <Column minScreenWidth="Small">
+                                                <HBox alignItems="Center">
+                                                    <Text text="{i18n>countryColumn}" />
+                                                    <core:Icon
+                                                        src="sap-icon://sort"
+                                                        press=".onSortCountry"
+                                                        class="sapUiTinyMarginBegin sortIcon" />
+                                                </HBox>
+                                            </Column>
+                                        </columns>
+                                        <items>
+                                            <ColumnListItem
+                                                type="Navigation"
+                                                press=".onCustomerPress">
+                                                <cells>
+                                                    <Text text="{customers>CustomerID}" />
+                                                    <Text text="{customers>CompanyName}" />
+                                                    <Text text="{customers>ContactName}" />
+                                                    <Text text="{customers>Country}" />
+                                                </cells>
+                                            </ColumnListItem>
+                                        </items>
+                                    </Table>
+                                </ScrollContainer>
+
+                                <!-- Load More Button at Bottom -->
+                                <HBox justifyContent="End">
+                                    <Button
+                                        id="loadMoreCustomersBtn"
+                                        text="Load More Customers"
+                                        type="Transparent"
+                                        press=".onLoadMoreCustomers"
+                                        visible="{customers>/hasMore}"
+                                        class="sapUiSmallMarginTop sapUiSmallMarginEnd" />
+                                </HBox>
+                            </VBox>
+                        </f:content>
+                    </f:Card>
+                </VBox>
+
+                <!-- items="{
+                            path : 'tasks>/tasks',
+                            sorter : {
+                                path : 'type',
+                                group : true
+                            }
+                        }" -->
+                <!-- Orders Card with Fixed Height -->
+                <VBox renderType="Bare" class="sapUiLargeMarginTop">
+                    <f:Card renderType="Bare" height="450px" class="sapUiContentPadding">
+                        <f:header>
+                            <card:Header
+                                title="{i18n>orderListTitle}"
+                                subtitle="Browse all orders with filters"
+                                renderType="Bare">
+                                <card:toolbar renderType="Bare">
+                                    <Toolbar renderType="Bare">
+                                        <ToolbarSpacer />
+                                        <FlexBox
+                                            width="50%"
+                                            wrap="Wrap"
+                                            direction="Row"
+                                            justifyContent="Start"
+                                            alignItems="Start"
+                                            renderType="Bare">
+                                            <SearchField
+                                                placeholder="{i18n>searchOrdersPlaceholder}"
+                                                search=".onFilterOrders" />
+                                            <Select
+                                                selectedKey="All"
+                                                change=".onStatusFilterChange"
+                                                class="sapUiTinyMarginBegin"
+                                                width="120px">
+                                                <core:Item key="All" text="{i18n>allStatusFilter}" />
+                                                <core:Item key="Pending"
+                                                    text="{i18n>pendingStatusFilter}" />
+                                                <core:Item key="Shipped"
+                                                    text="{i18n>shippedStatusFilter}" />
+                                            </Select>
+                                        </FlexBox>
+                                    </Toolbar>
+                                </card:toolbar>
+                            </card:Header>
+                        </f:header>
+                        <f:content>
+                            <VBox width="100%">
+                                <!-- Single Table with Programmatic Sticky Headers -->
+                                <ScrollContainer height="80%" vertical="true" horizontal="false">
+                                    <Table
+                                        id="ordersTable"
+                                        items="{ path: 'orders>/value' }"
+                                        width="100%"
+                                        showNoData="false"
+                                        mode="None"
+                                        busyIndicatorDelay="0">
+                                        <columns>
+                                            <Column
+                                                minScreenWidth="Small"
+                                                width="5em"
+                                                demandPopin="true">
+                                                <Text text="{i18n>orderIdColumn}" />
+                                            </Column>
+                                            <Column>
+                                                <Text text="{i18n>taskTypeColumn}" />
+                                            </Column>
+                                            <Column demandPopin="true">
+                                                <HBox alignItems="Center">
+                                                    <Text text="{i18n>customerIdColumn}" />
+                                                    <core:Icon
+                                                        src="sap-icon://sort"
+                                                        press=".onSortCustomerIdOrders"
+                                                        class="sapUiTinyMarginBegin sortIcon" />
+                                                </HBox>
+                                            </Column>
+                                            <Column demandPopin="true" minScreenWidth="Small">
                                                 <Text text="{i18n>countryColumn}" />
-                                                <core:Icon
-                                                    src="sap-icon://sort"
-                                                    press=".onSortCountry"
-                                                    class="sapUiTinyMarginBegin sortIcon" />
-                                            </HBox>
-                                        </Column>
-                                    </columns>
-                                    <items>
-                                        <ColumnListItem
-                                            type="Navigation"
-                                            press=".onCustomerPress">
-                                            <cells>
-                                                <Text text="{customers>CustomerID}" />
-                                                <Text text="{customers>CompanyName}" />
-                                                <Text text="{customers>ContactName}" />
-                                                <Text text="{customers>Country}" />
-                                            </cells>
-                                        </ColumnListItem>
-                                    </items>
-                                </Table>
-                            </ScrollContainer>
-
-                            <!-- Load More Button at Bottom -->
-                            <Button
-                                id="loadMoreCustomersBtn"
-                                text="Load More Customers"
-                                type="Emphasized"
-                                press=".onLoadMoreCustomers"
-                                visible="{customers>/hasMore}"
-                                class="sapUiSmallMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd" />
-                        </VBox>
-                    </f:content>
-                </f:Card>
-            </VBox>
-
-            <!-- items="{
-                        path : 'tasks>/tasks',
-                        sorter : {
-                            path : 'type',
-                            group : true
-                        }
-                    }" -->
-            <!-- Orders Card with Fixed Height -->
-            <VBox class="sapUiResponsiveMargin sapUiLargeMarginTop">
-                <f:Card height="450px">
-                    <f:header>
-                        <card:Header
-                            title="{i18n>orderListTitle}"
-                            subtitle="Browse all orders with filters">
-                            <card:toolbar >
-                                <Toolbar >
-                                    <ToolbarSpacer />
-                                    <SearchField
-                                        width="100%"
-                                        placeholder="{i18n>searchOrdersPlaceholder}"
-                                        search=".onFilterOrders" />
-                                    <Select
-                                        selectedKey="All"
-                                        change=".onStatusFilterChange"
-                                        class="sapUiTinyMarginBegin"
-                                        width="120px">
-                                        <core:Item key="All" text="{i18n>allStatusFilter}" />
-                                        <core:Item key="Pending" text="{i18n>pendingStatusFilter}" />
-                                        <core:Item key="Shipped" text="{i18n>shippedStatusFilter}" />
-                                    </Select>
-                                </Toolbar>
-                            </card:toolbar>
-                        </card:Header>
-                    </f:header>
-                    <f:content>
-                        <VBox class="sapUiResponsiveMargin" width="100%">
-                            <!-- Single Table with Programmatic Sticky Headers -->
-                            <ScrollContainer height="380px" vertical="true" horizontal="false">
-                                <Table
-                                    id="ordersTable"
-                                    items="{ path: 'orders>/value' }"
-                                    width="100%"
-                                    showNoData="false"
-                                    mode="None"
-                                    busyIndicatorDelay="0">
-                                    <columns>
-                                        <Column
-                                            minScreenWidth="Small"
-                                            width="5em">
-                                            <Text text="{i18n>orderIdColumn}" />
-                                        </Column>
-                                        <Column>
-                                            <Text text="{i18n>taskTypeColumn}" />
-                                        </Column>
-                                        <Column>
-                                            <HBox alignItems="Center">
-                                                <Text text="{i18n>customerIdColumn}" />
-                                                <core:Icon
-                                                    src="sap-icon://sort"
-                                                    press=".onSortCustomerIdOrders"
-                                                    class="sapUiTinyMarginBegin sortIcon" />
-                                            </HBox>
-                                        </Column>
-                                        <Column minScreenWidth="Small">
-                                            <Text text="{i18n>countryColumn}" />
-                                        </Column>
-                                        <Column minScreenWidth="Small">
-                                            <HBox alignItems="Center">
-                                                <Text text="{i18n>orderDateColumn}" />
-                                                <core:Icon
-                                                    src="sap-icon://sort"
-                                                    press=".onSortOrderDate"
-                                                    class="sapUiTinyMarginBegin sortIcon" />
-                                            </HBox>
-                                        </Column>
-                                        <Column minScreenWidth="Small">
-                                            <Text text="{i18n>shippedDateColumn}" />
-                                        </Column>
-                                        <Column minScreenWidth="Small">
-                                            <HBox alignItems="Center">
-                                                <Text text="{i18n>statusColumn}" />
-                                                <core:Icon
-                                                    src="sap-icon://sort"
-                                                    press=".onSortStatus"
-                                                    class="sapUiTinyMarginBegin sortIcon" />
-                                            </HBox>
-                                        </Column>
-                                    </columns>
-                                    <items>
-                                        <ColumnListItem
-                                            type="Navigation"
-                                            press=".onOrderPress">
-                                            <cells>
-                                                <Text text="{orders>OrderID}" />
-                                                <Text text="Order" />
-                                                <Text text="{orders>CustomerID}" />
-                                                <Text text="{orders>ShipCountry}" />
-                                                <Text text="{path: 'orders>OrderDate', formatter: '.formatDate'}" />
-                                                <Text text="{
+                                            </Column>
+                                            <Column demandPopin="true" minScreenWidth="Small">
+                                                <HBox alignItems="Center">
+                                                    <Text text="{i18n>orderDateColumn}" />
+                                                    <core:Icon
+                                                        src="sap-icon://sort"
+                                                        press=".onSortOrderDate"
+                                                        class="sapUiTinyMarginBegin sortIcon" />
+                                                </HBox>
+                                            </Column>
+                                            <Column minScreenWidth="Small">
+                                                <Text text="{i18n>shippedDateColumn}" />
+                                            </Column>
+                                            <Column demandPopin="true" minScreenWidth="Small">
+                                                <HBox alignItems="Center">
+                                                    <Text text="{i18n>statusColumn}" />
+                                                    <core:Icon
+                                                        src="sap-icon://sort"
+                                                        press=".onSortStatus"
+                                                        class="sapUiTinyMarginBegin sortIcon" />
+                                                </HBox>
+                                            </Column>
+                                        </columns>
+                                        <items>
+                                            <ColumnListItem
+                                                type="Navigation"
+                                                press=".onOrderPress">
+                                                <cells>
+                                                    <Text text="{orders>OrderID}" />
+                                                    <Text text="Order" />
+                                                    <Text text="{orders>CustomerID}" />
+                                                    <Text text="{orders>ShipCountry}" />
+                                                    <Text
+                                                        text="{path: 'orders>OrderDate', formatter: '.formatDate'}" />
+                                                    <Text
+                                                        text="{
                                                     parts: ['orders>ShippedDate', 'orders>Status'],
                                                     formatter: '.formatShippedDate'
                                                 }" />
-                                                <ObjectStatus
-                                                    text="{orders>Status}"
-                                                    state="{path: 'orders>Status', formatter: '.formatStatusState'}" />
-                                            </cells>
-                                        </ColumnListItem>
-                                    </items>
-                                </Table>
-                            </ScrollContainer>
-                        </VBox>
-                    </f:content>
-                </f:Card>
-            </VBox>
+                                                    <ObjectStatus
+                                                        text="{orders>Status}"
+                                                        state="{path: 'orders>Status', formatter: '.formatStatusState'}" />
+                                                </cells>
+                                            </ColumnListItem>
+                                        </items>
+                                    </Table>
+                                </ScrollContainer>
+                            </VBox>
+                        </f:content>
+                    </f:Card>
+                </VBox>
 
-            <!-- Invoices Card with Fixed Height -->
-            <VBox class="sapUiResponsiveMargin sapUiLargeMarginTop">
-                <f:Card height="450px">
-                    <f:header>
-                        <card:Header
-                            title="{i18n>invoicesListTitle}"
-                            subtitle="Browse and load invoices">
-                            <card:toolbar>
-                                <Toolbar>
-                                    <ToolbarSpacer />
-                                    <SearchField
+                <!-- Invoices Card with Fixed Height -->
+                <VBox renderType="Bare" class="sapUiLargeMarginTop">
+                    <f:Card renderType="Bare" height="450px" class="sapUiContentPadding">
+                        <f:header>
+                            <card:Header
+                                title="{i18n>invoicesListTitle}"
+                                subtitle="Browse and load invoices">
+                                <card:toolbar>
+                                    <Toolbar>
+                                        <ToolbarSpacer />
+                                        <SearchField
+                                            width="100%"
+                                            placeholder="{i18n>searchInvoicesPlaceholder}"
+                                            search=".onFilterInvoices" />
+                                    </Toolbar>
+                                </card:toolbar>
+                            </card:Header>
+                        </f:header>
+                        <f:content>
+                            <VBox width="100%">
+                                <!-- Single Table with Programmatic Sticky Headers -->
+                                <ScrollContainer height="285px" vertical="true" horizontal="false">
+                                    <Table
+                                        id="invoicesTable"
+                                        items="{ path: 'invoices>/value' }"
                                         width="100%"
-                                        placeholder="{i18n>searchInvoicesPlaceholder}"
-                                        search=".onFilterInvoices" />
-                                </Toolbar>
-                            </card:toolbar>
-                        </card:Header>
-                    </f:header>
-                    <f:content>
-                        <VBox class="sapUiResponsiveMargin" width="100%">
-                            <!-- Single Table with Programmatic Sticky Headers -->
-                            <ScrollContainer height="300px" vertical="true" horizontal="false">
-                                <Table
-                                    id="invoicesTable"
-                                    items="{ path: 'invoices>/value' }"
-                                    width="100%"
-                                    showNoData="false"
-                                    mode="None"
-                                    busyIndicatorDelay="0">
-                                    <columns>
-                                        <Column
-                                            minScreenWidth="Small"
-                                            width="5em">
-                                            <Text text="{i18n>orderIdColumn}" />
-                                        </Column>
-                                        <Column>
-                                            <HBox alignItems="Center">
-                                                <Text text="{i18n>productNameColumn}" />
-                                                <core:Icon
-                                                    src="sap-icon://sort"
-                                                    press=".onSortProductName"
-                                                    class="sapUiTinyMarginBegin sortIcon" />
-                                            </HBox>
-                                        </Column>
-                                        <Column>
-                                            <HBox alignItems="Center">
-                                                <Text text="{i18n>customerColumn}" />
-                                                <core:Icon
-                                                    src="sap-icon://sort"
-                                                    press=".onSortCustomerName"
-                                                    class="sapUiTinyMarginBegin sortIcon" />
-                                            </HBox>
-                                        </Column>
-                                        <Column minScreenWidth="Small">
-                                            <Text text="{i18n>orderDateColumn}" />
-                                        </Column>
-                                        <Column minScreenWidth="Small">
-                                            <Text text="{i18n>statusColumn}" />
-                                        </Column>
-                                        <Column minScreenWidth="Small">
-                                            <Text text="{i18n>priceColumn}" />
-                                        </Column>
-                                    </columns>
-                                    <items>
-                                        <ColumnListItem
-                                            type="Navigation"
-                                            press=".onInvoicePress">
-                                            <cells>
-                                                <Text text="{invoices>OrderID}" />
-                                                <Text text="{invoices>ProductName}" />
-                                                <Text text="{invoices>CustomerName}" />
-                                                <Text text="{path: 'invoices>OrderDate', formatter: '.formatDate'}" />
-                                                <Text text="Active" />
-                                                <Text text="{invoices>ExtendedPrice}" />
-                                            </cells>
-                                        </ColumnListItem>
-                                    </items>
-                                </Table>
-                            </ScrollContainer>
-                            
-                            <!-- Load More Button at Bottom -->
-                            <Button
-                                id="loadMoreInvoicesBtn"
-                                text="Load More Invoices"
-                                type="Emphasized"
-                                press=".onLoadMoreInvoices"
-                                visible="{invoices>/hasMore}"
-                                class="sapUiSmallMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd" />
-                        </VBox>
-                    </f:content>
-                </f:Card>
+                                        showNoData="false"
+                                        mode="None"
+                                        busyIndicatorDelay="0">
+                                        <columns>
+                                            <Column
+                                                minScreenWidth="Small"
+                                                width="5em"
+                                                demandPopin="true">
+                                                <Text text="{i18n>orderIdColumn}" />
+                                            </Column>
+                                            <Column demandPopin="true">
+                                                <HBox alignItems="Center">
+                                                    <Text text="{i18n>productNameColumn}" />
+                                                    <core:Icon
+                                                        src="sap-icon://sort"
+                                                        press=".onSortProductName"
+                                                        class="sapUiTinyMarginBegin sortIcon" />
+                                                </HBox>
+                                            </Column>
+                                            <Column demandPopin="true">
+                                                <HBox alignItems="Center">
+                                                    <Text text="{i18n>customerColumn}" />
+                                                    <core:Icon
+                                                        src="sap-icon://sort"
+                                                        press=".onSortCustomerName"
+                                                        class="sapUiTinyMarginBegin sortIcon" />
+                                                </HBox>
+                                            </Column>
+                                            <Column demandPopin="true" minScreenWidth="Small">
+                                                <Text text="{i18n>orderDateColumn}" />
+                                            </Column>
+                                            <Column demandPopin="true" minScreenWidth="Small">
+                                                <Text text="{i18n>statusColumn}" />
+                                            </Column>
+                                            <Column demandPopin="true" minScreenWidth="Small">
+                                                <Text text="{i18n>priceColumn}" />
+                                            </Column>
+                                        </columns>
+                                        <items>
+                                            <ColumnListItem
+                                                type="Navigation"
+                                                press=".onInvoicePress">
+                                                <cells>
+                                                    <Text text="{invoices>OrderID}" />
+                                                    <Text text="{invoices>ProductName}" />
+                                                    <Text text="{invoices>CustomerName}" />
+                                                    <Text
+                                                        text="{path: 'invoices>OrderDate', formatter: '.formatDate'}" />
+                                                    <Text text="Active" />
+                                                    <Text text="{invoices>ExtendedPrice}" />
+                                                </cells>
+                                            </ColumnListItem>
+                                        </items>
+                                    </Table>
+                                </ScrollContainer>
+
+                                <!-- Load More Button at Bottom -->
+                                <HBox justifyContent="End">
+                                    <Button
+                                        id="loadMoreInvoicesBtn"
+                                        text="Load More Invoices"
+                                        type="Transparent"
+                                        press=".onLoadMoreInvoices"
+                                        visible="{invoices>/hasMore}"
+                                        class="sapUiSmallMarginTop sapUiSmallMarginEnd" />
+                                </HBox>
+                            </VBox>
+                        </f:content>
+                    </f:Card>
+                </VBox>
             </VBox>
-        </content>
-        <footer>
+        </f:content>
+        <f:footer>
             <core:Fragment fragmentName="appiuimodule.views.Footer" type="XML" />
-        </footer>
-    </Page>
+        </f:footer>
+    </f:DynamicPage>
 </mvc:View>

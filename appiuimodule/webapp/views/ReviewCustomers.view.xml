@@ -7,15 +7,25 @@
     xmlns:macros="sap.fe.macros"
     xmlns:html="http://www.w3.org/1999/xhtml"
     controllerName="appiuimodule.controllers.ReviewCustomers">
-    <Page
-        id="ReviewCustomers"
-        title="{i18n>reviewCustomersTitle}"
-        showNavButton="true"
-        navButtonPress=".onNavBack">
-        <headerContent>
-            <core:Fragment fragmentName="appiuimodule.views.HeaderButtons" type="XML" />
-        </headerContent>
-        <content class="sapUiSmallMarginBottom sapUiMediumMarginBegin sapUiMediumMarginEnd">
+
+    <f:DynamicPage
+        id="ReviewCustomersDynamicPage">
+        <f:title>
+            <f:DynamicPageTitle>
+                <f:heading>
+                    <HBox>
+                        <Button type="Transparent" icon="sap-icon://nav-back"
+                            press=".onNavBack" />
+                        <Title class="sapUiTinyMarginTop sapUiSmallMarginBegin"
+                            text="{i18n>reviewCustomersTitle}" />
+                    </HBox>
+                </f:heading>
+                <f:actions>
+                    <core:Fragment fragmentName="appiuimodule.views.HeaderButtons" type="XML" />
+                </f:actions>
+            </f:DynamicPageTitle>
+        </f:title>
+        <f:content>
 
             <!-- Customers Review Card with Larger Height -->
             <VBox class="sapUiResponsiveMargin sapUiLargeMarginTop" renderType="Bare" height="35rem">
@@ -114,9 +124,9 @@
                 </f:Card>
             </VBox>
 
-        </content>
-        <footer>
+        </f:content>
+        <f:footer>
             <core:Fragment fragmentName="appiuimodule.views.Footer" type="XML" />
-        </footer>
-    </Page>
+        </f:footer>
+    </f:DynamicPage>
 </mvc:View>

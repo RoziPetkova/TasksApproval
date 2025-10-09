@@ -7,24 +7,35 @@
     xmlns:macros="sap.fe.macros"
     xmlns:html="http://www.w3.org/1999/xhtml"
     controllerName="appiuimodule.controllers.OrderDetails">
-    <Page
-        id="Details"
-        title="{i18n>DetailsTitle}"
-        showNavButton="true"
-        navButtonPress=".onNavBack">
-        <headerContent>
-            <core:Fragment fragmentName="appiuimodule.views.HeaderButtons" type="XML" />
-        </headerContent>
-        <content class="sapUiSmallMarginBottom sapUiMediumMarginBegin sapUiMediumMarginEnd">
-            <VBox class="sapUiResponsiveMargin sapUiMediumMarginTop">
-                <f:Card id="orderCard">
+
+    <f:DynamicPage
+        id="OrderDetailsDynamicPage"
+        showFooter="true">
+        <f:title>
+            <f:DynamicPageTitle>
+                <f:heading>
+                    <HBox>
+                        <Button type="Transparent" icon="sap-icon://nav-back"
+                            press=".onNavBack" />
+                        <Title class="sapUiTinyMarginTop sapUiSmallMarginBegin"
+                            text="{i18n>DetailsTitle}" />
+                    </HBox>
+                </f:heading>
+                <f:actions>
+                    <core:Fragment fragmentName="appiuimodule.views.HeaderButtons" type="XML" />
+                </f:actions>
+            </f:DynamicPageTitle>
+        </f:title>
+        <f:content>
+            <VBox renderType="Bare" class="sapUiResponsiveMargin sapUiMediumMarginTop">
+                <f:Card renderType="Bare" id="orderCard" class="sapUiContentPadding">
                     <f:header>
                         <card:Header
                             title="{i18n>generalInformationLabel}"
                             iconSrc="sap-icon://order-status" />
                     </f:header>
                     <f:content>
-                        <VBox class="sapUiResponsiveMargin" width="100%">
+                        <VBox width="100%">
                             <HBox justifyContent="End" class="sapUiSmallMarginBottom">
                                 <core:Fragment
                                     fragmentName="appiuimodule.views.CustomerDetailsButton"
@@ -32,18 +43,10 @@
                             </HBox>
                             <VBox wrap="Wrap" width="100%"
                                 justifyContent="SpaceBetween">
-                                <HBox>
-                                    <MessageStrip
-                                        text="Error with default icon and close button:"
-                                        type="Error"
-                                        showIcon="true"
-                                        showCloseButton="true"
-                                        class="sapUiMediumMarginBottom">
-                                    </MessageStrip>
-                                </HBox>
-                                <HBox>
+
+                                <HBox justifyContent="SpaceBetween" wrap="Wrap">
                                     <!-- Left Column -->
-                                    <VBox width="48%">
+                                    <VBox width="45%">
                                         <List items="{path: 'orderModel>/taskDetails', length: 4}"
                                             class="sapUiSizeCompact" width="100%">
                                             <StandardListItem
@@ -55,9 +58,9 @@
                                     </VBox>
 
                                     <!-- Right Column -->
-                                    <VBox width="48%">
+                                    <VBox width="45%">
                                         <List
-                                            items="{path: 'orderModel>/taskDetails', startIndex: 4}"
+                                            items="{path: 'orderModel>/taskDetails', startIndex: 4, filters: [{path: 'label', operator: 'NE', value1: 'RejectionReason'}]}"
                                             class="sapUiSizeCompact" width="100%">
                                             <StandardListItem
                                                 title="{orderModel>label}"
@@ -66,13 +69,22 @@
                                         </List>
                                     </VBox>
                                 </HBox>
+
+                                <VBox class="sapUiLargeMarginTop" justifyContent="Start"
+                                    visible="{= !!${orderModel>/taskDetails/8/value} }">
+                                    <MessageStrip
+                                        text="Rejection reason: {orderModel>/taskDetails/8/value}"
+                                        type="Error"
+                                        class="sapUiMediumMarginBottom">
+                                    </MessageStrip>
+                                </VBox>
                             </VBox>
                         </VBox>
                     </f:content>
                 </f:Card>
             </VBox>
-        </content>
-        <footer>
+        </f:content>
+        <f:footer>
             <Toolbar>
                 <ToolbarSpacer /> <!-- pushes buttons to the right -->
                 <Button
@@ -88,6 +100,6 @@
                     enabled="{= ${orderModel>/taskDetails/7/value} === 'Pending' }"
                     press=".onDecline" />
             </Toolbar>
-        </footer>
-    </Page>
+        </f:footer>
+    </f:DynamicPage>
 </mvc:View>

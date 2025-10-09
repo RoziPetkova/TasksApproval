@@ -6,130 +6,161 @@
     xmlns:card="sap.f.cards"
     xmlns:macros="sap.fe.macros"
     xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:layout="sap.ui.layout"
     controllerName="appiuimodule.controllers.InvoiceDetails">
-    <Page
-        id="InvoiceDetails"
-        title="{i18n>invoiceDetailsTitle}"
-        showNavButton="true"
-        navButtonPress=".onNavBack">
-        <headerContent>
-            <core:Fragment fragmentName="appiuimodule.views.HeaderButtons" type="XML" />
-        </headerContent>
-        <content class="sapUiSmallMarginBottom sapUiMediumMarginBegin sapUiMediumMarginEnd">
 
-            <!-- Invoice Details Card -->
-            <VBox class="sapUiResponsiveMargin sapUiMediumMarginTop">
-                <f:Card id="invoiceCard">
-                    <f:header>
-                        <card:Header
-                            title="{i18n>invoiceDetailsTitle}"
-                            iconSrc="sap-icon://document" />
-                    </f:header>
-                    <f:content>
-                        <VBox class="sapUiResponsiveMargin" width="100%">
-                            <HBox justifyContent="End" class="sapUiSmallMarginBottom">
-                                <core:Fragment
-                                    fragmentName="appiuimodule.views.CustomerDetailsButton"
-                                    type="XML" />
-                            </HBox>
-                            <HBox wrap="Wrap" width="100%"
-                                justifyContent="SpaceBetween">
-                                <!-- Left Column -->
-                                <VBox width="48%">
-                                    <List items="{path: 'invoiceModel>/invoiceDetails', length: 6}"
-                                        class="sapUiSizeCompact" width="100%">
-                                        <StandardListItem
-                                            title="{invoiceModel>label}"
-                                            info="{invoiceModel>value}" />
-                                    </List>
+    <f:DynamicPage
+        id="InvoiceDetailsDynamicPage">
+        <f:title>
+            <f:DynamicPageTitle>
+                <f:heading>
+                    <HBox>
+                        <Button type="Transparent" icon="sap-icon://nav-back"
+                            press=".onNavBack" />
+                        <Title class="sapUiTinyMarginTop sapUiSmallMarginBegin"
+                            text="{i18n>invoiceDetailsTitle}" />
+                    </HBox>
+                </f:heading>
+                <f:actions>
+                    <core:Fragment fragmentName="appiuimodule.views.HeaderButtons" type="XML" />
+                </f:actions>
+            </f:DynamicPageTitle>
+        </f:title>
+        <f:header>
+            <f:DynamicPageHeader
+                pinnable="true">
+                <f:content>
+                    <VBox width="100%">
+                        <HBox justifyContent="End" class="sapUiSmallMarginBottom">
+                            <core:Fragment
+                                fragmentName="appiuimodule.views.CustomerDetailsButton"
+                                type="XML" />
+                        </HBox>
+                        <layout:HorizontalLayout allowWrapping="true" class="sapUiLargeMarginBegin">
+                            <!-- Order Information -->
+                            <layout:VerticalLayout class="sapUiLargeMarginEnd sapUiSmallMarginBottom">
+                                <Label text="{i18n>generalInformationLabel}"
+                                    class="sapUiTinyMarginBottom" />
+                                <VBox>
+                                    <ObjectAttribute title="{i18n>orderIdColumn}"
+                                        text="{invoiceModel>/invoiceDetails/0/value}" />
+                                    <ObjectAttribute title="{i18n>productNameColumn}"
+                                        text="{invoiceModel>/invoiceDetails/1/value}" />
+                                    <ObjectAttribute title="{i18n>customerColumn}"
+                                        text="{invoiceModel>/invoiceDetails/2/value}" />
+                                    <ObjectAttribute title="{i18n>orderDateColumn}"
+                                        text="{invoiceModel>/invoiceDetails/9/value}" />
                                 </VBox>
+                            </layout:VerticalLayout>
 
-                                <!-- Right Column -->
-                                <VBox width="48%">
-                                    <List
-                                        items="{path: 'invoiceModel>/invoiceDetails', startIndex: 6}"
-                                        class="sapUiSizeCompact" width="100%">
-                                        <StandardListItem
-                                            title="{invoiceModel>label}"
-                                            info="{invoiceModel>value}" />
-                                    </List>
+                            <!-- Pricing Information -->
+                            <layout:VerticalLayout class="sapUiLargeMarginEnd sapUiSmallMarginBottom">
+                                <Label text="Pricing Information"
+                                    class="sapUiTinyMarginBottom" />
+                                <VBox>
+                                    <ObjectAttribute title="{i18n>quantityLabel}"
+                                        text="{invoiceModel>/invoiceDetails/3/value}" />
+                                    <ObjectAttribute title="{i18n>unitPriceLabel}"
+                                        text="{invoiceModel>/invoiceDetails/4/value}" />
+                                    <ObjectAttribute title="{i18n>discountLabel}"
+                                        text="{invoiceModel>/invoiceDetails/5/value}" />
+                                    <ObjectAttribute title="{i18n>extendedPriceLabel}"
+                                        text="{invoiceModel>/invoiceDetails/6/value}" />
                                 </VBox>
-                            </HBox>
-                        </VBox>
-                    </f:content>
-                </f:Card>
+                            </layout:VerticalLayout>
+
+                            <!-- Shipping Information -->
+                            <layout:VerticalLayout class="sapUiLargeMarginEnd sapUiSmallMarginBottom">
+                                <Label text="Shipping Information" class="sapUiTinyMarginBottom" />
+                                <VBox>
+                                    <ObjectAttribute title="{i18n>salespersonLabel}"
+                                        text="{invoiceModel>/invoiceDetails/7/value}" />
+                                    <ObjectAttribute title="{i18n>shipperNameLabel}"
+                                        text="{invoiceModel>/invoiceDetails/8/value}" />
+                                    <ObjectAttribute title="{i18n>freightLabel}"
+                                        text="{invoiceModel>/invoiceDetails/10/value}" />
+                                </VBox>
+                            </layout:VerticalLayout>
+
+                        </layout:HorizontalLayout>
+                    </VBox>
+                </f:content>
+            </f:DynamicPageHeader>
+        </f:header>
+        <f:content>
+            <VBox class="sapUiResponsiveMargin">
+                <!-- Products Card with Fixed Height -->
+                <VBox>
+                    <f:Card height="450px">
+                        <f:header>
+                            <card:Header
+                                title="{i18n>productsInOrderTitle}"
+                                subtitle="Products in this order">
+                            </card:Header>
+                        </f:header>
+                        <f:content>
+                            <VBox width="100%">
+                                <!-- Single Table with Programmatic Sticky Headers -->
+                                <ScrollContainer height="340px" vertical="true" horizontal="false">
+                                    <Table
+                                        id="productsTable"
+                                        items="{ path: 'productsModel>/products' }"
+                                        width="100%"
+                                        showNoData="false"
+                                        mode="None"
+                                        busyIndicatorDelay="0">
+                                        <columns>
+                                            <Column width="12em">
+                                                <Text text="{i18n>productNameColumn}" />
+                                            </Column>
+                                            <Column width="6em">
+                                                <Text text="{i18n>quantityLabel}" />
+                                            </Column>
+                                            <Column width="8em">
+                                                <Text text="{i18n>unitPriceLabel}" />
+                                            </Column>
+                                            <Column width="6em">
+                                                <Text text="{i18n>discountLabel}" />
+                                            </Column>
+                                            <Column width="8em">
+                                                <Text text="{i18n>extendedPriceLabel}" />
+                                            </Column>
+                                        </columns>
+                                        <items>
+                                            <ColumnListItem>
+                                                <cells>
+                                                    <Text text="{productsModel>ProductName}" />
+                                                    <Text text="{productsModel>Quantity}" />
+                                                    <Text
+                                                        text="{
+                                                        parts: ['productsModel>UnitPrice'],
+                                                        formatter: '.formatCurrency'
+                                                    }" />
+                                                    <Text
+                                                        text="{
+                                                        parts: ['productsModel>Discount'],
+                                                        formatter: '.formatDiscount'
+                                                    }" />
+                                                    <Text
+                                                        text="{
+                                                        parts: ['productsModel>ExtendedPrice'],
+                                                        formatter: '.formatCurrency'
+                                                    }" />
+                                                </cells>
+                                            </ColumnListItem>
+                                        </items>
+                                    </Table>
+                                </ScrollContainer>
+                            </VBox>
+                        </f:content>
+                    </f:Card>
+                </VBox>
+
             </VBox>
 
-            <!-- Products Card with Fixed Height -->
-            <VBox class="sapUiResponsiveMargin sapUiLargeMarginTop">
-                <f:Card height="450px">
-                    <f:header>
-                        <card:Header
-                            title="{i18n>productsInOrderTitle}"
-                            subtitle="Products in this order">
-                        </card:Header>
-                    </f:header>
-                    <f:content>
-                        <VBox class="sapUiResponsiveMargin" width="100%">
-                            <!-- Single Table with Programmatic Sticky Headers -->
-                            <ScrollContainer height="340px" vertical="true" horizontal="false">
-                                <Table
-                                    id="productsTable"
-                                    items="{ path: 'productsModel>/products' }"
-                                    width="100%"
-                                    showNoData="false"
-                                    mode="None"
-                                    busyIndicatorDelay="0">
-                                    <columns>
-                                        <Column width="12em">
-                                            <Text text="{i18n>productNameColumn}" />
-                                        </Column>
-                                        <Column width="6em">
-                                            <Text text="{i18n>quantityLabel}" />
-                                        </Column>
-                                        <Column width="8em">
-                                            <Text text="{i18n>unitPriceLabel}" />
-                                        </Column>
-                                        <Column width="6em">
-                                            <Text text="{i18n>discountLabel}" />
-                                        </Column>
-                                        <Column width="8em">
-                                            <Text text="{i18n>extendedPriceLabel}" />
-                                        </Column>
-                                    </columns>
-                                    <items>
-                                        <ColumnListItem>
-                                            <cells>
-                                                <Text text="{productsModel>ProductName}" />
-                                                <Text text="{productsModel>Quantity}" />
-                                                <Text
-                                                    text="{
-                                                    parts: ['productsModel>UnitPrice'],
-                                                    formatter: '.formatCurrency'
-                                                }" />
-                                                <Text
-                                                    text="{
-                                                    parts: ['productsModel>Discount'],
-                                                    formatter: '.formatDiscount'
-                                                }" />
-                                                <Text
-                                                    text="{
-                                                    parts: ['productsModel>ExtendedPrice'],
-                                                    formatter: '.formatCurrency'
-                                                }" />
-                                            </cells>
-                                        </ColumnListItem>
-                                    </items>
-                                </Table>
-                            </ScrollContainer>
-                        </VBox>
-                    </f:content>
-                </f:Card>
-            </VBox>
-
-        </content>
-        <footer>
+        </f:content>
+        <f:footer>
             <core:Fragment fragmentName="appiuimodule.views.Footer" type="XML" />
-        </footer>
-    </Page>
+        </f:footer>
+    </f:DynamicPage>
 </mvc:View>

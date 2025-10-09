@@ -85,8 +85,8 @@
         <f:content>
             <VBox class="sapUiResponsiveMargin">
                 <!-- Customer Orders Card with Fixed Height -->
-                <VBox>
-                    <f:Card height="450px">
+                <VBox renderType="Bare">
+                    <f:Card renderType="Bare" class="sapUiContentPadding responsiveCard">
                         <f:header>
                             <card:Header
                                 title="{i18n>customerOrdersTitle}"
@@ -96,12 +96,13 @@
                         <f:content>
                             <VBox width="100%">
                                 <!-- Single Table with Programmatic Sticky Headers -->
-                                <ScrollContainer height="340px" vertical="true" horizontal="false">
+                                <ScrollContainer height="90%" vertical="true" horizontal="false">
                                     <Table
                                         id="customerOrdersTable"
                                         items="{ path: 'customerOrdersModel>/orders' }"
                                         width="100%"
-                                        showNoData="false"
+                                        showNoData="true"
+                                        noDataText="No orders available"
                                         mode="None"
                                         busyIndicatorDelay="0">
                                         <columns>
@@ -114,17 +115,32 @@
                                             <Column>
                                                 <Text text="{i18n>taskTypeColumn}" />
                                             </Column>
+                                            <Column demandPopin="true">
+                                                <Text text="{i18n>customerIdColumn}" />
+                                            </Column>
                                             <Column demandPopin="true" minScreenWidth="Small">
                                                 <Text text="{i18n>countryColumn}" />
                                             </Column>
                                             <Column demandPopin="true" minScreenWidth="Small">
-                                                <Text text="{i18n>orderDateColumn}" />
+                                                <HBox alignItems="Center">
+                                                    <Text text="{i18n>orderDateColumn}" />
+                                                    <core:Icon
+                                                        src="sap-icon://sort"
+                                                        press=".onSortOrderDate"
+                                                        class="sapUiTinyMarginBegin sortIcon" />
+                                                </HBox>
                                             </Column>
                                             <Column minScreenWidth="Small">
                                                 <Text text="{i18n>shippedDateColumn}" />
                                             </Column>
                                             <Column demandPopin="true" minScreenWidth="Small">
-                                                <Text text="{i18n>statusColumn}" />
+                                                <HBox alignItems="Center">
+                                                    <Text text="{i18n>statusColumn}" />
+                                                    <core:Icon
+                                                        src="sap-icon://sort"
+                                                        press=".onSortStatus"
+                                                        class="sapUiTinyMarginBegin sortIcon" />
+                                                </HBox>
                                             </Column>
                                         </columns>
                                         <items>
@@ -134,14 +150,15 @@
                                                 <cells>
                                                     <Text text="{customerOrdersModel>OrderID}" />
                                                     <Text text="Order" />
+                                                    <Text text="{customerOrdersModel>CustomerID}" />
                                                     <Text text="{customerOrdersModel>ShipCountry}" />
                                                     <Text
                                                         text="{path: 'customerOrdersModel>OrderDate', formatter: '.formatDate'}" />
                                                     <Text
                                                         text="{
-                                                            parts: ['customerOrdersModel>ShippedDate', 'customerOrdersModel>Status'],
-                                                            formatter: '.formatShippedDate'
-                                                        }" />
+                                                    parts: ['customerOrdersModel>ShippedDate', 'customerOrdersModel>Status'],
+                                                    formatter: '.formatShippedDate'
+                                                }" />
                                                     <ObjectStatus
                                                         text="{customerOrdersModel>Status}"
                                                         state="{path: 'customerOrdersModel>Status', formatter: '.formatStatusState'}" />
@@ -156,8 +173,8 @@
                 </VBox>
 
                 <!-- Customer Invoices Card with Fixed Height -->
-                <VBox class="sapUiLargeMarginTop">
-                    <f:Card height="450px">
+                <VBox renderType="Bare" class="sapUiLargeMarginTop">
+                    <f:Card renderType="Bare" class="sapUiContentPadding responsiveCard">
                         <f:header>
                             <card:Header
                                 title="{i18n>customerInvoicesTitle}"
@@ -167,12 +184,13 @@
                         <f:content>
                             <VBox width="100%">
                                 <!-- Single Table with Programmatic Sticky Headers -->
-                                <ScrollContainer height="340px" vertical="true" horizontal="false">
+                                <ScrollContainer height="90%" vertical="true" horizontal="false">
                                     <Table
                                         id="customerInvoicesTable"
                                         items="{ path: 'customerInvoicesModel>/invoices' }"
                                         width="100%"
-                                        showNoData="false"
+                                        showNoData="true"
+                                        noDataText="No invoices available"
                                         mode="None"
                                         busyIndicatorDelay="0">
                                         <columns>
@@ -183,19 +201,31 @@
                                                 <Text text="{i18n>orderIdColumn}" />
                                             </Column>
                                             <Column demandPopin="true">
-                                                <Text text="{i18n>productNameColumn}" />
+                                                <HBox alignItems="Center">
+                                                    <Text text="{i18n>productNameColumn}" />
+                                                    <core:Icon
+                                                        src="sap-icon://sort"
+                                                        press=".onSortProductName"
+                                                        class="sapUiTinyMarginBegin sortIcon" />
+                                                </HBox>
                                             </Column>
-                                            <Column minScreenWidth="Small">
-                                                <Text text="{i18n>quantityLabel}" />
+                                            <Column demandPopin="true">
+                                                <Text text="{i18n>customerColumn}" />
                                             </Column>
-                                            <Column minScreenWidth="Small">
-                                                <Text text="{i18n>unitPriceLabel}" />
+                                            <Column demandPopin="true" minScreenWidth="Small">
+                                                <HBox alignItems="Center">
+                                                    <Text text="{i18n>orderDateColumn}" />
+                                                    <core:Icon
+                                                        src="sap-icon://sort"
+                                                        press=".onSortInvoiceOrderDate"
+                                                        class="sapUiTinyMarginBegin sortIcon" />
+                                                </HBox>
                                             </Column>
-                                            <Column minScreenWidth="Small">
-                                                <Text text="{i18n>extendedPriceLabel}" />
+                                            <Column demandPopin="true" minScreenWidth="Small">
+                                                <Text text="{i18n>statusColumn}" />
                                             </Column>
-                                            <Column minScreenWidth="Small">
-                                                <Text text="{i18n>orderDateColumn}" />
+                                            <Column demandPopin="true" minScreenWidth="Small">
+                                                <Text text="{i18n>priceColumn}" />
                                             </Column>
                                         </columns>
                                         <items>
@@ -205,22 +235,10 @@
                                                 <cells>
                                                     <Text text="{customerInvoicesModel>OrderID}" />
                                                     <Text text="{customerInvoicesModel>ProductName}" />
-                                                    <Text text="{customerInvoicesModel>Quantity}" />
-                                                    <Text
-                                                        text="{
-                                                    parts: ['customerInvoicesModel>UnitPrice'],
-                                                    formatter: '.formatCurrency'
-                                                }" />
-                                                    <Text
-                                                        text="{
-                                                    parts: ['customerInvoicesModel>ExtendedPrice'],
-                                                    formatter: '.formatCurrency'
-                                                }" />
-                                                    <Text
-                                                        text="{
-                                                    parts: ['customerInvoicesModel>OrderDate'],
-                                                    formatter: '.formatDate'
-                                                }" />
+                                                    <Text text="{customerInvoicesModel>CustomerName}" />
+                                                    <Text text="{path: 'customerInvoicesModel>OrderDate', formatter: '.formatDate'}" />
+                                                    <Text text="Active" />
+                                                    <Text text="{customerInvoicesModel>ExtendedPrice}" />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>

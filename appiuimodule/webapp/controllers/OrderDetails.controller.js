@@ -404,20 +404,29 @@ sap.ui.define(
             loadOrderProperties(order) {
                 var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
 
+                const taskDetails = [
+                    { label: bundle.getText("orderIdColumn"), value: order.OrderID },
+                    { label: bundle.getText("taskTypeLabel"), value: "Order" },
+                    { label: bundle.getText("customerIdColumn"), value: order.CustomerID },
+                    { label: bundle.getText("orderDateColumn"), value: this.formatDate(order.OrderDate) },
+                    { label: bundle.getText("shippedDateLabel"), value: this.formatDate(order.ShippedDate) },
+                    { label: bundle.getText("countryLabel"), value: order.ShipCountry },
+                    { label: bundle.getText("cityLabel"), value: order.ShipCity },
+                    { label: bundle.getText("statusLabel"), value: order.Status }
+                ];
+
+                // Add rejection reason if it exists
+                if (order.RejectionReason) {
+                    taskDetails.push({
+                        label: "RejectionReason",
+                        value: order.RejectionReason
+                    });
+                }
+
                 return new sap.ui.model.json.JSONModel({
-                    taskDetails: [
-                        { label: bundle.getText("orderIdColumn"), value: order.OrderID },
-                        { label: bundle.getText("taskTypeLabel"), value: "Order" },
-                        { label: bundle.getText("customerIdColumn"), value: order.CustomerID },
-                        { label: bundle.getText("orderDateColumn"), value: this.formatDate(order.OrderDate) },
-                        { label: bundle.getText("shippedDateLabel"), value: this.formatDate(order.ShippedDate) },
-                        { label: bundle.getText("countryLabel"), value: order.ShipCountry },
-                        { label: bundle.getText("cityLabel"), value: order.ShipCity },
-                        { label: bundle.getText("statusLabel"), value: order.Status }
-                    ]
+                    taskDetails: taskDetails
                 });
             },
-
         });
     }
 );

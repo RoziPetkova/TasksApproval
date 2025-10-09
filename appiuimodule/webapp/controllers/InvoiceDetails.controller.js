@@ -91,13 +91,8 @@ sap.ui.define(
 
             loadOrderData: async function (orderID) {
                 const table = this.byId("productsTable");
-                const card = this.byId("invoiceCard");
                 if (table) {
                     table.setBusy(true);
-                }
-                if (card) {
-                    card.setBusyIndicatorDelay(0); 
-                    card.setBusy(true);
                 }
 
                 try {
@@ -133,8 +128,9 @@ sap.ui.define(
                     });
                     this.getView().setModel(oProductsModel, "productsModel");
                 } finally {
-                    card.setBusy(false);
-                    table.setBusy(false);
+                    if (table) {
+                        table.setBusy(false);
+                    }
                 }
             },
 
@@ -162,23 +158,23 @@ sap.ui.define(
                         oCustomer = aCustomers.find(function (customer) {
                             return customer.CompanyName === customerName;
                         });
+                        if (!oCustomer) {
+                            oCustomer = await this.loadCustomerByName(customerName);
+                        }
                     }
-
-                    if (oCustomer) {
-                        const oRouter = this.getOwnerComponent().getRouter();
-                        oRouter.navTo("customerdetails", { CustomerID: oCustomer.CustomerID });
-                    }
+                    const oRouter = this.getOwnerComponent().getRouter();
+                    oRouter.navTo("customerdetails", { CustomerID: oCustomer.CustomerID });
                 }
             },
 
-            loadCustomerByName: async function(customerName) {
+            loadCustomerByName: async function (customerName) {
                 try {
                     const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$filter=CompanyName eq '${customerName}'`);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const data = await response.json();
-                    
+
                     if (data.value && data.value.length > 0) {
                         return data.value[0];
                     } else {
