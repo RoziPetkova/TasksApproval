@@ -3,9 +3,18 @@
     xmlns:core="sap.ui.core">
     <Dialog
         id="approveDialog"
-        title=""
-        icon="">
+        title="{i18n>taskDecisionDialogTitle}"
+        icon="sap-icon://message-success"
+        type="Message">
         <content>
+            <VBox alignItems="Center">
+                <items>
+                    <Text
+                        text="{i18n>confirmApprovalText}"
+                        textAlign="Center"
+                        width="100%" />
+                </items>
+            </VBox>
         </content>
         <beginButton>
             <Button

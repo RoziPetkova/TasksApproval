@@ -6,9 +6,11 @@ sap.ui.define(
         "sap/ui/model/FilterOperator",
         "sap/ui/model/Sorter",
         "sap/m/library",
-        "sap/ui/Device"
+        "sap/ui/Device",
+        "sap/m/MessageToast",
+        "sap/ui/model/json/JSONModel"
     ],
-    function (Controller, History, Filter, FilterOperator, Sorter, mobileLibrary, Device) {
+    function (Controller, History, Filter, FilterOperator, Sorter, mobileLibrary, Device, MessageToast, JSONModel) {
         'use strict';
 
         return Controller.extend('appiuimodule.controllers.Overview', {
@@ -70,7 +72,7 @@ sap.ui.define(
                     isMobile = true;
                 }
                 // Create view model
-                var viewModel = new sap.ui.model.json.JSONModel({
+                var viewModel = new JSONModel({
                     isMobile: isMobile
                 });
                 this.getView().setModel(viewModel, "viewModel");
@@ -82,7 +84,7 @@ sap.ui.define(
                     oCustomersTable.setBusy(true);
                 }
 
-                var oCustomersModel = new sap.ui.model.json.JSONModel();
+                var oCustomersModel = new JSONModel();
 
                 try {
                     const response = await fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$top=10");
@@ -103,6 +105,8 @@ sap.ui.define(
                     console.error("Error loading customers data: ", error);
                     // Set empty model with hasMore false
                     oCustomersModel.setData({ value: [], hasMore: false });
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    MessageToast.show(bundle.getText("failedToLoadCustomersMessage"));
                 } finally {
                     if (oCustomersTable) {
                         oCustomersTable.setBusy(false);
@@ -156,6 +160,8 @@ sap.ui.define(
                     this._customersHasMore = false;
                     currentData.hasMore = false;
                     oCustomersModel.setData(currentData);
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    MessageToast.show(bundle.getText("failedToLoadMoreCustomersMessage"));
                 } finally {
                     if (oCustomersTable) {
                         oCustomersTable.setBusy(false);
@@ -163,9 +169,6 @@ sap.ui.define(
                 }
             },
 
-            /**
-             * Handle "Load More Invoices" button click
-             */
             onLoadMoreInvoices: async function () {
                 if (!this._invoicesHasMore) {
                     return;
@@ -207,6 +210,8 @@ sap.ui.define(
                     this._invoicesHasMore = false;
                     currentData.hasMore = false;
                     oInvoicesModel.setData(currentData);
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    MessageToast.show(bundle.getText("failedToLoadMoreInvoicesMessage"));
                 } finally {
                     if (oInvoicesTable) {
                         oInvoicesTable.setBusy(false);
@@ -224,7 +229,7 @@ sap.ui.define(
                     oInvoicesTable.setBusy(true);
                 }
 
-                var oInvoicesModel = new sap.ui.model.json.JSONModel();
+                var oInvoicesModel = new JSONModel();
 
                 try {
                     const response = await fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$top=10");
@@ -245,6 +250,8 @@ sap.ui.define(
                     console.error("Error loading invoices data:", error);
                     // Set empty model with hasMore false
                     oInvoicesModel.setData({ value: [], hasMore: false });
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    MessageToast.show(bundle.getText("failedToLoadInvoicesMessage"));
                 } finally {
                     if (oInvoicesTable) {
                         oInvoicesTable.setBusy(false);
@@ -283,11 +290,13 @@ sap.ui.define(
                     this._originalOrdersData = data.value;
 
                     // Create and set the model
-                    const oOrdersModel = new sap.ui.model.json.JSONModel();
+                    const oOrdersModel = new JSONModel();
                     oOrdersModel.setData(data);
                     this.getOwnerComponent().setModel(oOrdersModel, "orders");
                 } catch (error) {
                     console.error("Error loading all orders:", error);
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    MessageToast.show(bundle.getText("failedToLoadOrdersMessage"));
                 } finally {
                     if (oOrdersTable) {
                         oOrdersTable.setBusy(false);
@@ -459,6 +468,8 @@ sap.ui.define(
                     oCustomersModel.setData(data);
                 } catch (error) {
                     console.error("Error searching customers:", error);
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    MessageToast.show(bundle.getText("failedToSearchCustomersMessage"));
                 }
             },
 
@@ -491,6 +502,8 @@ sap.ui.define(
                     oInvoicesModel.setData(data);
                 } catch (error) {
                     console.error("Error searching invoices:", error);
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    MessageToast.show(bundle.getText("failedToSearchInvoicesMessage"));
                 }
             },
 

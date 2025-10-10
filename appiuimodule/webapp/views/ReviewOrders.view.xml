@@ -28,38 +28,41 @@
         <f:content>
 
             <!-- Orders Review Card with Larger Height -->
-            <VBox class="sapUiResponsiveMargin sapUiLargeMarginTop" renderType="Bare" height="35rem">
-                <f:Card height="100%">
+            <VBox class="sapUiResponsiveMargin sapUiLargeMarginTop" renderType="Bare">
+                <f:Card height="35rem" class="sapUiContentPadding">
                     <f:header>
                         <card:Header
                             title="{i18n>reviewOrdersTitle}"
-                            subtitle="Review all orders with filters">
-                            <card:toolbar>
-                                <Toolbar>
-                                    <ToolbarSpacer />
+                            subtitle="{i18n>ordersSubtitle}">
+                        </card:Header>
+                    </f:header>
+                    <f:content>
+                        <VBox renderType="Bare">
+                            <HBox renderType="Bare" width="100%">
+                                <OverflowToolbar style="Clear" width="100%">
+                                    <ToolbarSpacer visible="{= !${viewModel>/isMobile} }" />
                                     <SearchField
-                                        width="100%"
                                         placeholder="{i18n>searchOrdersPlaceholder}"
-                                        search=".onFilterOrders" />
+                                        search=".onFilterOrders"
+                                        width="{= ${viewModel>/isMobile} ? '55%' : '40%' }" />
                                     <Select
                                         selectedKey="All"
                                         change=".onStatusFilterChange"
                                         class="sapUiTinyMarginBegin"
-                                        width="120px">
+                                        width="{= ${viewModel>/isMobile} ? '44%' : '20%' }">
                                         <core:Item key="All" text="{i18n>allStatusFilter}" />
-                                        <core:Item key="Pending" text="{i18n>pendingStatusFilter}" />
-                                        <core:Item key="Shipped" text="{i18n>shippedStatusFilter}" />
+                                        <core:Item key="Pending"
+                                            text="{i18n>pendingStatusFilter}" />
+                                        <core:Item key="Shipped"
+                                            text="{i18n>shippedStatusFilter}" />
                                     </Select>
-                                </Toolbar>
-                            </card:toolbar>
-                        </card:Header>
-                    </f:header>
-                    <f:content>
-                        <VBox class="sapUiResponsiveMargin" width="100%" height="100%"
-                            renderType="Bare">
-                            <!-- Single Table with Programmatic Sticky Headers -->
+                                </OverflowToolbar>
+                            </HBox>
+
                             <VBox renderType="Bare" height="80%">
-                                <ScrollContainer height="100%" vertical="true" horizontal="false">
+                                <!-- Single Table with Programmatic Sticky Headers -->
+                                <ScrollContainer height="100%" vertical="true"
+                                    horizontal="false">
                                     <Table
                                         id="reviewOrdersTable"
                                         items="{ path: 'orders>/value' }"
@@ -69,14 +72,13 @@
                                         busyIndicatorDelay="0">
                                         <columns>
                                             <Column
-                                                minScreenWidth="Small"
                                                 width="5em">
                                                 <Text text="{i18n>orderIdColumn}" />
                                             </Column>
-                                            <Column>
+                                            <Column minScreenWidth="Small">
                                                 <Text text="{i18n>taskTypeColumn}" />
                                             </Column>
-                                            <Column>
+                                            <Column  demandPopin="true" minScreenWidth="Small">
                                                 <HBox alignItems="Center">
                                                     <Text text="{i18n>customerIdColumn}" />
                                                     <core:Icon
@@ -85,10 +87,10 @@
                                                         class="sapUiTinyMarginBegin sortIcon" />
                                                 </HBox>
                                             </Column>
-                                            <Column minScreenWidth="Small">
+                                            <Column demandPopin="true" minScreenWidth="Small">
                                                 <Text text="{i18n>countryColumn}" />
                                             </Column>
-                                            <Column minScreenWidth="Small">
+                                            <Column>
                                                 <HBox alignItems="Center">
                                                     <Text text="{i18n>orderDateColumn}" />
                                                     <core:Icon
@@ -97,10 +99,10 @@
                                                         class="sapUiTinyMarginBegin sortIcon" />
                                                 </HBox>
                                             </Column>
-                                            <Column minScreenWidth="Small">
+                                            <Column>
                                                 <Text text="{i18n>shippedDateColumn}" />
                                             </Column>
-                                            <Column minScreenWidth="Small">
+                                            <Column>
                                                 <HBox alignItems="Center">
                                                     <Text text="{i18n>statusColumn}" />
                                                     <core:Icon
@@ -122,7 +124,10 @@
                                                     <Text
                                                         text="{path: 'orders>OrderDate', formatter: '.formatDate'}" />
                                                     <Text
-                                                        text="{path: 'orders>ShippedDate', formatter: '.formatDate'}" />
+                                                        text="{
+                                                    parts: ['orders>ShippedDate', 'orders>Status'],
+                                                    formatter: '.formatShippedDate'
+                                                }" />
                                                     <ObjectStatus
                                                         text="{orders>Status}"
                                                         state="{path: 'orders>Status', formatter: '.formatStatusState'}" />
@@ -132,18 +137,6 @@
                                     </Table>
                                 </ScrollContainer>
                             </VBox>
-
-                            <HBox renderType="Bare" alignItems="Center" justifyContent="Center"
-                                height="20%">
-                                <!-- Load More Button at Bottom -->
-                                <Button
-                                    id="loadMoreOrdersBtn"
-                                    text="{i18n>loadMoreOrdersButton}"
-                                    type="Emphasized"
-                                    press=".onLoadMoreOrders"
-                                    visible="{orders>/hasMore}"
-                                    class="sapUiSmallMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd" />
-                            </HBox>
                         </VBox>
                     </f:content>
                 </f:Card>

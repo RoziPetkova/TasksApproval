@@ -4,9 +4,12 @@ sap.ui.define(
         "sap/ui/model/Filter",
         "sap/ui/model/FilterOperator",
         "sap/ui/core/routing/History",
-        "sap/ui/model/Sorter"
+        "sap/ui/model/Sorter",
+        "sap/ui/Device",
+        "sap/m/MessageToast",
+        "sap/ui/model/json/JSONModel"
     ],
-    function (Controller, Filter, FilterOperator, History, Sorter) {
+    function (Controller, Filter, FilterOperator, History, Sorter, Device, MessageToast, JSONModel) {
         'use strict';
 
         return Controller.extend('appiuimodule.controllers.ReviewOrders', {
@@ -27,12 +30,21 @@ sap.ui.define(
                     // Set sticky header for orders table after data is loaded
                     this._setStickyHeaderForOrdersTable();
                 });
+                this.setViewModel();
             },
 
-            /**
-             * Set sticky headers for orders table
-             * @private
-             */
+            setViewModel() {
+                let isMobile = false;
+                if (Device.system.phone || Device.system.tablet) {
+                    isMobile = true;
+                }
+                // Create view model
+                var viewModel = new JSONModel({
+                    isMobile: isMobile
+                });
+                this.getView().setModel(viewModel, "viewModel");
+            },
+
             _setStickyHeaderForOrdersTable: function () {
                 sap.ui.require([
                     "sap/m/library"
@@ -46,10 +58,6 @@ sap.ui.define(
                 }.bind(this));
             },
 
-            /**
-             * Load orders JSON model - first 50 records
-             * @private
-             */
             _loadOrdersModel: async function () {
                 const oTable = this.byId("reviewOrdersTable");
                 if (oTable) {
@@ -80,7 +88,7 @@ sap.ui.define(
                     data.hasMore = data.value && data.value.length === 50;
 
                     // Create and set the model
-                    const oOrdersModel = new sap.ui.model.json.JSONModel();
+                    const oOrdersModel = new JSONModel();
                     oOrdersModel.setData(data);
                     this.getOwnerComponent().setModel(oOrdersModel, "orders");
 
@@ -89,17 +97,16 @@ sap.ui.define(
                     this._ordersHasMore = data.hasMore;
                 } catch (error) {
                     console.error("Error loading orders data:", error);
-                    const oOrdersModel = new sap.ui.model.json.JSONModel();
+                    const oOrdersModel = new JSONModel();
                     oOrdersModel.setData({ value: [], hasMore: false });
                     this.getOwnerComponent().setModel(oOrdersModel, "orders");
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    MessageToast.show(bundle.getText("failedToLoadOrdersMessage"));
                 } finally {
                     oTable.setBusy(false);
                 }
             },
 
-            /**
-             * Handle "Load More Orders" button click
-             */
             onLoadMoreOrders: async function () {
                 if (!this._ordersHasMore) {
                     return;
@@ -150,14 +157,13 @@ sap.ui.define(
                     this._ordersHasMore = false;
                     currentData.hasMore = false;
                     oOrdersModel.setData(currentData);
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    MessageToast.show(bundle.getText("failedToLoadMoreOrdersMessage"));
                 } finally {
                     oTable.setBusy(false);
                 }
             },
 
-            /**
-             * Navigate back to previous page
-             */
             onNavBack: function () {
                 const oHistory = History.getInstance();
                 const sPreviousHash = oHistory.getPreviousHash();
@@ -172,18 +178,12 @@ sap.ui.define(
                 }
             },
 
-            /**
-             * Navigate to order details
-             */
             onOrderPress(oEvent) {
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("orderdetails",
                     { OrderID: oEvent.getSource().getBindingContext("orders").getObject().OrderID });
             },
 
-            /**
-             * Format status state for ObjectStatus
-             */
             formatStatusState: function (status) {
                 if (status === "Shipped") {
                     return "Success";
@@ -195,26 +195,27 @@ sap.ui.define(
                 return "None";
             },
 
-            /**
-             * Format date
-             */
             formatDate: function (dateString) {
                 if (!dateString) return "";
                 var date = new Date(dateString);
                 return date.toLocaleDateString();
             },
 
-            /**
-             * Handle search/filter
-             */
+            formatShippedDate: function (shippedDate, status) {
+                // Show "None" for declined orders
+                if (status === "Declined") {
+                    return "None";
+                }
+                if (!shippedDate) return "";
+                var date = new Date(shippedDate);
+                return date.toLocaleDateString();
+            },
+
             onFilterOrders: function (oEvent) {
                 const query = oEvent.getParameter("query");
                 this.searchOrders(query);
             },
 
-            /**
-             * Search orders by CustomerID
-             */
             searchOrders: function (query) {
                 const oOrdersModel = this.getOwnerComponent().getModel("orders");
 
@@ -323,9 +324,6 @@ sap.ui.define(
                 }
             },
 
-            /**
-             * Reset all sort icons to neutral state
-             */
             _resetOrdersHeaderIcons() {
                 const table = this.byId("reviewOrdersTable");
                 const columns = table.getColumns();

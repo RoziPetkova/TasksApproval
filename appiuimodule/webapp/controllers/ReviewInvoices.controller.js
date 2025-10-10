@@ -4,9 +4,12 @@ sap.ui.define(
         "sap/ui/model/Filter",
         "sap/ui/model/FilterOperator",
         "sap/ui/core/routing/History",
-        "sap/ui/model/Sorter"
+        "sap/ui/model/Sorter",
+        "sap/ui/Device",
+        "sap/m/MessageToast",
+        "sap/ui/model/json/JSONModel"
     ],
-    function (Controller, Filter, FilterOperator, History, Sorter) {
+    function (Controller, Filter, FilterOperator, History, Sorter, Device, MessageToast, JSONModel) {
         'use strict';
 
         return Controller.extend('appiuimodule.controllers.ReviewInvoices', {
@@ -24,12 +27,21 @@ sap.ui.define(
                     // Set sticky header for invoices table after data is loaded
                     this._setStickyHeaderForInvoicesTable();
                 });
+                this.setViewModel();
             },
 
-            /**
-             * Set sticky headers for invoices table
-             * @private
-             */
+            setViewModel() {
+                let isMobile = false;
+                if (Device.system.phone || Device.system.tablet) {
+                    isMobile = true;
+                }
+                // Create view model
+                var viewModel = new JSONModel({
+                    isMobile: isMobile
+                });
+                this.getView().setModel(viewModel, "viewModel");
+            },
+
             _setStickyHeaderForInvoicesTable: function () {
                 sap.ui.require([
                     "sap/m/library"
@@ -48,7 +60,7 @@ sap.ui.define(
              * @private
              */
             _loadInvoicesModel: async function () {
-                var oInvoicesModel = new sap.ui.model.json.JSONModel();
+                var oInvoicesModel = new JSONModel();
                 const oTable = this.byId("reviewInvoicesTable");
                 if (oTable) {
                     oTable.setBusy(true);
@@ -73,6 +85,8 @@ sap.ui.define(
                     console.error("Error loading invoices data:", error);
                     // Set empty model with hasMore false
                     oInvoicesModel.setData({ value: [], hasMore: false });
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    MessageToast.show(bundle.getText("failedToLoadInvoicesMessage"));
                 } finally {
                     oTable.setBusy(false);
                 }
@@ -123,6 +137,8 @@ sap.ui.define(
                     this._invoicesHasMore = false;
                     currentData.hasMore = false;
                     oInvoicesModel.setData(currentData);
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    MessageToast.show(bundle.getText("failedToLoadMoreInvoicesMessage"));
                 } finally {
                     oTable.setBusy(false);
                 }
@@ -218,6 +234,8 @@ sap.ui.define(
                     this._invoicesHasMore = data.hasMore;
                 } catch (error) {
                     console.error("Error searching invoices:", error);
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    MessageToast.show(bundle.getText("failedToSearchInvoicesMessage"));
                 }
             },
 

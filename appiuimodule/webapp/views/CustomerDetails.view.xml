@@ -86,7 +86,7 @@
             <VBox class="sapUiResponsiveMargin">
                 <!-- Customer Orders Card with Fixed Height -->
                 <VBox renderType="Bare">
-                    <f:Card renderType="Bare" class="sapUiContentPadding responsiveCard">
+                    <f:Card class="sapUiContentPadding responsiveCard">
                         <f:header>
                             <card:Header
                                 title="{i18n>customerOrdersTitle}"
@@ -95,7 +95,7 @@
                         </f:header>
                         <f:content>
                             <VBox width="100%">
-                                <!-- Single Table with Programmatic Sticky Headers -->
+                                <!-- Orders table -->
                                 <ScrollContainer height="90%" vertical="true" horizontal="false">
                                     <Table
                                         id="customerOrdersTable"
@@ -106,22 +106,19 @@
                                         mode="None"
                                         busyIndicatorDelay="0">
                                         <columns>
-                                            <Column
-                                                minScreenWidth="Small"
-                                                width="5em"
-                                                demandPopin="true">
+                                            <Column width="5em">
                                                 <Text text="{i18n>orderIdColumn}" />
                                             </Column>
-                                            <Column>
+                                            <Column minScreenWidth="Small">
                                                 <Text text="{i18n>taskTypeColumn}" />
                                             </Column>
-                                            <Column demandPopin="true">
+                                            <Column minScreenWidth="Small">
                                                 <Text text="{i18n>customerIdColumn}" />
                                             </Column>
                                             <Column demandPopin="true" minScreenWidth="Small">
                                                 <Text text="{i18n>countryColumn}" />
                                             </Column>
-                                            <Column demandPopin="true" minScreenWidth="Small">
+                                            <Column >
                                                 <HBox alignItems="Center">
                                                     <Text text="{i18n>orderDateColumn}" />
                                                     <core:Icon
@@ -130,10 +127,10 @@
                                                         class="sapUiTinyMarginBegin sortIcon" />
                                                 </HBox>
                                             </Column>
-                                            <Column minScreenWidth="Small">
+                                            <Column >
                                                 <Text text="{i18n>shippedDateColumn}" />
                                             </Column>
-                                            <Column demandPopin="true" minScreenWidth="Small">
+                                            <Column >
                                                 <HBox alignItems="Center">
                                                     <Text text="{i18n>statusColumn}" />
                                                     <core:Icon
@@ -183,7 +180,7 @@
                         </f:header>
                         <f:content>
                             <VBox width="100%">
-                                <!-- Single Table with Programmatic Sticky Headers -->
+                                <!-- Invoices Table -->
                                 <ScrollContainer height="90%" vertical="true" horizontal="false">
                                     <Table
                                         id="customerInvoicesTable"
@@ -194,13 +191,10 @@
                                         mode="None"
                                         busyIndicatorDelay="0">
                                         <columns>
-                                            <Column
-                                                minScreenWidth="Small"
-                                                width="5em"
-                                                demandPopin="true">
+                                            <Column width="5em">
                                                 <Text text="{i18n>orderIdColumn}" />
                                             </Column>
-                                            <Column demandPopin="true">
+                                            <Column>
                                                 <HBox alignItems="Center">
                                                     <Text text="{i18n>productNameColumn}" />
                                                     <core:Icon
@@ -209,10 +203,10 @@
                                                         class="sapUiTinyMarginBegin sortIcon" />
                                                 </HBox>
                                             </Column>
-                                            <Column demandPopin="true">
+                                            <Column minScreenWidth="Small">
                                                 <Text text="{i18n>customerColumn}" />
                                             </Column>
-                                            <Column demandPopin="true" minScreenWidth="Small">
+                                            <Column >
                                                 <HBox alignItems="Center">
                                                     <Text text="{i18n>orderDateColumn}" />
                                                     <core:Icon
@@ -221,10 +215,10 @@
                                                         class="sapUiTinyMarginBegin sortIcon" />
                                                 </HBox>
                                             </Column>
-                                            <Column demandPopin="true" minScreenWidth="Small">
+                                            <Column minScreenWidth="Small" demandPopin="true">
                                                 <Text text="{i18n>statusColumn}" />
                                             </Column>
-                                            <Column demandPopin="true" minScreenWidth="Small">
+                                            <Column >
                                                 <Text text="{i18n>priceColumn}" />
                                             </Column>
                                         </columns>

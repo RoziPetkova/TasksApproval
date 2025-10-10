@@ -4,9 +4,11 @@ sap.ui.define(
         "sap/ui/model/Filter",
         "sap/ui/model/FilterOperator",
         "sap/ui/core/routing/History",
-        "sap/ui/model/Sorter"
+        "sap/ui/model/Sorter",
+        "sap/m/MessageToast",
+        "sap/ui/model/json/JSONModel"
     ],
-    function (Controller, Filter, FilterOperator, History, Sorter) {
+    function (Controller, Filter, FilterOperator, History, Sorter, MessageToast, JSONModel) {
         'use strict';
 
         return Controller.extend('appiuimodule.controllers.ReviewCustomers', {
@@ -48,31 +50,33 @@ sap.ui.define(
              * @private
              */
             _loadCustomersModel: async function () {
-                var oCustomersModel = new sap.ui.model.json.JSONModel();
+                var oCustomersModel = new JSONModel();
                 const oTable = this.byId("reviewCustomersTable");
                 if (oTable) {
                     oTable.setBusy(true);
                 }
 
                 try {
-                    const response = await fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$top=50");
+                    const response = await fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$top=20");
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const data = await response.json();
                     
                     // Add hasMore property for button visibility
-                    data.hasMore = data.value && data.value.length === 50;
+                    data.hasMore = data.value && data.value.length === 20;
                     
                     oCustomersModel.setData(data);
                     
                     // Initialize skip counter and check if there are more records
-                    this._customersSkip = 50;
+                    this._customersSkip = 20;
                     this._customersHasMore = data.hasMore;
                 } catch (error) {
                     console.error("Error loading customers data: ", error);
                     // Set empty model with hasMore false
                     oCustomersModel.setData({ value: [], hasMore: false });
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    MessageToast.show(bundle.getText("failedToLoadCustomersMessage"));
                 } finally {
                     const oTable = this.byId("reviewCustomersTable");
                     if (oTable) {
@@ -99,7 +103,7 @@ sap.ui.define(
                 }
 
                 try {
-                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$top=50&$skip=${this._customersSkip}`);
+                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$top=20&$skip=${this._customersSkip}`);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
@@ -111,7 +115,7 @@ sap.ui.define(
                         
                         // Update skip counter and check if there are more records
                         this._customersSkip += newData.value.length;
-                        this._customersHasMore = newData.value.length === 50;
+                        this._customersHasMore = newData.value.length === 20;
                         currentData.hasMore = this._customersHasMore;
                         
                         oCustomersModel.setData(currentData);
@@ -126,6 +130,8 @@ sap.ui.define(
                     this._customersHasMore = false;
                     currentData.hasMore = false;
                     oCustomersModel.setData(currentData);
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    MessageToast.show(bundle.getText("failedToLoadMoreCustomersMessage"));
                 } finally {
                     const oTable = this.byId("reviewCustomersTable");
                     if (oTable) {
@@ -168,9 +174,6 @@ sap.ui.define(
                 await this.searchCustomers(query);
             },
 
-            /**
-             * Search customers by CustomerID or CompanyName
-             */
             searchCustomers: async function (query) {
                 const oCustomersModel = this.getOwnerComponent().getModel("customers");
                 const oTable = this.byId("reviewCustomersTable");
@@ -188,7 +191,7 @@ sap.ui.define(
                         url += `?$filter=${encodeURIComponent(filter)}`;
                     } else {
                         // If no query, show top 50 as default
-                        url += "?$top=50";
+                        url += "?$top=20";
                     }
 
                     const response = await fetch(url);
@@ -198,7 +201,7 @@ sap.ui.define(
                     const data = await response.json();
                     
                     // Add hasMore property based on result count
-                    data.hasMore = data.value && data.value.length === 50;
+                    data.hasMore = data.value && data.value.length === 20;
                     
                     oCustomersModel.setData(data);
                     
@@ -207,6 +210,8 @@ sap.ui.define(
                     this._customersHasMore = data.hasMore;
                 } catch (error) {
                     console.error("Error searching customers:", error);
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    MessageToast.show(bundle.getText("failedToSearchCustomersMessage"));
                 } finally {
                     const oTable = this.byId("reviewCustomersTable");
                     if (oTable) {

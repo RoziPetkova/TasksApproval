@@ -3,41 +3,22 @@ sap.ui.define(
         "sap/ui/core/mvc/Controller",
         "sap/ui/core/routing/History",
         "sap/m/library",
-        "sap/ui/model/Sorter"
+        "sap/ui/model/Sorter",
+        "sap/m/MessageToast",
+        "sap/ui/model/json/JSONModel"
     ],
-    function (Controller, History, mobileLibrary, Sorter) {
+    function (Controller, History, mobileLibrary, Sorter, MessageToast, JSONModel) {
         "use strict";
 
         return Controller.extend("appiuimodule.controllers.CustomerDetails", {
             _sortState: {},
-            /**
-             * Called when a controller is instantiated and its View controls (if available) are already created.
-             * Can be used to modify the View before it is displayed, to bind event handlers and do other one-time initialization.
-             * @memberOf appiuimodule.controllers.CustomerDetails
-             */
+
             onInit() {
                 const oRouter = this.getOwnerComponent().getRouter();
+                //The context (scope) for the callback function
+                // Ensures that inside onPatternMatched, this refers to the
+                // controller instance
                 oRouter.getRoute("customerdetails").attachPatternMatched(this.onPatternMatched, this);
-            },
-
-            /**
-             * Set sticky headers for both tables
-             * @private
-             */
-            _setStickyHeadersForTables: function () {
-                const Sticky = mobileLibrary.Sticky;
-
-                // Set sticky for customer orders table
-                const oOrdersTable = this.byId("customerOrdersTable");
-                if (oOrdersTable) {
-                    oOrdersTable.setSticky([Sticky.ColumnHeaders]);
-                }
-
-                // Set sticky for customer invoices table
-                const oInvoicesTable = this.byId("customerInvoicesTable");
-                if (oInvoicesTable) {
-                    oInvoicesTable.setSticky([Sticky.ColumnHeaders]);
-                }
             },
 
             onPatternMatched: async function (oEvent) {
@@ -56,7 +37,7 @@ sap.ui.define(
                     }
                 }
 
-                this.getView().setModel(new sap.ui.model.json.JSONModel(currentCustomer), "customerModel");
+                this.getView().setModel(new JSONModel(currentCustomer), "customerModel");
 
                 // Fetch orders and invoices 
                 await this.loadCustomerOrders(currentCustomerId);
@@ -64,6 +45,22 @@ sap.ui.define(
 
                 this.updateStatusStyle();
                 this._setStickyHeadersForTables();
+            },
+            
+            _setStickyHeadersForTables: function () {
+                const Sticky = mobileLibrary.Sticky;
+
+                // Set sticky for customer orders table
+                const oOrdersTable = this.byId("customerOrdersTable");
+                if (oOrdersTable) {
+                    oOrdersTable.setSticky([Sticky.ColumnHeaders]);
+                }
+
+                // Set sticky for customer invoices table
+                const oInvoicesTable = this.byId("customerInvoicesTable");
+                if (oInvoicesTable) {
+                    oInvoicesTable.setSticky([Sticky.ColumnHeaders]);
+                }
             },
 
             updateStatusStyle: function () {
@@ -160,22 +157,13 @@ sap.ui.define(
                     if (data.value && data.value.length > 0) {
                         const oCustomer = data.value[0];
                         return oCustomer;
-
-                        // Set customer data directly to model
-                        // this.getView().setModel(new sap.ui.model.json.JSONModel(oCustomer), "customerModel");
                     } else {
                         console.error("Customer not found:", customerId);
-                        // Set empty model
-                        // this.getView().setModel(new sap.ui.model.json.JSONModel({}), "customerModel");
-                        // this.getView().setModel(new sap.ui.model.json.JSONModel({ orders: [] }), "customerOrdersModel");
-                        // this.getView().setModel(new sap.ui.model.json.JSONModel({ invoices: [] }), "customerInvoicesModel");
                     }
                 } catch (error) {
                     console.error("Error loading customer by ID:", error);
-                    // Set empty model on error
-                    // this.getView().setModel(new sap.ui.model.json.JSONModel({}), "customerModel");
-                    // this.getView().setModel(new sap.ui.model.json.JSONModel({ orders: [] }), "customerOrdersModel");
-                    // this.getView().setModel(new sap.ui.model.json.JSONModel({ invoices: [] }), "customerInvoicesModel");
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    MessageToast.show(bundle.getText("failedToLoadCustomerMessage"));
                 }
             },
 
@@ -197,14 +185,16 @@ sap.ui.define(
                         });
                     }
 
-                    var oCustomerOrdersModel = new sap.ui.model.json.JSONModel({
+                    var oCustomerOrdersModel = new JSONModel({
                         orders: customerOrders
                     });
                     this.getView().setModel(oCustomerOrdersModel, "customerOrdersModel");
                 } catch (error) {
                     console.error("Error loading customer orders from local model:", error);
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    MessageToast.show(bundle.getText("failedToLoadCustomerOrdersMessage"));
                     // Set empty model on error
-                    var oCustomerOrdersModel = new sap.ui.model.json.JSONModel({
+                    var oCustomerOrdersModel = new JSONModel({
                         orders: []
                     });
                     this.getView().setModel(oCustomerOrdersModel, "customerOrdersModel");
@@ -223,14 +213,16 @@ sap.ui.define(
                     }
                     const data = await response.json();
 
-                    var oCustomerInvoicesModel = new sap.ui.model.json.JSONModel({
+                    var oCustomerInvoicesModel = new JSONModel({
                         invoices: data.value || []
                     });
                     this.getView().setModel(oCustomerInvoicesModel, "customerInvoicesModel");
                 } catch (error) {
                     console.error("Error loading customer invoices:", error);
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    MessageToast.show(bundle.getText("failedToLoadCustomerInvoicesMessage"));
                     // Set empty model on error
-                    var oCustomerInvoicesModel = new sap.ui.model.json.JSONModel({
+                    var oCustomerInvoicesModel = new JSONModel({
                         invoices: []
                     });
                     this.getView().setModel(oCustomerInvoicesModel, "customerInvoicesModel");

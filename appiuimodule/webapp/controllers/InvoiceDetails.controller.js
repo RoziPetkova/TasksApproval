@@ -2,8 +2,10 @@ sap.ui.define(
     [
         "sap/ui/core/mvc/Controller",
         "sap/ui/core/routing/History",
+        "sap/m/MessageToast",
+        "sap/ui/model/json/JSONModel"
     ],
-    function (Controller, History) {
+    function (Controller, History, MessageToast, JSONModel) {
         "use strict";
 
         return Controller.extend("appiuimodule.controllers.InvoiceDetails", {
@@ -72,7 +74,7 @@ sap.ui.define(
             loadInvoiceProperties(invoice) {
                 var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
 
-                return new sap.ui.model.json.JSONModel({
+                return new JSONModel({
                     invoiceDetails: [
                         { label: bundle.getText("orderIdColumn"), value: invoice.OrderID },
                         { label: bundle.getText("productNameColumn"), value: invoice.ProductName },
@@ -112,7 +114,7 @@ sap.ui.define(
                         this.getView().setModel(oInvoiceModel, "invoiceModel");
 
                         // Set products model with all entries - each entry represents one product line
-                        var oProductsModel = new sap.ui.model.json.JSONModel({
+                        var oProductsModel = new JSONModel({
                             products: data.value
                         });
                         this.getView().setModel(oProductsModel, "productsModel");
@@ -122,8 +124,10 @@ sap.ui.define(
                     }
                 } catch (error) {
                     console.error("Error loading order data:", error);
+                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+                    MessageToast.show(bundle.getText("failedToLoadOrderDataMessage"));
                     // Set empty models on error
-                    var oProductsModel = new sap.ui.model.json.JSONModel({
+                    var oProductsModel = new JSONModel({
                         products: []
                     });
                     this.getView().setModel(oProductsModel, "productsModel");
@@ -180,13 +184,13 @@ sap.ui.define(
                     } else {
                         console.error("Customer not found in API:", customerName);
                         var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                        sap.m.MessageToast.show(bundle.getText("customerNotFoundMessage", [customerName]));
+                        MessageToast.show(bundle.getText("customerNotFoundMessage", [customerName]));
                         return null;
                     }
                 } catch (error) {
                     console.error("Error loading customer by name:", error);
                     var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    sap.m.MessageToast.show(bundle.getText("failedToLoadCustomerMessage", [customerName]));
+                    MessageToast.show(bundle.getText("failedToLoadCustomerMessage", [customerName]));
                     return null;
                 }
             },
@@ -208,7 +212,7 @@ sap.ui.define(
             onSettingsSave: function () {
                 // Placeholder for save functionality
                 var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                sap.m.MessageToast.show(bundle.getText("settingsSavedMessage"));
+                MessageToast.show(bundle.getText("settingsSavedMessage"));
                 this.settingsDialog.close();
             },
 

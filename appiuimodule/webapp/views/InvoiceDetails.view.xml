@@ -90,8 +90,8 @@
         <f:content>
             <VBox class="sapUiResponsiveMargin">
                 <!-- Products Card with Fixed Height -->
-                <VBox>
-                    <f:Card height="450px">
+                <VBox renderType="Bare">
+                    <f:Card class="sapUiContentPadding responsiveCard">
                         <f:header>
                             <card:Header
                                 title="{i18n>productsInOrderTitle}"
@@ -99,13 +99,12 @@
                             </card:Header>
                         </f:header>
                         <f:content>
-                            <VBox width="100%">
+                            <VBox renderType="Bare" width="100%">
                                 <!-- Single Table with Programmatic Sticky Headers -->
-                                <ScrollContainer height="340px" vertical="true" horizontal="false">
+                                <ScrollContainer height="90%" vertical="true" horizontal="false">
                                     <Table
                                         id="productsTable"
                                         items="{ path: 'productsModel>/products' }"
-                                        width="100%"
                                         showNoData="false"
                                         mode="None"
                                         busyIndicatorDelay="0">

@@ -28,29 +28,30 @@
         <f:content>
 
             <!-- Invoices Review Card with Larger Height -->
-            <VBox class="sapUiResponsiveMargin sapUiLargeMarginTop" renderType="Bare" height="35rem">
-                <f:Card height="100%">
+            <VBox class="sapUiResponsiveMargin sapUiLargeMarginTop" renderType="Bare">
+                <f:Card height="35rem" class="sapUiContentPadding">
                     <f:header>
                         <card:Header
                             title="{i18n>reviewInvoicesTitle}"
-                            subtitle="Review and browse all invoices">
-                            <card:toolbar>
-                                <Toolbar>
-                                    <ToolbarSpacer />
-                                    <SearchField
-                                        width="100%"
-                                        placeholder="{i18n>searchInvoicesPlaceholder}"
-                                        search=".onFilterInvoices" />
-                                </Toolbar>
-                            </card:toolbar>
+                            subtitle="{i18n>invoicesSubtitle}">
                         </card:Header>
                     </f:header>
                     <f:content>
-                        <VBox class="sapUiResponsiveMargin" height="100%" renderType="Bare">
-                            <VBox  renderType="Bare" height="80%">
+                        <VBox renderType="Bare" width="100%">
+                            <VBox renderType="Bare" width="100%">
+                                <Toolbar style="Clear" width="100%">
+                                    <ToolbarSpacer visible="{= !${viewModel>/isMobile} }" />
+                                    <SearchField
+                                        width="{= ${viewModel>/isMobile} ? '100%' : '50%' }"
+                                        placeholder="{i18n>searchInvoicesPlaceholder}"
+                                        search=".onFilterInvoices" />
+                                </Toolbar>
+                            </VBox>
+
+                            <VBox renderType="Bare" height="75%">
                                 <!-- Single Table with Programmatic Sticky Headers -->
-                                <ScrollContainer vertical="true"
-                                    horizontal="false" height="100%">
+                                <ScrollContainer height="100%" vertical="true"
+                                    horizontal="false">
                                     <Table
                                         id="reviewInvoicesTable"
                                         items="{ path: 'invoices>/value' }"
@@ -59,12 +60,10 @@
                                         mode="None"
                                         busyIndicatorDelay="0">
                                         <columns>
-                                            <Column
-                                                minScreenWidth="Small"
-                                                width="5em">
+                                            <Column width="5em">
                                                 <Text text="{i18n>orderIdColumn}" />
                                             </Column>
-                                            <Column>
+                                            <Column demandPopin="true">
                                                 <HBox alignItems="Center">
                                                     <Text text="{i18n>productNameColumn}" />
                                                     <core:Icon
@@ -73,7 +72,7 @@
                                                         class="sapUiTinyMarginBegin sortIcon" />
                                                 </HBox>
                                             </Column>
-                                            <Column>
+                                            <Column demandPopin="true">
                                                 <HBox alignItems="Center">
                                                     <Text text="{i18n>customerColumn}" />
                                                     <core:Icon
@@ -82,20 +81,14 @@
                                                         class="sapUiTinyMarginBegin sortIcon" />
                                                 </HBox>
                                             </Column>
-                                            <Column minScreenWidth="Small">
+                                            <Column demandPopin="true" minScreenWidth="Small">
                                                 <Text text="{i18n>orderDateColumn}" />
                                             </Column>
-                                            <Column minScreenWidth="Small">
+                                            <Column demandPopin="true" minScreenWidth="Small">
                                                 <Text text="{i18n>statusColumn}" />
                                             </Column>
-                                            <Column minScreenWidth="Small">
+                                            <Column>
                                                 <Text text="{i18n>priceColumn}" />
-                                            </Column>
-                                            <Column minScreenWidth="Small">
-                                                <Text text="{i18n>quantityLabel}" />
-                                            </Column>
-                                            <Column minScreenWidth="Small">
-                                                <Text text="{i18n>unitPriceLabel}" />
                                             </Column>
                                         </columns>
                                         <items>
@@ -109,29 +102,23 @@
                                                     <Text
                                                         text="{path: 'invoices>OrderDate', formatter: '.formatDate'}" />
                                                     <Text text="{i18n>activeStatusValue}" />
-                                                    <Text
-                                                        text="{path: 'invoices>ExtendedPrice', formatter: '.formatCurrency'}" />
-                                                    <Text text="{invoices>Quantity}" />
-                                                    <Text
-                                                        text="{path: 'invoices>UnitPrice', formatter: '.formatCurrency'}" />
+                                                    <Text text="{invoices>ExtendedPrice}" />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>
                                     </Table>
                                 </ScrollContainer>
-
-                                <!-- Load More Button at Bottom -->
-
                             </VBox>
-                            <HBox renderType="Bare" alignItems="Center" justifyContent="Center" height="20%">
+
+                            <!-- Load More Button at Bottom -->
+                            <HBox justifyContent="End">
                                 <Button
-                                    width="auto"
                                     id="loadMoreInvoicesBtn"
                                     text="{i18n>loadMoreInvoicesButton}"
-                                    type="Emphasized"
+                                    type="Transparent"
                                     press=".onLoadMoreInvoices"
-                                    visible="{invoices>/hasMore}"
-                                    class="sapUiSmallMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd" />
+                                    enabled="{invoices>/hasMore}"
+                                    class="sapUiSmallMarginTop sapUiSmallMarginEnd" />
                             </HBox>
                         </VBox>
                     </f:content>

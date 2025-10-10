@@ -1,9 +1,10 @@
 sap.ui.define(
     [
         'sap/ui/core/mvc/Controller',
-         "sap/m/MessageToast" 
+         "sap/m/MessageToast",
+         "sap/ui/model/json/JSONModel"
     ],
-    function (Controller, MessageToast) {
+    function (Controller, MessageToast, JSONModel) {
         'use strict';
 
         return Controller.extend('appiuimodule.controllers.EntryPanel', {
@@ -11,7 +12,7 @@ sap.ui.define(
             onInit: function () {
                 // Initialize entry panel
                 // Set view model to hide homepage button since we're already on the homepage
-                const oViewModel = new sap.ui.model.json.JSONModel({
+                const oViewModel = new JSONModel({
                     showHomepageButton: false
                 });
                 this.getView().setModel(oViewModel, "view");

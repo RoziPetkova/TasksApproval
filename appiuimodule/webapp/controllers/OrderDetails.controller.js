@@ -2,8 +2,9 @@ sap.ui.define(
     [
         "sap/ui/core/mvc/Controller",
         "sap/ui/core/routing/History",
+        "sap/ui/model/json/JSONModel"
     ],
-    function (Controller, History) {
+    function (Controller, History, JSONModel) {
         "use strict";
 
         return Controller.extend("appiuimodule.controllers.OrderDetails", {
@@ -65,27 +66,6 @@ sap.ui.define(
                     });
                 }
 
-                // Set title and icon dynamically
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                this.approveDialog.setTitle(bundle.getText("taskDecisionDialogTitle"));
-                this.approveDialog.setIcon("sap-icon://accept");
-
-                // Clear previous content and add approve content
-                this.approveDialog.removeAllContent();
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                this.approveDialog.addContent(
-                    new sap.m.VBox({
-                        alignItems: "Center",
-                        items: [
-                            new sap.m.Text({
-                                text: bundle.getText("confirmApprovalText"),
-                                textAlign: "Center",
-                                width: "100%"
-                            })
-                        ]
-                    })
-                );
-
                 this.approveDialog.open();
             },
 
@@ -117,42 +97,19 @@ sap.ui.define(
                     });
                 }
 
-                // Set title and icon dynamically
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                this.declineDialog.setTitle(bundle.getText("taskDecisionDialogTitle"));
-                this.declineDialog.setIcon("sap-icon://decline");
-
-                // Clear previous content and add decline content
-                this.declineDialog.removeAllContent();
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                this.declineDialog.addContent(
-                    new sap.m.VBox({
-                        alignItems: "Center",
-                        renderType: "Bare",
-                        items: [
-                            new sap.m.TextArea({
-                                id: this.createId("rejectionReasonInput"),
-                                placeholder: bundle.getText("rejectionReasonPlaceholder"),
-                                rows: 5,
-                                width: "95%",
-                                growing: true,
-                                growingMaxLines: 7
-                            })
-                        ]
-                    })
-                );
-
                 this.declineDialog.open();
             },
 
             onDeclineConfirm: async function () {
                 // Get rejection reason from input
                 const input = this.byId("rejectionReasonInput");
+                const rejectionReason = input ? input.getValue() : "";
+
+                // Clear the input for next time
                 if (input) {
-                    input.destroy(); // Clear input after getting value in order to be able to open dialog again
+                    input.setValue("");
                 }
 
-                const rejectionReason = input ? input.getValue() : "";
                 await this.handleDeclineOrder(rejectionReason);
                 this.declineDialog.close();
             },
@@ -248,7 +205,7 @@ sap.ui.define(
                         sap.m.MessageToast.show(bundle.getText("orderNotFoundMessage", [orderId]));
 
                         // Navigate back or set empty model
-                        this.getView().setModel(new sap.ui.model.json.JSONModel({
+                        this.getView().setModel(new JSONModel({
                             taskDetails: [
                                 { label: bundle.getText("errorLabel"), value: bundle.getText("orderNotFoundLabel", [orderId]) },
                                 { label: bundle.getText("statusLabel"), value: bundle.getText("notAvailableLabel") }
@@ -261,7 +218,7 @@ sap.ui.define(
                     sap.m.MessageToast.show(bundle.getText("failedToLoadOrderMessage", [orderId]));
 
                     // Set error model
-                    this.getView().setModel(new sap.ui.model.json.JSONModel({
+                    this.getView().setModel(new JSONModel({
                         taskDetails: [
                             { label: bundle.getText("errorLabel"), value: bundle.getText("failedToLoadOrderLabel", [orderId]) },
                             { label: bundle.getText("statusLabel"), value: bundle.getText("errorStatusLabel") }
@@ -436,7 +393,7 @@ sap.ui.define(
                     });
                 }
 
-                return new sap.ui.model.json.JSONModel({
+                return new JSONModel({
                     taskDetails: taskDetails
                 });
             },

@@ -27,29 +27,30 @@
         </f:title>
         <f:content>
 
-            <!-- Customers Review Card with Larger Height -->
-            <VBox class="sapUiResponsiveMargin sapUiLargeMarginTop" renderType="Bare" height="35rem">
-                <f:Card height="100%">
+            <!-- Customers Review Card -->
+            <VBox class="sapUiResponsiveMargin sapUiLargeMarginTop" renderType="Bare">
+                <f:Card height="35rem" class="sapUiContentPadding">
                     <f:header>
                         <card:Header
                             title="{i18n>reviewCustomersTitle}"
-                            subtitle="Review and browse all customers">
-                            <card:toolbar>
-                                <Toolbar>
-                                    <ToolbarSpacer />
-                                    <SearchField
-                                        width="100%"
-                                        placeholder="{i18n>searchCustomersPlaceholder}"
-                                        search=".onFilterCustomers" />
-                                </Toolbar>
-                            </card:toolbar>
+                            subtitle="{i18n>customersSubtitle}">
                         </card:Header>
                     </f:header>
                     <f:content>
-                        <VBox class="sapUiResponsiveMargin" height="100%" width="100%">
-                            <!-- Single Table with Programmatic Sticky Headers -->
-                            <VBox renderType="Bare" height="80%">
-                                <ScrollContainer height="100%" vertical="true" horizontal="false">
+                        <VBox renderType="Bare" width="100%">
+                            <VBox renderType="Bare" width="100%">
+                                <Toolbar style="Clear" width="100%">
+                                    <ToolbarSpacer visible="{= !${viewModel>/isMobile} }" />
+                                    <SearchField
+                                        width="{= ${viewModel>/isMobile} ? '100%' : '50%' }"
+                                        placeholder="{i18n>searchCustomersPlaceholder}"
+                                        search=".onFilterCustomers" />
+                                </Toolbar>
+                            </VBox>
+
+                            <VBox height="75%" renderType="Bare">
+                                <ScrollContainer height="100%" vertical="true"
+                                    horizontal="false">
                                     <Table
                                         id="reviewCustomersTable"
                                         items="{ path: 'customers>/value' }"
@@ -59,8 +60,7 @@
                                         busyIndicatorDelay="0">
                                         <columns>
                                             <Column
-                                                minScreenWidth="Small"
-                                                width="6em">
+                                                width="7em">
                                                 <HBox alignItems="Center">
                                                     <Text text="{i18n>customerIdColumn}" />
                                                     <core:Icon
@@ -75,7 +75,7 @@
                                             <Column>
                                                 <Text text="{i18n>contactNameColumn}" />
                                             </Column>
-                                            <Column minScreenWidth="Small">
+                                            <Column minScreenWidth="Small" demandPopin="true">
                                                 <HBox alignItems="Center">
                                                     <Text text="{i18n>countryColumn}" />
                                                     <core:Icon
@@ -83,12 +83,6 @@
                                                         press=".onSortCountry"
                                                         class="sapUiTinyMarginBegin sortIcon" />
                                                 </HBox>
-                                            </Column>
-                                            <Column minScreenWidth="Small">
-                                                <Text text="{i18n>cityColumn}" />
-                                            </Column>
-                                            <Column minScreenWidth="Small">
-                                                <Text text="{i18n>phoneColumn}" />
                                             </Column>
                                         </columns>
                                         <items>
@@ -100,8 +94,6 @@
                                                     <Text text="{customers>CompanyName}" />
                                                     <Text text="{customers>ContactName}" />
                                                     <Text text="{customers>Country}" />
-                                                    <Text text="{customers>City}" />
-                                                    <Text text="{customers>Phone}" />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>
@@ -109,15 +101,14 @@
                                 </ScrollContainer>
                             </VBox>
                             <!-- Load More Button at Bottom -->
-                            <HBox renderType="Bare" alignItems="Center" justifyContent="Center"
-                                height="20%">
+                            <HBox justifyContent="End">
                                 <Button
                                     id="loadMoreCustomersBtn"
                                     text="{i18n>loadMoreCustomersButton}"
                                     type="Transparent"
                                     press=".onLoadMoreCustomers"
-                                    visible="{customers>/hasMore}"
-                                    class="sapUiSmallMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd" />
+                                    enabled="{customers>/hasMore}"
+                                    class="sapUiSmallMarginTop sapUiSmallMarginEnd" />
                             </HBox>
                         </VBox>
                     </f:content>
