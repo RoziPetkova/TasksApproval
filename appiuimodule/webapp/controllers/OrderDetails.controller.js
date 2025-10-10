@@ -2,30 +2,27 @@ sap.ui.define(
     [
         "sap/ui/core/mvc/Controller",
         "sap/ui/core/routing/History",
-        "sap/ui/model/json/JSONModel"
+        "sap/ui/model/json/JSONModel",
+        "sap/m/MessageToast",
+        "sap/m/MessageBox"
     ],
-    function (Controller, History, JSONModel) {
+    function (Controller, History, JSONModel, MessageToast, MessageBox) {
         "use strict";
 
         return Controller.extend("appiuimodule.controllers.OrderDetails", {
-            /**
-             * Called when a controller is instantiated and its View controls (if available) are already created.
-             * Can be used to modify the View before it is displayed, to bind event handlers and do other one-time initialization.
-             * @memberOf appiuimodule.ext.overview.Overview
-             */
+            _bundle: null,
+
             onInit() {
+                this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.getRoute("orderdetails").attachPatternMatched(this.onObjectMatched, this);
             },
-
 
             onObjectMatched: async function (oEvent) {
                 var sOrderId = oEvent.getParameter("arguments").OrderID;
                 var oModel = this.getOwnerComponent().getModel("orders");
 
-                // Check if model exists and has data
                 if (!oModel || !oModel.getProperty("/value")) {
-                    // If model doesn't exist or has no data, fetch order directly from API
                     await this.loadOrderById(sOrderId);
                     return;
                 }
@@ -75,7 +72,6 @@ sap.ui.define(
             },
 
             onCloseDialog: function () {
-                // Generic close function for all dialogs
                 if (this.approveDialog && this.approveDialog.isOpen()) {
                     this.approveDialog.close();
                 }
@@ -101,7 +97,6 @@ sap.ui.define(
             },
 
             onDeclineConfirm: async function () {
-                // Get rejection reason from input
                 const input = this.byId("rejectionReasonInput");
                 const rejectionReason = input ? input.getValue() : "";
 
@@ -114,45 +109,14 @@ sap.ui.define(
                 this.declineDialog.close();
             },
 
-            formatStatus: function (shippedDate) {
-                return shippedDate ? "Shipped" : "Pending";
-            },
-
-            formatDate: function (dateString) {
-                if (!dateString) return "";
-                var date = new Date(dateString);
-                return date.toLocaleDateString();
-            },
-
-            formatCustomerRowType: function (label) {
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                var customerIdLabel = bundle.getText("customerIdColumn");
-                return (label === customerIdLabel) ? "Navigation" : "Inactive";
-            },
-
-            formatStatusColor: function (label, value) {
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                var statusLabel = bundle.getText("statusLabel");
-
-                if (label === statusLabel) {
-                    if (value === "Shipped" || value === "Approved") {
-                        return "Success";
-                    } else if (value === "Pending") {
-                        return "Warning";
-                    } else if (value === "Declined" || value === "Rejected") {
-                        return "Error";
-                    }
-                }
-                return "None";
-            },
+           
 
             onCustomerRowPress: function (oEvent) {
                 var oItem = oEvent.getSource();
                 var oBindingContext = oItem.getBindingContext("orderModel");
                 var oRowData = oBindingContext.getObject();
 
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                var customerIdLabel = bundle.getText("customerIdColumn");
+                var customerIdLabel = this._bundle.getText("customerIdColumn");
 
                 if (oRowData.label === customerIdLabel && oRowData.value) {
                     const oRouter = this.getOwnerComponent().getRouter();
@@ -192,36 +156,29 @@ sap.ui.define(
                     if (data.value && data.value.length > 0) {
                         const oOrder = data.value[0];
 
-                        // Add Status property
                         oOrder.Status = oOrder.ShippedDate ? "Shipped" : "Pending";
 
-                        // Set order details
                         var oOrderModel = this.loadOrderProperties(oOrder);
                         this.getView().setModel(oOrderModel, "orderModel");
                     } else {
                         console.error("Order not found in API:", orderId);
-                        // Show error message to user
-                        var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                        sap.m.MessageToast.show(bundle.getText("orderNotFoundMessage", [orderId]));
+                        MessageBox.error(this._bundle.getText("orderNotFoundMessage", [orderId]));
 
-                        // Navigate back or set empty model
                         this.getView().setModel(new JSONModel({
                             taskDetails: [
-                                { label: bundle.getText("errorLabel"), value: bundle.getText("orderNotFoundLabel", [orderId]) },
-                                { label: bundle.getText("statusLabel"), value: bundle.getText("notAvailableLabel") }
+                                { label: this._bundle.getText("errorLabel"), value: this._bundle.getText("orderNotFoundLabel", [orderId]) },
+                                { label: this._bundle.getText("statusLabel"), value: this._bundle.getText("notAvailableLabel") }
                             ]
                         }), "orderModel");
                     }
                 } catch (error) {
                     console.error("Error loading order by ID:", error);
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    sap.m.MessageToast.show(bundle.getText("failedToLoadOrderMessage", [orderId]));
+                    MessageBox.error(this._bundle.getText("failedToLoadOrderMessage", [orderId]));
 
-                    // Set error model
                     this.getView().setModel(new JSONModel({
                         taskDetails: [
-                            { label: bundle.getText("errorLabel"), value: bundle.getText("failedToLoadOrderLabel", [orderId]) },
-                            { label: bundle.getText("statusLabel"), value: bundle.getText("errorStatusLabel") }
+                            { label: this._bundle.getText("errorLabel"), value: this._bundle.getText("failedToLoadOrderLabel", [orderId]) },
+                            { label: this._bundle.getText("statusLabel"), value: this._bundle.getText("errorStatusLabel") }
                         ]
                     }), "orderModel");
                 } finally {
@@ -244,9 +201,7 @@ sap.ui.define(
             },
 
             onSettingsSave: function () {
-                // Placeholder for save functionality
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                sap.m.MessageToast.show(bundle.getText("settingsSavedMessage"));
+                MessageToast.show(this._bundle.getText("settingsSavedMessage"));
                 this.settingsDialog.close();
             },
 
@@ -272,14 +227,11 @@ sap.ui.define(
 
             handleApproveOrder: async function () {
                 try {
-                    // Get current order data
                     const oOrderModel = this.getView().getModel("orderModel");
                     const currentOrderId = oOrderModel.getProperty("/taskDetails/0/value"); // OrderID is first detail
 
-                    // Update local model: set ShippedDate to current date, Status to Shipped
                     const updatedOrderData = oOrderModel.getData().taskDetails;
 
-                    // Find and update the ShippedDate and Status in taskDetails
                     updatedOrderData.forEach(detail => {
                         if (detail.label.includes("Shipped Date") || detail.label.includes("shippedDate")) {
                             detail.value = this.formatDate(new Date().toISOString());
@@ -289,67 +241,52 @@ sap.ui.define(
                         }
                     });
 
-                    // Update the model
                     oOrderModel.setData({ taskDetails: updatedOrderData });
 
-                    // Also update the orders model in Component if available
                     const allOrdersModel = this.getOwnerComponent().getModel("orders");
                     this.updateOrdersModel(allOrdersModel, updatedOrderData, "Shipped");
 
-                    // Show success message
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    sap.m.MessageToast.show(bundle.getText("orderApprovedMessage", [currentOrderId]));
+                    MessageToast.show(this._bundle.getText("orderApprovedMessage", [currentOrderId]));
 
                 } catch (error) {
                     console.error("Error approving order:", error);
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    sap.m.MessageToast.show(bundle.getText("failedToApproveOrderMessage"));
+                    MessageBox.error(this._bundle.getText("failedToApproveOrderMessage"));
                 }
             },
 
             handleDeclineOrder: async function (rejectionReason) {
                 try {
-                    // Get current order data
                     const oOrderModel = this.getView().getModel("orderModel");
 
-                    // Update orderModel taskDetails using currentOrder
                     const updatedOrderData = oOrderModel.getData().taskDetails;
 
-                    // Find and update the ShippedDate and Status in taskDetails
                     updatedOrderData.forEach(detail => {
                         if (detail.label.includes("Shipped Date")) {
-                            detail.value = "None"; 
+                            detail.value = "None";
                         }
                         if (detail.label.includes("Status") || detail.label.includes("status")) {
                             detail.value = "Declined";
                         }
                     });
 
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-
-                    // Add rejection reason to taskDetails if provided
                     updatedOrderData.push({
-                        label: bundle.getText("rejectionReasonLabel"),
-                        value: rejectionReason || bundle.getText("noReasonProvidedLabel")
+                        label: this._bundle.getText("rejectionReasonLabel"),
+                        value: rejectionReason || this._bundle.getText("noReasonProvidedLabel")
                     });
 
-                    // Update the orderModel
                     oOrderModel.setData({ taskDetails: updatedOrderData });
 
-                    // Update the orders model in Component using currentOrder
                     const allOrdersModel = this.getOwnerComponent().getModel("orders");
                     this.updateOrdersModel(allOrdersModel, updatedOrderData, "Declined");
 
-                    // Show success message
                     const message = rejectionReason
-                        ? bundle.getText("orderDeclinedWithReasonMessage", [updatedOrderData[0].value, rejectionReason])
-                        : bundle.getText("orderDeclinedMessage", [updatedOrderData[0].value]);
-                    sap.m.MessageToast.show(message);
+                        ? this._bundle.getText("orderDeclinedWithReasonMessage", [updatedOrderData[0].value, rejectionReason])
+                        : this._bundle.getText("orderDeclinedMessage", [updatedOrderData[0].value]);
+                    MessageToast.show(message);
 
                 } catch (error) {
                     console.error("Error declining order:", error);
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    sap.m.MessageToast.show(bundle.getText("failedToDeclineOrderMessage"));
+                    MessageBox.error(this._bundle.getText("failedToDeclineOrderMessage"));
                 }
             },
 
@@ -372,23 +309,20 @@ sap.ui.define(
             },
 
             loadOrderProperties(order) {
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-
                 const taskDetails = [
-                    { label: bundle.getText("orderIdColumn"), value: order.OrderID },
-                    { label: bundle.getText("taskTypeLabel"), value: bundle.getText("orderTaskTypeValue") },
-                    { label: bundle.getText("customerIdColumn"), value: order.CustomerID },
-                    { label: bundle.getText("orderDateColumn"), value: this.formatDate(order.OrderDate) },
-                    { label: bundle.getText("shippedDateLabel"), value: this.formatDate(order.ShippedDate) },
-                    { label: bundle.getText("countryLabel"), value: order.ShipCountry },
-                    { label: bundle.getText("cityLabel"), value: order.ShipCity },
-                    { label: bundle.getText("statusLabel"), value: order.Status }
+                    { label: this._bundle.getText("orderIdColumn"), value: order.OrderID },
+                    { label: this._bundle.getText("taskTypeLabel"), value: this._bundle.getText("orderTaskTypeValue") },
+                    { label: this._bundle.getText("customerIdColumn"), value: order.CustomerID },
+                    { label: this._bundle.getText("orderDateColumn"), value: this.formatDate(order.OrderDate) },
+                    { label: this._bundle.getText("shippedDateLabel"), value: this.formatDate(order.ShippedDate) },
+                    { label: this._bundle.getText("countryLabel"), value: order.ShipCountry },
+                    { label: this._bundle.getText("cityLabel"), value: order.ShipCity },
+                    { label: this._bundle.getText("statusLabel"), value: order.Status }
                 ];
 
-                // Add rejection reason if it exists
                 if (order.RejectionReason) {
                     taskDetails.push({
-                        label: bundle.getText("rejectionReasonLabel"),
+                        label: this._bundle.getText("rejectionReasonLabel"),
                         value: order.RejectionReason
                     });
                 }
@@ -397,21 +331,36 @@ sap.ui.define(
                     taskDetails: taskDetails
                 });
             },
+
+             formatStatus: function (shippedDate) {
+                return shippedDate ? "Shipped" : "Pending";
+            },
+
+            formatDate: function (dateString) {
+                if (!dateString) return "";
+                var date = new Date(dateString);
+                return date.toLocaleDateString();
+            },
+
+            formatCustomerRowType: function (label) {
+                var customerIdLabel = this._bundle.getText("customerIdColumn");
+                return (label === customerIdLabel) ? "Navigation" : "Inactive";
+            },
+
+            formatStatusColor: function (label, value) {
+                var statusLabel = this._bundle.getText("statusLabel");
+
+                if (label === statusLabel) {
+                    if (value === "Shipped" || value === "Approved") {
+                        return "Success";
+                    } else if (value === "Pending") {
+                        return "Warning";
+                    } else if (value === "Declined" || value === "Rejected") {
+                        return "Error";
+                    }
+                }
+                return "None";
+            },
         });
     }
 );
-function setNewStatusStyle(sStatus, aCells) {
-    if (sStatus === "Pending") {
-        aCells[1].addStyleClass("statusPending");
-    } else if (sStatus === "Shipped" || sStatus === "Approved") {
-        aCells[1].addStyleClass("statusApproved");
-    } else if (sStatus === "Rejected" || sStatus === "Declined") {
-        aCells[1].addStyleClass("statusRejected");
-    }
-}
-
-function clearStatysStyle(aCells) {
-    aCells[1].removeStyleClass("statusPending");
-    aCells[1].removeStyleClass("statusApproved");
-    aCells[1].removeStyleClass("statusRejected");
-}

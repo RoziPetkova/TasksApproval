@@ -6,32 +6,25 @@ sap.ui.define(
         "sap/ui/core/routing/History",
         "sap/ui/model/Sorter",
         "sap/m/MessageToast",
-        "sap/ui/model/json/JSONModel"
+        "sap/ui/model/json/JSONModel",
+        "sap/m/MessageBox"
     ],
-    function (Controller, Filter, FilterOperator, History, Sorter, MessageToast, JSONModel) {
+    function (Controller, Filter, FilterOperator, History, Sorter, MessageToast, JSONModel, MessageBox) {
         'use strict';
 
         return Controller.extend('appiuimodule.controllers.ReviewCustomers', {
-
-            // Object to track sort state for different columns
+            _bundle: null,
             _sortState: {},
-
-            // Track customers loading for growing functionality - start with 50
             _customersSkip: 0,
             _customersHasMore: true,
 
             onInit: function () {
-                // Load customers data when controller initializes
+                this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
                 this._loadCustomersModel().then(() => {
-                    // Set sticky header for customers table after data is loaded
                     this._setStickyHeaderForCustomersTable();
                 });
             },
 
-            /**
-             * Set sticky headers for customers table
-             * @private
-             */
             _setStickyHeaderForCustomersTable: function() {
                 sap.ui.require([
                     "sap/m/library"
@@ -45,10 +38,6 @@ sap.ui.define(
                 }.bind(this));
             },
 
-            /**
-             * Load customers JSON model - first 50 records
-             * @private
-             */
             _loadCustomersModel: async function () {
                 var oCustomersModel = new JSONModel();
                 const oTable = this.byId("reviewCustomersTable");
@@ -62,21 +51,17 @@ sap.ui.define(
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const data = await response.json();
-                    
-                    // Add hasMore property for button visibility
+
                     data.hasMore = data.value && data.value.length === 20;
-                    
+
                     oCustomersModel.setData(data);
-                    
-                    // Initialize skip counter and check if there are more records
+
                     this._customersSkip = 20;
                     this._customersHasMore = data.hasMore;
                 } catch (error) {
                     console.error("Error loading customers data: ", error);
-                    // Set empty model with hasMore false
                     oCustomersModel.setData({ value: [], hasMore: false });
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    MessageToast.show(bundle.getText("failedToLoadCustomersMessage"));
+                    MessageBox.error(this._bundle.getText("failedToLoadCustomersMessage"));
                 } finally {
                     const oTable = this.byId("reviewCustomersTable");
                     if (oTable) {
@@ -87,9 +72,6 @@ sap.ui.define(
                 this.getOwnerComponent().setModel(oCustomersModel, "customers");
             },
 
-            /**
-             * Handle "Load More Customers" button click
-             */
             onLoadMoreCustomers: async function () {
                 if (!this._customersHasMore) {
                     return;
@@ -108,19 +90,16 @@ sap.ui.define(
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const newData = await response.json();
-                    
-                    // Append new data to existing data
+
                     if (newData.value && newData.value.length > 0) {
                         currentData.value = currentData.value.concat(newData.value);
-                        
-                        // Update skip counter and check if there are more records
+
                         this._customersSkip += newData.value.length;
                         this._customersHasMore = newData.value.length === 20;
                         currentData.hasMore = this._customersHasMore;
-                        
+
                         oCustomersModel.setData(currentData);
                     } else {
-                        // No more data available
                         this._customersHasMore = false;
                         currentData.hasMore = false;
                         oCustomersModel.setData(currentData);
@@ -130,8 +109,7 @@ sap.ui.define(
                     this._customersHasMore = false;
                     currentData.hasMore = false;
                     oCustomersModel.setData(currentData);
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    MessageToast.show(bundle.getText("failedToLoadMoreCustomersMessage"));
+                    MessageBox.error(this._bundle.getText("failedToLoadMoreCustomersMessage"));
                 } finally {
                     const oTable = this.byId("reviewCustomersTable");
                     if (oTable) {
@@ -140,16 +118,11 @@ sap.ui.define(
                 }
             },
 
-            /**
-             * Navigate back to previous page
-             */
             onNavBack: function () {
                 const oHistory = History.getInstance();
                 const sPreviousHash = oHistory.getPreviousHash();
 
                 if (sPreviousHash !== undefined) {
-                    //cannot be done by router - we need to split the history and then check what
-                    //is the property key of the previous hash
                     window.history.go(-1);
                 } else {
                     const oRouter = this.getOwnerComponent().getRouter();
@@ -157,18 +130,12 @@ sap.ui.define(
                 }
             },
 
-            /**
-             * Navigate to customer details
-             */
             onCustomerPress(oEvent) {
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("customerdetails",
                     { CustomerID: oEvent.getSource().getBindingContext("customers").getObject().CustomerID });
             },
 
-            /**
-             * Handle search/filter
-             */
             onFilterCustomers: async function (oEvent) {
                 const query = oEvent.getParameter("query");
                 await this.searchCustomers(query);
@@ -185,12 +152,10 @@ sap.ui.define(
                     let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Customers";
 
                     if (query && query.trim()) {
-                        // Search by CustomerID or CompanyName only - escape single quotes for OData
                         const escapedQuery = query.replace(/'/g, "''");
                         const filter = `contains(CustomerID,'${escapedQuery}') or contains(CompanyName,'${escapedQuery}')`;
                         url += `?$filter=${encodeURIComponent(filter)}`;
                     } else {
-                        // If no query, show top 50 as default
                         url += "?$top=20";
                     }
 
@@ -199,19 +164,16 @@ sap.ui.define(
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const data = await response.json();
-                    
-                    // Add hasMore property based on result count
+
                     data.hasMore = data.value && data.value.length === 20;
-                    
+
                     oCustomersModel.setData(data);
-                    
-                    // Reset pagination state when searching
+
                     this._customersSkip = data.value ? data.value.length : 0;
                     this._customersHasMore = data.hasMore;
                 } catch (error) {
                     console.error("Error searching customers:", error);
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    MessageToast.show(bundle.getText("failedToSearchCustomersMessage"));
+                    MessageBox.error(this._bundle.getText("failedToSearchCustomersMessage"));
                 } finally {
                     const oTable = this.byId("reviewCustomersTable");
                     if (oTable) {
@@ -220,9 +182,6 @@ sap.ui.define(
                 }
             },
 
-            /**
-             * Sort function for customers table
-             */
             onSortCustomersColumn(fieldPath, columnIndex) {
                 const table = this.byId("reviewCustomersTable");
                 const binding = table.getBinding("items");
@@ -260,9 +219,6 @@ sap.ui.define(
                 }
             },
 
-            /**
-             * Reset all sort icons to neutral state
-             */
             _resetCustomersHeaderIcons() {
                 const table = this.byId("reviewCustomersTable");
                 const columns = table.getColumns();
@@ -284,7 +240,6 @@ sap.ui.define(
                 });
             },
 
-            // Specific sort handlers
             onSortCustomerId() {
                 this.onSortCustomersColumn("CustomerID", 0);
             },
@@ -293,7 +248,6 @@ sap.ui.define(
                 this.onSortCustomersColumn("Country", 3);
             },
 
-            // Settings and Logout dialog handlers
             onSettingsPress: async function () {
                 if (!this.settingsDialog) {
                     this.settingsDialog = await this.loadFragment({
@@ -313,8 +267,7 @@ sap.ui.define(
             },
 
             onSettingsSave: function() {
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                sap.m.MessageToast.show(bundle.getText("settingsSavedMessage"));
+                MessageToast.show(this._bundle.getText("settingsSavedMessage"));
                 this.settingsDialog.close();
             },
 

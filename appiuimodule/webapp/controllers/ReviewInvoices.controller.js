@@ -7,24 +7,21 @@ sap.ui.define(
         "sap/ui/model/Sorter",
         "sap/ui/Device",
         "sap/m/MessageToast",
-        "sap/ui/model/json/JSONModel"
+        "sap/ui/model/json/JSONModel",
+        "sap/m/MessageBox"
     ],
-    function (Controller, Filter, FilterOperator, History, Sorter, Device, MessageToast, JSONModel) {
+    function (Controller, Filter, FilterOperator, History, Sorter, Device, MessageToast, JSONModel, MessageBox) {
         'use strict';
 
         return Controller.extend('appiuimodule.controllers.ReviewInvoices', {
-
-            // Object to track sort state for different columns
+            _bundle: null,
             _sortState: {},
-
-            // Track invoices loading for growing functionality - start with 50
             _invoicesSkip: 0,
             _invoicesHasMore: true,
 
             onInit: function () {
-                // Load invoices data when controller initializes
+                this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
                 this._loadInvoicesModel().then(() => {
-                    // Set sticky header for invoices table after data is loaded
                     this._setStickyHeaderForInvoicesTable();
                 });
                 this.setViewModel();
@@ -35,7 +32,6 @@ sap.ui.define(
                 if (Device.system.phone || Device.system.tablet) {
                     isMobile = true;
                 }
-                // Create view model
                 var viewModel = new JSONModel({
                     isMobile: isMobile
                 });
@@ -55,10 +51,6 @@ sap.ui.define(
                 }.bind(this));
             },
 
-            /**
-             * Load invoices JSON model - first 50 records
-             * @private
-             */
             _loadInvoicesModel: async function () {
                 var oInvoicesModel = new JSONModel();
                 const oTable = this.byId("reviewInvoicesTable");
@@ -73,20 +65,16 @@ sap.ui.define(
                     }
                     const data = await response.json();
 
-                    // Add hasMore property for button visibility
                     data.hasMore = data.value && data.value.length === 50;
 
                     oInvoicesModel.setData(data);
 
-                    // Initialize skip counter and check if there are more records
                     this._invoicesSkip = 50;
                     this._invoicesHasMore = data.hasMore;
                 } catch (error) {
                     console.error("Error loading invoices data:", error);
-                    // Set empty model with hasMore false
                     oInvoicesModel.setData({ value: [], hasMore: false });
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    MessageToast.show(bundle.getText("failedToLoadInvoicesMessage"));
+                    MessageBox.error(this._bundle.getText("failedToLoadInvoicesMessage"));
                 } finally {
                     oTable.setBusy(false);
                 }
@@ -94,9 +82,6 @@ sap.ui.define(
                 this.getOwnerComponent().setModel(oInvoicesModel, "invoices");
             },
 
-            /**
-             * Handle "Load More Invoices" button click
-             */
             onLoadMoreInvoices: async function () {
                 if (!this._invoicesHasMore) {
                     return;
@@ -116,18 +101,15 @@ sap.ui.define(
                     }
                     const newData = await response.json();
 
-                    // Append new data to existing data
                     if (newData.value && newData.value.length > 0) {
                         currentData.value = currentData.value.concat(newData.value);
 
-                        // Update skip counter and check if there are more records
                         this._invoicesSkip += newData.value.length;
                         this._invoicesHasMore = newData.value.length === 50;
                         currentData.hasMore = this._invoicesHasMore;
 
                         oInvoicesModel.setData(currentData);
                     } else {
-                        // No more data available
                         this._invoicesHasMore = false;
                         currentData.hasMore = false;
                         oInvoicesModel.setData(currentData);
@@ -137,23 +119,17 @@ sap.ui.define(
                     this._invoicesHasMore = false;
                     currentData.hasMore = false;
                     oInvoicesModel.setData(currentData);
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    MessageToast.show(bundle.getText("failedToLoadMoreInvoicesMessage"));
+                    MessageBox.error(this._bundle.getText("failedToLoadMoreInvoicesMessage"));
                 } finally {
                     oTable.setBusy(false);
                 }
             },
 
-            /**
-             * Navigate back to previous page
-             */
             onNavBack: function () {
                 const oHistory = History.getInstance();
                 const sPreviousHash = oHistory.getPreviousHash();
 
                 if (sPreviousHash !== undefined) {
-                    //cannot be done by router - we need to split the history and then check what
-                    //is the property key of the previous hash
                     window.history.go(-1);
                 } else {
                     const oRouter = this.getOwnerComponent().getRouter();
@@ -161,9 +137,6 @@ sap.ui.define(
                 }
             },
 
-            /**
-             * Navigate to invoice details
-             */
             onInvoicePress(oEvent) {
                 const oRouter = this.getOwnerComponent().getRouter();
                 const oInvoice = oEvent.getSource().getBindingContext("invoices").getObject();
@@ -174,34 +147,22 @@ sap.ui.define(
                 });
             },
 
-            /**
-             * Format date
-             */
             formatDate: function (dateString) {
                 if (!dateString) return "";
                 var date = new Date(dateString);
                 return date.toLocaleDateString();
             },
 
-            /**
-             * Format currency
-             */
             formatCurrency: function (amount) {
                 if (!amount) return "";
                 return parseFloat(amount).toFixed(2) + " USD";
             },
 
-            /**
-             * Handle search/filter
-             */
             onFilterInvoices: async function (oEvent) {
                 const query = oEvent.getParameter("query");
                 await this.searchInvoices(query);
             },
 
-            /**
-             * Search invoices by CustomerName
-             */
             searchInvoices: async function (query) {
                 const oInvoicesModel = this.getOwnerComponent().getModel("invoices");
 
@@ -209,12 +170,10 @@ sap.ui.define(
                     let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Invoices";
 
                     if (query && query.trim()) {
-                        // Search by CustomerName only - escape single quotes for OData
                         const escapedQuery = query.replace(/'/g, "''");
                         const filter = `contains(CustomerName,'${escapedQuery}')`;
                         url += `?$filter=${encodeURIComponent(filter)}`;
                     } else {
-                        // If no query, show top 50 as default
                         url += "?$top=50";
                     }
 
@@ -224,24 +183,18 @@ sap.ui.define(
                     }
                     const data = await response.json();
 
-                    // Add hasMore property based on result count
                     data.hasMore = data.value && data.value.length === 50;
 
                     oInvoicesModel.setData(data);
 
-                    // Reset pagination state when searching
                     this._invoicesSkip = data.value ? data.value.length : 0;
                     this._invoicesHasMore = data.hasMore;
                 } catch (error) {
                     console.error("Error searching invoices:", error);
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    MessageToast.show(bundle.getText("failedToSearchInvoicesMessage"));
+                    MessageBox.error(this._bundle.getText("failedToSearchInvoicesMessage"));
                 }
             },
 
-            /**
-             * Sort function for invoices table
-             */
             onSortInvoicesColumn(fieldPath, columnIndex) {
                 const table = this.byId("reviewInvoicesTable");
                 const binding = table.getBinding("items");
@@ -279,9 +232,6 @@ sap.ui.define(
                 }
             },
 
-            /**
-             * Reset all sort icons to neutral state
-             */
             _resetInvoicesHeaderIcons() {
                 const table = this.byId("reviewInvoicesTable");
                 const columns = table.getColumns();
@@ -303,7 +253,6 @@ sap.ui.define(
                 });
             },
 
-            // Specific sort handlers
             onSortProductName() {
                 this.onSortInvoicesColumn("ProductName", 1);
             },
@@ -312,7 +261,6 @@ sap.ui.define(
                 this.onSortInvoicesColumn("CustomerName", 2);
             },
 
-            // Settings and Logout dialog handlers
             onSettingsPress: async function () {
                 if (!this.settingsDialog) {
                     this.settingsDialog = await this.loadFragment({
@@ -332,8 +280,7 @@ sap.ui.define(
             },
 
             onSettingsSave: function () {
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                sap.m.MessageToast.show(bundle.getText("settingsSavedMessage"));
+                MessageToast.show(this._bundle.getText("settingsSavedMessage"));
                 this.settingsDialog.close();
             },
 

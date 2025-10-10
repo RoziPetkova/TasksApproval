@@ -1,952 +1,731 @@
-sap.ui.define(
-    [
-        'sap/ui/core/mvc/Controller',
-        "sap/ui/core/routing/History",
-        "sap/ui/model/Filter",
-        "sap/ui/model/FilterOperator",
-        "sap/ui/model/Sorter",
-        "sap/m/library",
-        "sap/ui/Device",
-        "sap/m/MessageToast",
-        "sap/ui/model/json/JSONModel"
-    ],
-    function (Controller, History, Filter, FilterOperator, Sorter, mobileLibrary, Device, MessageToast, JSONModel) {
-        'use strict';
+sap.ui.define([
+    'sap/ui/core/mvc/Controller',
+    "sap/ui/core/routing/History",
+    "sap/ui/model/Sorter",
+    "sap/m/library",
+    "sap/ui/Device",
+    "sap/m/MessageToast",
+    "sap/ui/model/json/JSONModel",
+    "sap/m/MessageBox"
+], function (Controller, History, Sorter, mobileLibrary, Device, MessageToast, JSONModel, MessageBox) {
+    'use strict';
 
-        return Controller.extend('appiuimodule.controllers.Overview', {
+    return Controller.extend('appiuimodule.controllers.Overview', {
+        _bundle: null,
+        _sortState: {
+            customersTable: {},
+            invoicesTable: {},
+            ordersTable: {}
+        },
+        _originalOrdersData: null,
+        _customersSkip: 0,
+        _customersHasMore: true,
+        _invoicesSkip: 0,
+        _invoicesHasMore: true,
 
-            // Object to track sort state for different columns and tables
-            _sortState: {
-                customersTable: {},
-                invoicesTable: {},
-                ordersTable: {}
-            },
+        onInit: function () {
+            this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+            this._loadCustomersModel();
+            this._loadInvoicesModel();
+            this._loadAllOrders();
+            this._setStickyHeaderForCustomersTable();
+            this.setViewModel();
+        },
 
-            // Store original orders data for filtering
-            _originalOrdersData: null,
+        _setStickyHeaderForCustomersTable: function () {
+            const Sticky = mobileLibrary.Sticky;
+            const oCustomersTable = this.byId("customersTable");
+            if (oCustomersTable) {
+                oCustomersTable.setSticky([Sticky.ColumnHeaders]);
+            }
+            const oOrdersTable = this.byId("ordersTable");
+            if (oOrdersTable) {
+                oOrdersTable.setSticky([Sticky.ColumnHeaders]);
+            }
+            const oInvoicesTable = this.byId("invoicesTable");
+            if (oInvoicesTable) {
+                oInvoicesTable.setSticky([Sticky.ColumnHeaders]);
+            }
+        },
 
-            // Track customers loading for growing functionality
-            _customersSkip: 0,
-            _customersHasMore: true,
+        setViewModel() {
+            let isMobile = false;
+            if (Device.system.phone || Device.system.tablet) {
+                isMobile = true;
+            }
+            var viewModel = new JSONModel({
+                isMobile: isMobile
+            });
+            this.getView().setModel(viewModel, "viewModel");
+        },
 
-            // Track invoices loading for growing functionality
-            _invoicesSkip: 0,
-            _invoicesHasMore: true,
+        _loadCustomersModel: async function () {
+            const oCustomersTable = this.byId("customersTable");
+            if (oCustomersTable) {
+                oCustomersTable.setBusy(true);
+            }
 
-            onInit: function () {
-                // Load all data models when overview controller initializes
-                this._loadCustomersModel();
-                this._loadInvoicesModel();
-                this._loadAllOrders();
-                // Set sticky header for customers table after data is loaded
-                this._setStickyHeaderForCustomersTable();
+            var oCustomersModel = new JSONModel();
 
-                // Device detection
-                this.setViewModel();
-            },
+            try {
+                const response = await fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$top=10");
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
 
-            _setStickyHeaderForCustomersTable: function () {
-                // Sticky is enum, not module. That's why its imported like that. 
-                const Sticky = mobileLibrary.Sticky;
+                data.hasMore = data.value && data.value.length === 10;
 
-                // Set sticky for customers table
-                const oCustomersTable = this.byId("customersTable");
+                oCustomersModel.setData(data);
+
+                this._customersSkip = 10;
+                this._customersHasMore = data.hasMore;
+            } catch (error) {
+                console.error("Error loading customers data: ", error);
+                oCustomersModel.setData({ value: [], hasMore: false });
+                MessageBox.error(this._bundle.getText("failedToLoadCustomersMessage"));
+            } finally {
                 if (oCustomersTable) {
-                    oCustomersTable.setSticky([Sticky.ColumnHeaders]);
+                    oCustomersTable.setBusy(false);
                 }
-                // Set sticky for orders table
-                const oOrdersTable = this.byId("ordersTable");
-                if (oOrdersTable) {
-                    oOrdersTable.setSticky([Sticky.ColumnHeaders]);
+            }
+
+            this.getOwnerComponent().setModel(oCustomersModel, "customers");
+        },
+
+        onLoadMoreCustomers: async function () {
+            if (!this._customersHasMore) {
+                return;
+            }
+
+            const oCustomersTable = this.byId("customersTable");
+            if (oCustomersTable) {
+                oCustomersTable.setBusy(true);
+            }
+
+            const oCustomersModel = this.getOwnerComponent().getModel("customers");
+            const currentData = oCustomersModel.getData();
+
+            try {
+                const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$top=10&$skip=${this._customersSkip}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                // Set sticky for invoices table
-                const oInvoicesTable = this.byId("invoicesTable");
-                if (oInvoicesTable) {
-                    oInvoicesTable.setSticky([Sticky.ColumnHeaders]);
-                }
-            },
+                const newData = await response.json();
 
-            setViewModel() {
-                let isMobile = false;
-                if (Device.system.phone || Device.system.tablet) {
-                    isMobile = true;
-                }
-                // Create view model
-                var viewModel = new JSONModel({
-                    isMobile: isMobile
-                });
-                this.getView().setModel(viewModel, "viewModel");
-            },
+                if (newData.value && newData.value.length > 0) {
+                    currentData.value = currentData.value.concat(newData.value);
 
-            _loadCustomersModel: async function () {
-                const oCustomersTable = this.byId("customersTable");
-                if (oCustomersTable) {
-                    oCustomersTable.setBusy(true);
-                }
+                    this._customersSkip += newData.value.length;
+                    this._customersHasMore = newData.value.length === 10;
+                    currentData.hasMore = this._customersHasMore;
 
-                var oCustomersModel = new JSONModel();
-
-                try {
-                    const response = await fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$top=10");
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-
-                    // Add hasMore property for button visibility
-                    data.hasMore = data.value && data.value.length === 10;
-
-                    oCustomersModel.setData(data);
-
-                    // Initialize skip counter and check if there are more records
-                    this._customersSkip = 10;
-                    this._customersHasMore = data.hasMore;
-                } catch (error) {
-                    console.error("Error loading customers data: ", error);
-                    // Set empty model with hasMore false
-                    oCustomersModel.setData({ value: [], hasMore: false });
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    MessageToast.show(bundle.getText("failedToLoadCustomersMessage"));
-                } finally {
-                    if (oCustomersTable) {
-                        oCustomersTable.setBusy(false);
-                    }
-                }
-
-                this.getOwnerComponent().setModel(oCustomersModel, "customers");
-            },
-
-            /**
-             * Handle "Load More Customers" button click
-             */
-            onLoadMoreCustomers: async function () {
-                if (!this._customersHasMore) {
-                    return;
-                }
-
-                const oCustomersTable = this.byId("customersTable");
-                if (oCustomersTable) {
-                    oCustomersTable.setBusy(true);
-                }
-
-                const oCustomersModel = this.getOwnerComponent().getModel("customers");
-                const currentData = oCustomersModel.getData();
-
-                try {
-                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$top=10&$skip=${this._customersSkip}`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const newData = await response.json();
-
-                    // Append new data to existing data
-                    if (newData.value && newData.value.length > 0) {
-                        currentData.value = currentData.value.concat(newData.value);
-
-                        // Update skip counter and check if there are more records
-                        this._customersSkip += newData.value.length;
-                        this._customersHasMore = newData.value.length === 10;
-                        currentData.hasMore = this._customersHasMore;
-
-                        oCustomersModel.setData(currentData);
-                    } else {
-                        // No more data available
-                        this._customersHasMore = false;
-                        currentData.hasMore = false;
-                        oCustomersModel.setData(currentData);
-                    }
-                } catch (error) {
-                    console.error("Error loading more customers data: ", error);
+                    oCustomersModel.setData(currentData);
+                } else {
                     this._customersHasMore = false;
                     currentData.hasMore = false;
                     oCustomersModel.setData(currentData);
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    MessageToast.show(bundle.getText("failedToLoadMoreCustomersMessage"));
-                } finally {
-                    if (oCustomersTable) {
-                        oCustomersTable.setBusy(false);
-                    }
                 }
-            },
-
-            onLoadMoreInvoices: async function () {
-                if (!this._invoicesHasMore) {
-                    return;
+            } catch (error) {
+                console.error("Error loading more customers data: ", error);
+                this._customersHasMore = false;
+                currentData.hasMore = false;
+                oCustomersModel.setData(currentData);
+                MessageBox.error(this._bundle.getText("failedToLoadMoreCustomersMessage"));
+            } finally {
+                if (oCustomersTable) {
+                    oCustomersTable.setBusy(false);
                 }
+            }
+        },
 
-                const oInvoicesTable = this.byId("invoicesTable");
-                if (oInvoicesTable) {
-                    oInvoicesTable.setBusy(true);
+        onLoadMoreInvoices: async function () {
+            if (!this._invoicesHasMore) {
+                return;
+            }
+
+            const oInvoicesTable = this.byId("invoicesTable");
+            if (oInvoicesTable) {
+                oInvoicesTable.setBusy(true);
+            }
+
+            const oInvoicesModel = this.getOwnerComponent().getModel("invoices");
+            const currentData = oInvoicesModel.getData();
+
+            try {
+                const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$top=10&$skip=${this._invoicesSkip}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                const newData = await response.json();
 
-                const oInvoicesModel = this.getOwnerComponent().getModel("invoices");
-                const currentData = oInvoicesModel.getData();
+                if (newData.value && newData.value.length > 0) {
+                    currentData.value = currentData.value.concat(newData.value);
 
-                try {
-                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$top=10&$skip=${this._invoicesSkip}`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const newData = await response.json();
+                    this._invoicesSkip += newData.value.length;
+                    this._invoicesHasMore = newData.value.length === 10;
+                    currentData.hasMore = this._invoicesHasMore;
 
-                    // Append new data to existing data
-                    if (newData.value && newData.value.length > 0) {
-                        currentData.value = currentData.value.concat(newData.value);
-
-                        // Update skip counter and check if there are more records
-                        this._invoicesSkip += newData.value.length;
-                        this._invoicesHasMore = newData.value.length === 10;
-                        currentData.hasMore = this._invoicesHasMore;
-
-                        oInvoicesModel.setData(currentData);
-                    } else {
-                        // No more data available
-                        this._invoicesHasMore = false;
-                        currentData.hasMore = false;
-                        oInvoicesModel.setData(currentData);
-                    }
-                } catch (error) {
-                    console.error("Error loading more invoices data: ", error);
+                    oInvoicesModel.setData(currentData);
+                } else {
                     this._invoicesHasMore = false;
                     currentData.hasMore = false;
                     oInvoicesModel.setData(currentData);
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    MessageToast.show(bundle.getText("failedToLoadMoreInvoicesMessage"));
-                } finally {
-                    if (oInvoicesTable) {
-                        oInvoicesTable.setBusy(false);
-                    }
                 }
-            },
-
-            /**
-             * Load the invoices JSON model - first 10 records only
-             * @private
-             */
-            _loadInvoicesModel: async function () {
-                const oInvoicesTable = this.byId("invoicesTable");
+            } catch (error) {
+                console.error("Error loading more invoices data: ", error);
+                this._invoicesHasMore = false;
+                currentData.hasMore = false;
+                oInvoicesModel.setData(currentData);
+                MessageBox.error(this._bundle.getText("failedToLoadMoreInvoicesMessage"));
+            } finally {
                 if (oInvoicesTable) {
-                    oInvoicesTable.setBusy(true);
+                    oInvoicesTable.setBusy(false);
+                }
+            }
+        },
+
+        _loadInvoicesModel: async function () {
+            const oInvoicesTable = this.byId("invoicesTable");
+            if (oInvoicesTable) {
+                oInvoicesTable.setBusy(true);
+            }
+
+            var oInvoicesModel = new JSONModel();
+
+            try {
+                const response = await fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$top=10");
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                data.hasMore = data.value && data.value.length === 10;
+
+                oInvoicesModel.setData(data);
+
+                this._invoicesSkip = 10;
+                this._invoicesHasMore = data.hasMore;
+            } catch (error) {
+                console.error("Error loading invoices data:", error);
+                oInvoicesModel.setData({ value: [], hasMore: false });
+                MessageBox.error(this._bundle.getText("failedToLoadInvoicesMessage"));
+            } finally {
+                if (oInvoicesTable) {
+                    oInvoicesTable.setBusy(false);
+                }
+            }
+
+            this.getOwnerComponent().setModel(oInvoicesModel, "invoices");
+        },
+
+        _loadAllOrders: async function () {
+            const oOrdersTable = this.byId("ordersTable");
+            if (oOrdersTable) {
+                oOrdersTable.setBusy(true);
+            }
+
+            try {
+                let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Orders";
+
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                if (data && data.value) {
+                    this.handleStatusProperty(data);
                 }
 
-                var oInvoicesModel = new JSONModel();
+                this._originalOrdersData = data.value;
 
-                try {
-                    const response = await fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$top=10");
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-
-                    // Add hasMore property for button visibility
-                    data.hasMore = data.value && data.value.length === 10;
-
-                    oInvoicesModel.setData(data);
-
-                    // Initialize skip counter and check if there are more records
-                    this._invoicesSkip = 10;
-                    this._invoicesHasMore = data.hasMore;
-                } catch (error) {
-                    console.error("Error loading invoices data:", error);
-                    // Set empty model with hasMore false
-                    oInvoicesModel.setData({ value: [], hasMore: false });
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    MessageToast.show(bundle.getText("failedToLoadInvoicesMessage"));
-                } finally {
-                    if (oInvoicesTable) {
-                        oInvoicesTable.setBusy(false);
-                    }
-                }
-
-                this.getOwnerComponent().setModel(oInvoicesModel, "invoices");
-            },
-
-            /**
-             * Load all orders and save them in the model
-             * @private
-             */
-            _loadAllOrders: async function () {
-                const oOrdersTable = this.byId("ordersTable");
+                const oOrdersModel = new JSONModel();
+                oOrdersModel.setData(data);
+                this.getOwnerComponent().setModel(oOrdersModel, "orders");
+            } catch (error) {
+                console.error("Error loading all orders:", error);
+                MessageBox.error(this._bundle.getText("failedToLoadOrdersMessage"));
+            } finally {
                 if (oOrdersTable) {
-                    oOrdersTable.setBusy(true);
+                    oOrdersTable.setBusy(false);
                 }
+            }
+        },
 
-                try {
-                    // Load ALL orders without any limit
-                    let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Orders";
-
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-
-                    // Add Status property to each order
-                    if (data && data.value) {
-                        this.handleStatusProperty(data);
-                    }
-
-                    // Store original data for filtering/search
-                    this._originalOrdersData = data.value;
-
-                    // Create and set the model
-                    const oOrdersModel = new JSONModel();
-                    oOrdersModel.setData(data);
-                    this.getOwnerComponent().setModel(oOrdersModel, "orders");
-                } catch (error) {
-                    console.error("Error loading all orders:", error);
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    MessageToast.show(bundle.getText("failedToLoadOrdersMessage"));
-                } finally {
-                    if (oOrdersTable) {
-                        oOrdersTable.setBusy(false);
-                    }
+        handleStatusProperty(data) {
+            data.value.forEach(function (order) {
+                if (order.OrderID % 2 == 0) {
+                    order.ShippedDate = null;
                 }
-            },
+                order.Status = order.ShippedDate ? "Shipped" : "Pending";
+            });
+        },
 
+        onOrderPress(oEvent) {
+            const oItem = oEvent.getSource();
+            const oRouter = this.getOwnerComponent().getRouter();
+            oRouter.navTo("orderdetails",
+                { OrderID: oEvent.getSource().getBindingContext("orders").getObject().OrderID });
+        },
 
-            handleStatusProperty(data) {
-                data.value.forEach(function (order) {
-                    if (order.OrderID % 2 == 0) {
-                        order.ShippedDate = null;
-                    }
-                    order.Status = order.ShippedDate ? "Shipped" : "Pending";
-                });
-            },
+        onCustomerPress(oEvent) {
+            const oRouter = this.getOwnerComponent().getRouter();
+            oRouter.navTo("customerdetails",
+                { CustomerID: oEvent.getSource().getBindingContext("customers").getObject().CustomerID });
+        },
 
-            onOrderPress(oEvent) {
-                const oItem = oEvent.getSource();
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("orderdetails",
-                    { OrderID: oEvent.getSource().getBindingContext("orders").getObject().OrderID });
-            },
+        onInvoicePress(oEvent) {
+            const oRouter = this.getOwnerComponent().getRouter();
+            const oInvoice = oEvent.getSource().getBindingContext("invoices").getObject();
+            oRouter.navTo("invoicedetails", {
+                OrderID: oInvoice.OrderID
+            });
+        },
 
-            onCustomerPress(oEvent) {
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("customerdetails",
-                    { CustomerID: oEvent.getSource().getBindingContext("customers").getObject().CustomerID });
-            },
+        formatStatusState: function (status) {
+            if (status === "Shipped") {
+                return "Success";
+            } else if (status === "Pending") {
+                return "Warning";
+            } else if (status === "Declined") {
+                return "Error";
+            }
+            return "None";
+        },
 
-            onInvoicePress(oEvent) {
-                const oRouter = this.getOwnerComponent().getRouter();
-                const oInvoice = oEvent.getSource().getBindingContext("invoices").getObject();
-                oRouter.navTo("invoicedetails", {
-                    OrderID: oInvoice.OrderID
-                });
-            },
+        formatDate: function (dateString) {
+            if (!dateString) return "";
+            var date = new Date(dateString);
+            return date.toLocaleDateString();
+        },
 
-            formatStatusState: function (status) {
-                // Return the appropriate state for ObjectStatus control
-                if (status === "Shipped") {
-                    return "Success";
-                } else if (status === "Pending") {
-                    return "Warning";
-                } else if (status === "Declined") {
-                    return "Error";
-                }
+        formatShippedDate: function (shippedDate, status) {
+            if (status === "Declined") {
                 return "None";
-            },
+            }
+            if (!shippedDate) return "";
+            var date = new Date(shippedDate);
+            return date.toLocaleDateString();
+        },
 
-            formatDate: function (dateString) {
-                if (!dateString) return "";
-                var date = new Date(dateString);
-                return date.toLocaleDateString();
-            },
+        onFilterOrders: function (oEvent) {
+            const query = oEvent.getParameter("query");
+            this.searchOrders(query);
+        },
 
-            formatShippedDate: function (shippedDate, status) {
-                // Show "None" for declined orders
-                if (status === "Declined") {
-                    return "None";
+        searchOrders: function (query) {
+            const oOrdersModel = this.getOwnerComponent().getModel("orders");
+
+            if (!this._originalOrdersData) {
+                if (oOrdersModel && oOrdersModel.getProperty("/value")) {
+                    this._originalOrdersData = oOrdersModel.getProperty("/value");
+                } else {
+                    console.warn("Orders data not available for search");
+                    return;
                 }
-                if (!shippedDate) return "";
-                var date = new Date(shippedDate);
-                return date.toLocaleDateString();
-            },
+            }
 
-            onFilterOrders: function (oEvent) {
-                const query = oEvent.getParameter("query");
-                this.searchOrders(query);
-            },
+            const allOrders = this._originalOrdersData || [];
+            let filteredOrders;
 
-            searchOrders: function (query) {
-                const oOrdersModel = this.getOwnerComponent().getModel("orders");
+            if (query && query.trim()) {
+                const queryLower = query.toLowerCase();
+                filteredOrders = allOrders.filter(function (order) {
+                    return order.CustomerID.toLowerCase().includes(queryLower);
+                });
+            } else {
+                filteredOrders = allOrders;
+            }
 
-                // Check if original data exists, if not try to set it
-                if (!this._originalOrdersData) {
-                    if (oOrdersModel && oOrdersModel.getProperty("/value")) {
-                        this._originalOrdersData = oOrdersModel.getProperty("/value");
-                    } else {
-                        console.warn("Orders data not available for search");
-                        return;
-                    }
+            oOrdersModel.setProperty("/value", filteredOrders);
+        },
+
+        onStatusFilterChange: function (oEvent) {
+            const selectedKey = oEvent.getParameter("selectedItem").getKey();
+            this.filterOrdersByStatus(selectedKey);
+        },
+
+        filterOrdersByStatus: function (status) {
+            const oOrdersModel = this.getOwnerComponent().getModel("orders");
+
+            if (!this._originalOrdersData) {
+                if (oOrdersModel && oOrdersModel.getProperty("/value")) {
+                    this._originalOrdersData = oOrdersModel.getProperty("/value");
+                } else {
+                    console.warn("Orders data not available for status filtering");
+                    return;
                 }
+            }
 
-                // Use stored original data for search
-                const allOrders = this._originalOrdersData || [];
-                let filteredOrders;
+            const allOrders = this._originalOrdersData || [];
+            let filteredOrders;
+
+            if (status === "Shipped") {
+                filteredOrders = allOrders.filter(function (order) {
+                    return order.Status === "Shipped";
+                });
+            } else if (status === "Pending") {
+                filteredOrders = allOrders.filter(function (order) {
+                    return order.Status === "Pending";
+                });
+            } else {
+                filteredOrders = allOrders;
+            }
+
+            oOrdersModel.setProperty("/value", filteredOrders);
+        },
+
+        onFilterCustomers: async function (oEvent) {
+            const query = oEvent.getParameter("query");
+            await this.searchCustomers(query);
+        },
+
+        searchCustomers: async function (query) {
+            const oCustomersModel = this.getOwnerComponent().getModel("customers");
+
+            try {
+                let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Customers";
 
                 if (query && query.trim()) {
-                    // Filter by CustomerID locally
-                    const queryLower = query.toLowerCase();
-                    filteredOrders = allOrders.filter(function (order) {
-                        return order.CustomerID.toLowerCase().includes(queryLower);
-                    });
+                    const escapedQuery = query.replace(/'/g, "''");
+                    const filter = `contains(CustomerID,'${escapedQuery}') or contains(CompanyName,'${escapedQuery}')`;
+                    url += `?$filter=${encodeURIComponent(filter)}`;
                 } else {
-                    // Show all orders if no query
-                    filteredOrders = allOrders;
+                    url += "?$top=10";
                 }
 
-                // Update the model with filtered data
-                oOrdersModel.setProperty("/value", filteredOrders);
-            },
-
-            onStatusFilterChange: function (oEvent) {
-                const selectedKey = oEvent.getParameter("selectedItem").getKey();
-                this.filterOrdersByStatus(selectedKey);
-            },
-
-            filterOrdersByStatus: function (status) {
-                const oOrdersModel = this.getOwnerComponent().getModel("orders");
-
-                // Check if original data exists, if not try to set it
-                if (!this._originalOrdersData) {
-                    if (oOrdersModel && oOrdersModel.getProperty("/value")) {
-                        this._originalOrdersData = oOrdersModel.getProperty("/value");
-                    } else {
-                        console.warn("Orders data not available for status filtering");
-                        return;
-                    }
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                const data = await response.json();
+                oCustomersModel.setData(data);
+            } catch (error) {
+                console.error("Error searching customers:", error);
+                MessageBox.error(this._bundle.getText("failedToSearchCustomersMessage"));
+            }
+        },
 
-                // Use stored original data for filtering
-                const allOrders = this._originalOrdersData || [];
-                let filteredOrders;
+        onFilterInvoices: async function (oEvent) {
+            const query = oEvent.getParameter("query");
+            await this.searchInvoices(query);
+        },
 
-                if (status === "Shipped") {
-                    filteredOrders = allOrders.filter(function (order) {
-                        return order.Status === "Shipped";
-                    });
-                } else if (status === "Pending") {
-                    filteredOrders = allOrders.filter(function (order) {
-                        return order.Status === "Pending";
-                    });
+        searchInvoices: async function (query) {
+            const oInvoicesModel = this.getOwnerComponent().getModel("invoices");
+
+            try {
+                let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Invoices";
+
+                if (query && query.trim()) {
+                    const escapedQuery = query.replace(/'/g, "''");
+                    const filter = `contains(CustomerName,'${escapedQuery}')`;
+                    url += `?$filter=${encodeURIComponent(filter)}`;
                 } else {
-                    // Show all orders for "All" or no selection
-                    filteredOrders = allOrders;
+                    url += "?$top=10";
                 }
 
-                // Update the model with filtered data
-                oOrdersModel.setProperty("/value", filteredOrders);
-            },
-
-            onFilterCustomers: async function (oEvent) {
-                const query = oEvent.getParameter("query");
-                await this.searchCustomers(query);
-            },
-
-            searchCustomers: async function (query) {
-                const oCustomersModel = this.getOwnerComponent().getModel("customers");
-
-                try {
-                    let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Customers";
-
-                    if (query && query.trim()) {
-                        // Search by CustomerID or CompanyName only - escape single quotes for OData
-                        const escapedQuery = query.replace(/'/g, "''");
-                        const filter = `contains(CustomerID,'${escapedQuery}') or contains(CompanyName,'${escapedQuery}')`;
-                        url += `?$filter=${encodeURIComponent(filter)}`;
-                    } else {
-                        // If no query, show top 10 as default
-                        url += "?$top=10";
-                    }
-
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    oCustomersModel.setData(data);
-                } catch (error) {
-                    console.error("Error searching customers:", error);
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    MessageToast.show(bundle.getText("failedToSearchCustomersMessage"));
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-            },
+                const data = await response.json();
+                oInvoicesModel.setData(data);
+            } catch (error) {
+                console.error("Error searching invoices:", error);
+                MessageBox.error(this._bundle.getText("failedToSearchInvoicesMessage"));
+            }
+        },
 
-            onFilterInvoices: async function (oEvent) {
-                const query = oEvent.getParameter("query");
-                await this.searchInvoices(query);
-            },
+        onSortCustomersColumn(fieldPath, columnIndex) {
+            const table = this.byId("customersTable");
+            const binding = table.getBinding("items");
 
-            searchInvoices: async function (query) {
-                const oInvoicesModel = this.getOwnerComponent().getModel("invoices");
+            if (!this._sortState["customersTable"]) {
+                this._sortState["customersTable"] = {};
+            }
 
-                try {
-                    let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Invoices";
+            this._resetCustomersHeaderIcons();
 
-                    if (query && query.trim()) {
-                        // Search by CustomerName only - escape single quotes for OData
-                        const escapedQuery = query.replace(/'/g, "''");
-                        const filter = `contains(CustomerName,'${escapedQuery}')`;
-                        url += `?$filter=${encodeURIComponent(filter)}`;
-                    } else {
-                        // If no query, show top 10 as default
-                        url += "?$top=10";
-                    }
+            if (this._sortState["customersTable"][fieldPath] === undefined) {
+                this._sortState["customersTable"][fieldPath] = false;
+            }
 
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    oInvoicesModel.setData(data);
-                } catch (error) {
-                    console.error("Error searching invoices:", error);
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    MessageToast.show(bundle.getText("failedToSearchInvoicesMessage"));
+            this._sortState["customersTable"][fieldPath] = !this._sortState["customersTable"][fieldPath];
+            const isAscending = this._sortState["customersTable"][fieldPath];
+
+            const sorter = new Sorter(fieldPath, !isAscending);
+
+            binding.sort(sorter);
+
+            const columns = table.getColumns();
+            const column = columns[columnIndex];
+            const header = column.getHeader();
+
+            let icon = null;
+            if (header.getMetadata().getName() === "sap.m.HBox") {
+                const headerItems = header.getItems();
+                if (headerItems && headerItems[1]) {
+                    icon = headerItems[1];
                 }
-            },
+            }
 
-            /**
-             * Generic sorting function that can be used for any column in any table
-             * @param {string} tableId - ID of the table to sort
-             * @param {string} fieldPath - Path to the field to sort by
-             * @param {number} columnIndex - Index of the column containing the sort icon
-             * @param {number} iconIndex - Index of the icon within the column header (default: 1)
-             */
-            onSortColumn(tableId, fieldPath, columnIndex, iconIndex = 1) {
-                const table = this.byId(tableId);
-                const binding = table.getBinding("items");
-
-                // Initialize sort state for this table if it doesn't exist
-                if (!this._sortState[tableId]) {
-                    this._sortState[tableId] = {};
+            if (icon && icon.getMetadata().getName() === "sap.ui.core.Icon") {
+                if (isAscending) {
+                    icon.setSrc("sap-icon://sort-ascending");
+                } else {
+                    icon.setSrc("sap-icon://sort-descending");
                 }
+            }
+        },
 
-                // Reset all other icons in this table to neutral state
-                this._resetAllSortIcons(tableId);
+        _resetCustomersHeaderIcons() {
+            const table = this.byId("customersTable");
+            const columns = table.getColumns();
 
-                // Initialize sort state for this field if it doesn't exist (start with descending first click)
-                if (this._sortState[tableId][fieldPath] === undefined) {
-                    this._sortState[tableId][fieldPath] = false; // false = descending first
-                }
-
-                // Toggle sort direction
-                this._sortState[tableId][fieldPath] = !this._sortState[tableId][fieldPath];
-                const isAscending = this._sortState[tableId][fieldPath];
-
-                // Create sorter
-                const sorter = new Sorter(fieldPath, !isAscending);
-
-                // Apply sorting
-                binding.sort(sorter);
-
-                // Update icon to show current sort direction
-                const columns = table.getColumns();
-                const column = columns[columnIndex];
+            columns.forEach(function (column) {
                 const header = column.getHeader();
 
-                // Handle different header structures
-                let icon = null;
-                if (header.getMetadata().getName() === "sap.m.HBox") {
-                    // Header is an HBox containing items
+                if (header && header.getMetadata().getName() === "sap.m.HBox") {
                     const headerItems = header.getItems();
-                    if (headerItems && headerItems[iconIndex]) {
-                        icon = headerItems[iconIndex];
-                    }
-                } else if (header.getMetadata().getName() === "sap.ui.core.Icon") {
-                    // Header is directly an Icon
-                    icon = header;
-                }
-
-                if (icon && icon.getMetadata().getName() === "sap.ui.core.Icon") {
-                    if (isAscending) {
-                        icon.setSrc("sap-icon://sort-ascending");
-                    } else {
-                        icon.setSrc("sap-icon://sort-descending");
+                    if (headerItems) {
+                        headerItems.forEach(function (item) {
+                            if (item.getMetadata().getName() === "sap.ui.core.Icon" &&
+                                (item.getSrc().includes("sort") || item.getSrc() === "sap-icon://text-align-center")) {
+                                item.setSrc("sap-icon://sort");
+                            }
+                        });
                     }
                 }
-            },
+            });
+        },
 
-            /**
-             * Reset all sort icons in a table to neutral state
-             * @param {string} tableId - ID of the table
-             */
-            _resetAllSortIcons(tableId) {
-                const table = this.byId(tableId);
-                const columns = table.getColumns();
+        onSortInvoicesColumn(fieldPath, columnIndex) {
+            const table = this.byId("invoicesTable");
+            const binding = table.getBinding("items");
 
-                columns.forEach(function (column) {
-                    const header = column.getHeader();
+            if (!this._sortState["invoicesTable"]) {
+                this._sortState["invoicesTable"] = {};
+            }
 
-                    if (header.getMetadata().getName() === "sap.m.HBox") {
-                        // Header is an HBox containing items
-                        const headerItems = header.getItems();
-                        if (headerItems) {
-                            headerItems.forEach(function (item) {
-                                if (item.getMetadata().getName() === "sap.ui.core.Icon" &&
-                                    (item.getSrc().includes("sort") || item.getSrc() === "sap-icon://text-align-center")) {
-                                    item.setSrc("sap-icon://text-align-center");
-                                }
-                            });
-                        }
-                    } else if (header.getMetadata().getName() === "sap.ui.core.Icon") {
-                        // Header is directly an Icon
-                        if (header.getSrc().includes("sort") || header.getSrc() === "sap-icon://text-align-center") {
-                            header.setSrc("sap-icon://text-align-center");
-                        }
-                    }
-                });
-            },
+            this._resetInvoicesHeaderIcons();
 
-            /**
-             * Sort function for customers table (single table with sticky headers)
-             */
-            onSortCustomersColumn(fieldPath, columnIndex) {
-                const table = this.byId("customersTable");
-                const binding = table.getBinding("items");
+            if (this._sortState["invoicesTable"][fieldPath] === undefined) {
+                this._sortState["invoicesTable"][fieldPath] = false;
+            }
 
-                // Initialize sort state for customers table if it doesn't exist
-                if (!this._sortState["customersTable"]) {
-                    this._sortState["customersTable"] = {};
+            this._sortState["invoicesTable"][fieldPath] = !this._sortState["invoicesTable"][fieldPath];
+            const isAscending = this._sortState["invoicesTable"][fieldPath];
+
+            const sorter = new Sorter(fieldPath, !isAscending);
+
+            binding.sort(sorter);
+
+            const columns = table.getColumns();
+            const column = columns[columnIndex];
+            const header = column.getHeader();
+
+            let icon = null;
+            if (header.getMetadata().getName() === "sap.m.HBox") {
+                const headerItems = header.getItems();
+                if (headerItems && headerItems[1]) {
+                    icon = headerItems[1];
                 }
+            }
 
-                // Reset all other icons to neutral state
-                this._resetCustomersHeaderIcons();
-
-                // Initialize sort state for this field if it doesn't exist (start with descending first click)
-                if (this._sortState["customersTable"][fieldPath] === undefined) {
-                    this._sortState["customersTable"][fieldPath] = false; // false = descending first
+            if (icon && icon.getMetadata().getName() === "sap.ui.core.Icon") {
+                if (isAscending) {
+                    icon.setSrc("sap-icon://sort-ascending");
+                } else {
+                    icon.setSrc("sap-icon://sort-descending");
                 }
+            }
+        },
 
-                // Toggle sort direction
-                this._sortState["customersTable"][fieldPath] = !this._sortState["customersTable"][fieldPath];
-                const isAscending = this._sortState["customersTable"][fieldPath];
+        _resetInvoicesHeaderIcons() {
+            const table = this.byId("invoicesTable");
+            const columns = table.getColumns();
 
-                // Create sorter
-                const sorter = new Sorter(fieldPath, !isAscending);
-
-                // Apply sorting to table
-                binding.sort(sorter);
-
-                // Update icon to show current sort direction
-                const columns = table.getColumns();
-                const column = columns[columnIndex];
+            columns.forEach(function (column) {
                 const header = column.getHeader();
 
-                // Handle different header structures
-                let icon = null;
-                if (header.getMetadata().getName() === "sap.m.HBox") {
-                    // Header is an HBox containing items
+                if (header && header.getMetadata().getName() === "sap.m.HBox") {
                     const headerItems = header.getItems();
-                    if (headerItems && headerItems[1]) {
-                        icon = headerItems[1];
+                    if (headerItems) {
+                        headerItems.forEach(function (item) {
+                            if (item.getMetadata().getName() === "sap.ui.core.Icon" &&
+                                (item.getSrc().includes("sort") || item.getSrc() === "sap-icon://text-align-center")) {
+                                item.setSrc("sap-icon://sort");
+                            }
+                        });
                     }
                 }
+            });
+        },
 
-                if (icon && icon.getMetadata().getName() === "sap.ui.core.Icon") {
-                    if (isAscending) {
-                        icon.setSrc("sap-icon://sort-ascending");
-                    } else {
-                        icon.setSrc("sap-icon://sort-descending");
-                    }
+        onSortOrdersColumn(fieldPath, columnIndex) {
+            const table = this.byId("ordersTable");
+            const binding = table.getBinding("items");
+
+            if (!this._sortState["ordersTable"]) {
+                this._sortState["ordersTable"] = {};
+            }
+
+            this._resetOrdersHeaderIcons();
+
+            if (this._sortState["ordersTable"][fieldPath] === undefined) {
+                this._sortState["ordersTable"][fieldPath] = false;
+            }
+
+            this._sortState["ordersTable"][fieldPath] = !this._sortState["ordersTable"][fieldPath];
+            const isAscending = this._sortState["ordersTable"][fieldPath];
+
+            const sorter = new Sorter(fieldPath, !isAscending);
+
+            binding.sort(sorter);
+
+            const columns = table.getColumns();
+            const column = columns[columnIndex];
+            const header = column.getHeader();
+
+            let icon = null;
+            if (header.getMetadata().getName() === "sap.m.HBox") {
+                const headerItems = header.getItems();
+                if (headerItems && headerItems[1]) {
+                    icon = headerItems[1];
                 }
-            },
+            }
 
-            /**
-             * Reset all sort icons in customers table to neutral state
-             */
-            _resetCustomersHeaderIcons() {
-                const table = this.byId("customersTable");
-                const columns = table.getColumns();
-
-                columns.forEach(function (column) {
-                    const header = column.getHeader();
-
-                    if (header && header.getMetadata().getName() === "sap.m.HBox") {
-                        // Header is an HBox containing items
-                        const headerItems = header.getItems();
-                        if (headerItems) {
-                            headerItems.forEach(function (item) {
-                                if (item.getMetadata().getName() === "sap.ui.core.Icon" &&
-                                    (item.getSrc().includes("sort") || item.getSrc() === "sap-icon://text-align-center")) {
-                                    item.setSrc("sap-icon://sort");
-                                }
-                            });
-                        }
-                    }
-                });
-            },
-
-            /**
-             * Sort function for invoices table (single table with sticky headers)
-             */
-            onSortInvoicesColumn(fieldPath, columnIndex) {
-                const table = this.byId("invoicesTable");
-                const binding = table.getBinding("items");
-
-                // Initialize sort state for invoices table if it doesn't exist
-                if (!this._sortState["invoicesTable"]) {
-                    this._sortState["invoicesTable"] = {};
+            if (icon && icon.getMetadata().getName() === "sap.ui.core.Icon") {
+                if (isAscending) {
+                    icon.setSrc("sap-icon://sort-ascending");
+                } else {
+                    icon.setSrc("sap-icon://sort-descending");
                 }
+            }
+        },
 
-                // Reset all other icons to neutral state
-                this._resetInvoicesHeaderIcons();
+        _resetOrdersHeaderIcons() {
+            const table = this.byId("ordersTable");
+            const columns = table.getColumns();
 
-                // Initialize sort state for this field if it doesn't exist (start with descending first click)
-                if (this._sortState["invoicesTable"][fieldPath] === undefined) {
-                    this._sortState["invoicesTable"][fieldPath] = false; // false = descending first
-                }
-
-                // Toggle sort direction
-                this._sortState["invoicesTable"][fieldPath] = !this._sortState["invoicesTable"][fieldPath];
-                const isAscending = this._sortState["invoicesTable"][fieldPath];
-
-                // Create sorter
-                const sorter = new Sorter(fieldPath, !isAscending);
-
-                // Apply sorting to table
-                binding.sort(sorter);
-
-                // Update icon to show current sort direction
-                const columns = table.getColumns();
-                const column = columns[columnIndex];
+            columns.forEach(function (column) {
                 const header = column.getHeader();
 
-                // Handle different header structures
-                let icon = null;
-                if (header.getMetadata().getName() === "sap.m.HBox") {
-                    // Header is an HBox containing items
+                if (header && header.getMetadata().getName() === "sap.m.HBox") {
                     const headerItems = header.getItems();
-                    if (headerItems && headerItems[1]) {
-                        icon = headerItems[1];
+                    if (headerItems) {
+                        headerItems.forEach(function (item) {
+                            if (item.getMetadata().getName() === "sap.ui.core.Icon" &&
+                                (item.getSrc().includes("sort") || item.getSrc() === "sap-icon://text-align-center")) {
+                                item.setSrc("sap-icon://sort");
+                            }
+                        });
                     }
                 }
+            });
+        },
 
-                if (icon && icon.getMetadata().getName() === "sap.ui.core.Icon") {
-                    if (isAscending) {
-                        icon.setSrc("sap-icon://sort-ascending");
-                    } else {
-                        icon.setSrc("sap-icon://sort-descending");
-                    }
-                }
-            },
+        onSortCustomerId() {
+            this.onSortCustomersColumn("CustomerID", 0);
+        },
 
-            /**
-             * Reset all sort icons in invoices table to neutral state
-             */
-            _resetInvoicesHeaderIcons() {
-                const table = this.byId("invoicesTable");
-                const columns = table.getColumns();
+        onSortCountry() {
+            this.onSortCustomersColumn("Country", 3);
+        },
 
-                columns.forEach(function (column) {
-                    const header = column.getHeader();
+        onSortProductName() {
+            this.onSortInvoicesColumn("ProductName", 1);
+        },
 
-                    if (header && header.getMetadata().getName() === "sap.m.HBox") {
-                        // Header is an HBox containing items
-                        const headerItems = header.getItems();
-                        if (headerItems) {
-                            headerItems.forEach(function (item) {
-                                if (item.getMetadata().getName() === "sap.ui.core.Icon" &&
-                                    (item.getSrc().includes("sort") || item.getSrc() === "sap-icon://text-align-center")) {
-                                    item.setSrc("sap-icon://sort");
-                                }
-                            });
-                        }
-                    }
+        onSortCustomerName() {
+            this.onSortInvoicesColumn("CustomerName", 2);
+        },
+
+        onSortCustomerIdOrders() {
+            this.onSortOrdersColumn("CustomerID", 2);
+        },
+
+        onSortOrderDate() {
+            this.onSortOrdersColumn("OrderDate", 4);
+        },
+
+        onSortStatus() {
+            this.onSortOrdersColumn("Status", 6);
+        },
+
+        onSettingsPress: async function () {
+            if (!this.settingsDialog) {
+                this.settingsDialog = await this.loadFragment({
+                    name: "appiuimodule.views.SettingsDialog"
                 });
-            },
+            }
+            this.settingsDialog.open();
+        },
 
-            /**
-             * Sort function for orders table (single table with sticky headers)
-             */
-            onSortOrdersColumn(fieldPath, columnIndex) {
-                const table = this.byId("ordersTable");
-                const binding = table.getBinding("items");
-
-                // Initialize sort state for orders table if it doesn't exist
-                if (!this._sortState["ordersTable"]) {
-                    this._sortState["ordersTable"] = {};
-                }
-
-                // Reset all other icons to neutral state
-                this._resetOrdersHeaderIcons();
-
-                // Initialize sort state for this field if it doesn't exist (start with descending first click)
-                if (this._sortState["ordersTable"][fieldPath] === undefined) {
-                    this._sortState["ordersTable"][fieldPath] = false; // false = descending first
-                }
-
-                // Toggle sort direction
-                this._sortState["ordersTable"][fieldPath] = !this._sortState["ordersTable"][fieldPath];
-                const isAscending = this._sortState["ordersTable"][fieldPath];
-
-                // Create sorter
-                const sorter = new Sorter(fieldPath, !isAscending);
-
-                // Apply sorting to table
-                binding.sort(sorter);
-
-                // Update icon to show current sort direction
-                const columns = table.getColumns();
-                const column = columns[columnIndex];
-                const header = column.getHeader();
-
-                // Handle different header structures
-                let icon = null;
-                if (header.getMetadata().getName() === "sap.m.HBox") {
-                    // Header is an HBox containing items
-                    const headerItems = header.getItems();
-                    if (headerItems && headerItems[1]) {
-                        icon = headerItems[1];
-                    }
-                }
-
-                if (icon && icon.getMetadata().getName() === "sap.ui.core.Icon") {
-                    if (isAscending) {
-                        icon.setSrc("sap-icon://sort-ascending");
-                    } else {
-                        icon.setSrc("sap-icon://sort-descending");
-                    }
-                }
-            },
-
-            /**
-             * Reset all sort icons in orders table to neutral state
-             */
-            _resetOrdersHeaderIcons() {
-                const table = this.byId("ordersTable");
-                const columns = table.getColumns();
-
-                columns.forEach(function (column) {
-                    const header = column.getHeader();
-
-                    if (header && header.getMetadata().getName() === "sap.m.HBox") {
-                        // Header is an HBox containing items
-                        const headerItems = header.getItems();
-                        if (headerItems) {
-                            headerItems.forEach(function (item) {
-                                if (item.getMetadata().getName() === "sap.ui.core.Icon" &&
-                                    (item.getSrc().includes("sort") || item.getSrc() === "sap-icon://text-align-center")) {
-                                    item.setSrc("sap-icon://sort");
-                                }
-                            });
-                        }
-                    }
+        onLogoutPress: async function () {
+            if (!this.logoutDialog) {
+                this.logoutDialog = await this.loadFragment({
+                    name: "appiuimodule.views.LogoutDialog"
                 });
-            },
+            }
 
-            // Specific sort handlers for allowed columns only
+            this.logoutDialog.setTitle(this._bundle.getText("logoutTitle"));
+            this.logoutDialog.setIcon("sap-icon://log");
 
-            // Customers table - CustomerID and Country sorting allowed
-            onSortCustomerId() {
-                this.onSortCustomersColumn("CustomerID", 0);
-            },
+            this.logoutDialog.removeAllContent();
+            this.logoutDialog.addContent(
+                new sap.m.VBox({
+                    alignItems: "Center",
+                    items: [
+                        new sap.m.Text({
+                            text: this._bundle.getText("logoutConfirmationMessage"),
+                            textAlign: "Center",
+                            width: "100%"
+                        })
+                    ]
+                })
+            );
 
-            onSortCountry() {
-                this.onSortCustomersColumn("Country", 3);
-            },
+            this.logoutDialog.open();
+        },
 
-            // Invoice table - only Product Name and Customer sorting allowed  
-            onSortProductName() {
-                this.onSortInvoicesColumn("ProductName", 1);
-            },
+        onSettingsSave: function () {
+            MessageToast.show(this._bundle.getText("settingsSavedMessage"));
+            this.settingsDialog.close();
+        },
 
-            onSortCustomerName() {
-                this.onSortInvoicesColumn("CustomerName", 2);
-            },
-
-            // Orders table - CustomerID and Status sorting allowed
-            onSortCustomerIdOrders() {
-                this.onSortOrdersColumn("CustomerID", 2);
-            },
-
-            onSortOrderDate() {
-                this.onSortOrdersColumn("OrderDate", 4);
-            },
-
-            onSortStatus() {
-                this.onSortOrdersColumn("Status", 6);
-            },
-
-            onSettingsPress: async function () {
-                if (!this.settingsDialog) {
-                    this.settingsDialog = await this.loadFragment({
-                        name: "appiuimodule.views.SettingsDialog"
-                    });
-                }
-                this.settingsDialog.open();
-            },
-
-            onLogoutPress: async function () {
-                if (!this.logoutDialog) {
-                    this.logoutDialog = await this.loadFragment({
-                        name: "appiuimodule.views.LogoutDialog"
-                    });
-                }
-
-                // Set title and icon dynamically for logout
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                this.logoutDialog.setTitle(bundle.getText("logoutTitle"));
-                this.logoutDialog.setIcon("sap-icon://log");
-
-                // Clear previous content and add logout confirmation content
-                this.logoutDialog.removeAllContent();
-                this.logoutDialog.addContent(
-                    new sap.m.VBox({
-                        alignItems: "Center",
-                        items: [
-                            new sap.m.Text({
-                                text: bundle.getText("logoutConfirmationMessage"),
-                                textAlign: "Center",
-                                width: "100%"
-                            })
-                        ]
-                    })
-                );
-
-                this.logoutDialog.open();
-            },
-
-            onSettingsSave: function () {
-                // Placeholder for save functionality
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                sap.m.MessageToast.show(bundle.getText("settingsSavedMessage"));
+        onCloseDialog: function () {
+            if (this.settingsDialog && this.settingsDialog.isOpen()) {
                 this.settingsDialog.close();
-            },
-
-            onCloseDialog: function () {
-                // Generic close function for all dialogs
-                if (this.settingsDialog && this.settingsDialog.isOpen()) {
-                    this.settingsDialog.close();
-                }
-                if (this.logoutDialog && this.logoutDialog.isOpen()) {
-                    this.logoutDialog.close();
-                }
-            },
-
-            onLogoutConfirm: function () {
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("logout");
+            }
+            if (this.logoutDialog && this.logoutDialog.isOpen()) {
                 this.logoutDialog.close();
-            },
+            }
+        },
 
-            onHomepagePress: function () {
+        onLogoutConfirm: function () {
+            const oRouter = this.getOwnerComponent().getRouter();
+            oRouter.navTo("logout");
+            this.logoutDialog.close();
+        },
+
+        onHomepagePress: function () {
+            const oRouter = this.getOwnerComponent().getRouter();
+            oRouter.navTo("entrypanel");
+        },
+
+        onNavBack: function () {
+            const oHistory = History.getInstance();
+            const sPreviousHash = oHistory.getPreviousHash();
+
+            if (sPreviousHash !== undefined) {
+                window.history.go(-1);
+            } else {
                 const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("entrypanel");
-            },
-
-            onNavBack: function () {
-                const oHistory = History.getInstance();
-                const sPreviousHash = oHistory.getPreviousHash();
-
-                if (sPreviousHash !== undefined) {
-                    window.history.go(-1);
-                } else {
-                    const oRouter = this.getOwnerComponent().getRouter();
-                    oRouter.navTo("entrypanel", {}, true);
-                }
-            },
-        });
-    }
-);
+                oRouter.navTo("entrypanel", {}, true);
+            }
+        },
+    });
+});

@@ -7,27 +7,22 @@ sap.ui.define(
         "sap/ui/model/Sorter",
         "sap/ui/Device",
         "sap/m/MessageToast",
-        "sap/ui/model/json/JSONModel"
+        "sap/ui/model/json/JSONModel",
+        "sap/m/MessageBox"
     ],
-    function (Controller, Filter, FilterOperator, History, Sorter, Device, MessageToast, JSONModel) {
+    function (Controller, Filter, FilterOperator, History, Sorter, Device, MessageToast, JSONModel, MessageBox) {
         'use strict';
 
         return Controller.extend('appiuimodule.controllers.ReviewOrders', {
-
-            // Object to track sort state for different columns
+            _bundle: null,
             _sortState: {},
-
-            // Store original orders data for filtering
             _originalOrdersData: null,
-
-            // Track orders loading for growing functionality - start with 50
             _ordersSkip: 0,
             _ordersHasMore: true,
 
             onInit: function () {
-                // Load orders data when controller initializes
+                this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
                 this._loadOrdersModel().then(() => {
-                    // Set sticky header for orders table after data is loaded
                     this._setStickyHeaderForOrdersTable();
                 });
                 this.setViewModel();
@@ -38,7 +33,6 @@ sap.ui.define(
                 if (Device.system.phone || Device.system.tablet) {
                     isMobile = true;
                 }
-                // Create view model
                 var viewModel = new JSONModel({
                     isMobile: isMobile
                 });
@@ -65,7 +59,6 @@ sap.ui.define(
                 }
 
                 try {
-                    // Load first 50 orders
                     let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Orders?$top=50";
 
                     const response = await fetch(url);
@@ -74,25 +67,20 @@ sap.ui.define(
                     }
                     const data = await response.json();
 
-                    // Add Status property to each order
                     if (data.value) {
                         data.value.forEach(function (order) {
                             order.Status = order.ShippedDate ? "Shipped" : "Pending";
                         });
                     }
 
-                    // Store original data for filtering/search
                     this._originalOrdersData = data.value;
 
-                    // Add hasMore property for button visibility
                     data.hasMore = data.value && data.value.length === 50;
 
-                    // Create and set the model
                     const oOrdersModel = new JSONModel();
                     oOrdersModel.setData(data);
                     this.getOwnerComponent().setModel(oOrdersModel, "orders");
 
-                    // Initialize skip counter and check if there are more records
                     this._ordersSkip = 50;
                     this._ordersHasMore = data.hasMore;
                 } catch (error) {
@@ -100,8 +88,7 @@ sap.ui.define(
                     const oOrdersModel = new JSONModel();
                     oOrdersModel.setData({ value: [], hasMore: false });
                     this.getOwnerComponent().setModel(oOrdersModel, "orders");
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    MessageToast.show(bundle.getText("failedToLoadOrdersMessage"));
+                    MessageBox.error(this._bundle.getText("failedToLoadOrdersMessage"));
                 } finally {
                     oTable.setBusy(false);
                 }
@@ -126,28 +113,23 @@ sap.ui.define(
                     }
                     const newData = await response.json();
 
-                    // Add Status property to new orders
                     if (newData.value) {
                         newData.value.forEach(function (order) {
                             order.Status = order.ShippedDate ? "Shipped" : "Pending";
                         });
                     }
 
-                    // Append new data to existing data
                     if (newData.value && newData.value.length > 0) {
                         currentData.value = currentData.value.concat(newData.value);
 
-                        // Update original data for filtering
                         this._originalOrdersData = currentData.value;
 
-                        // Update skip counter and check if there are more records
                         this._ordersSkip += newData.value.length;
                         this._ordersHasMore = newData.value.length === 50;
                         currentData.hasMore = this._ordersHasMore;
 
                         oOrdersModel.setData(currentData);
                     } else {
-                        // No more data available
                         this._ordersHasMore = false;
                         currentData.hasMore = false;
                         oOrdersModel.setData(currentData);
@@ -157,8 +139,7 @@ sap.ui.define(
                     this._ordersHasMore = false;
                     currentData.hasMore = false;
                     oOrdersModel.setData(currentData);
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    MessageToast.show(bundle.getText("failedToLoadMoreOrdersMessage"));
+                    MessageBox.error(this._bundle.getText("failedToLoadMoreOrdersMessage"));
                 } finally {
                     oTable.setBusy(false);
                 }
@@ -169,8 +150,6 @@ sap.ui.define(
                 const sPreviousHash = oHistory.getPreviousHash();
 
                 if (sPreviousHash !== undefined) {
-                    //cannot be done by router - we need to split the history and then check what
-                    //is the property key of the previous hash
                     window.history.go(-1);
                 } else {
                     const oRouter = this.getOwnerComponent().getRouter();
@@ -243,17 +222,11 @@ sap.ui.define(
                 oOrdersModel.setProperty("/value", filteredOrders);
             },
 
-            /**
-             * Handle status filter change
-             */
             onStatusFilterChange: function (oEvent) {
                 const selectedKey = oEvent.getParameter("selectedItem").getKey();
                 this.filterOrdersByStatus(selectedKey);
             },
 
-            /**
-             * Filter orders by status
-             */
             filterOrdersByStatus: function (status) {
                 const oOrdersModel = this.getOwnerComponent().getModel("orders");
 
@@ -284,9 +257,6 @@ sap.ui.define(
                 oOrdersModel.setProperty("/value", filteredOrders);
             },
 
-            /**
-             * Sort function for orders table
-             */
             onSortOrdersColumn(fieldPath, columnIndex) {
                 const table = this.byId("reviewOrdersTable");
                 const binding = table.getBinding("items");
@@ -345,7 +315,6 @@ sap.ui.define(
                 });
             },
 
-            // Specific sort handlers
             onSortCustomerIdOrders() {
                 this.onSortOrdersColumn("CustomerID", 2);
             },
@@ -358,7 +327,6 @@ sap.ui.define(
                 this.onSortOrdersColumn("Status", 6);
             },
 
-            // Settings and Logout dialog handlers
             onSettingsPress: async function () {
                 if (!this.settingsDialog) {
                     this.settingsDialog = await this.loadFragment({
@@ -378,8 +346,7 @@ sap.ui.define(
             },
 
             onSettingsSave: function () {
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                sap.m.MessageToast.show(bundle.getText("settingsSavedMessage"));
+                MessageToast.show(this._bundle.getText("settingsSavedMessage"));
                 this.settingsDialog.close();
             },
 

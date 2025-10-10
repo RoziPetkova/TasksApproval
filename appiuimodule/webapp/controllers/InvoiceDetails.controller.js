@@ -3,92 +3,25 @@ sap.ui.define(
         "sap/ui/core/mvc/Controller",
         "sap/ui/core/routing/History",
         "sap/m/MessageToast",
-        "sap/ui/model/json/JSONModel"
+        "sap/ui/model/json/JSONModel",
+        "sap/m/MessageBox"
     ],
-    function (Controller, History, MessageToast, JSONModel) {
+    function (Controller, History, MessageToast, JSONModel, MessageBox) {
         "use strict";
 
         return Controller.extend("appiuimodule.controllers.InvoiceDetails", {
-            /**
-             * Called when a controller is instantiated and its View controls (if available) are already created.
-             * Can be used to modify the View before it is displayed, to bind event handlers and do other one-time initialization.
-             * @memberOf appiuimodule.controllers.InvoiceDetails
-             */
+            _bundle: null,
+
             onInit() {
+                this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.getRoute("invoicedetails").attachPatternMatched(this.onObjectMatched, this);
             },
 
-            /**
-             * Set sticky headers for products table
-             * @private
-             */
-            _setStickyHeaderForProductsTable: function () {
-                sap.ui.require([
-                    "sap/m/library"
-                ], function (mobileLibrary) {
-                    const Sticky = mobileLibrary.Sticky;
-
-                    // Set sticky for products table
-                    const oProductsTable = this.byId("productsTable");
-                    if (oProductsTable) {
-                        oProductsTable.setSticky([Sticky.ColumnHeaders]);
-                    }
-                }.bind(this));
-            },
-
             onObjectMatched: async function (oEvent) {
                 var sOrderID = oEvent.getParameter("arguments").OrderID;
-                // Fetch all products for this OrderID and extract current invoice from the result
                 await this.loadOrderData(sOrderID);
-            },
-
-            onNavBack() {
-                const oHistory = History.getInstance();
-                const sPreviousHash = oHistory.getPreviousHash();
-
-                if (sPreviousHash !== undefined) {
-                    window.history.go(-1);
-                } else {
-                    const oRouter = this.getOwnerComponent().getRouter();
-                    oRouter.navTo("overview", {}, true);
-                }
-            },
-
-            formatCurrency: function (value) {
-                if (!value) return "0.00";
-                return parseFloat(value).toFixed(2);
-            },
-
-            formatDate: function (dateString) {
-                if (!dateString) return "";
-                var date = new Date(dateString);
-                return date.toLocaleDateString();
-            },
-
-            formatDiscount: function (value) {
-                if (!value) return "0%";
-                return (value * 100).toFixed(1) + "%";
-            },
-
-            loadInvoiceProperties(invoice) {
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-
-                return new JSONModel({
-                    invoiceDetails: [
-                        { label: bundle.getText("orderIdColumn"), value: invoice.OrderID },
-                        { label: bundle.getText("productNameColumn"), value: invoice.ProductName },
-                        { label: bundle.getText("customerColumn"), value: invoice.CustomerName },
-                        { label: bundle.getText("quantityLabel"), value: invoice.Quantity },
-                        { label: bundle.getText("unitPriceLabel"), value: this.formatCurrency(invoice.UnitPrice) },
-                        { label: bundle.getText("discountLabel"), value: (invoice.Discount * 100).toFixed(1) + "%" },
-                        { label: bundle.getText("extendedPriceLabel"), value: this.formatCurrency(invoice.ExtendedPrice) },
-                        { label: bundle.getText("salespersonLabel"), value: invoice.Salesperson },
-                        { label: bundle.getText("shipperNameLabel"), value: invoice.ShipperName },
-                        { label: bundle.getText("orderDateColumn"), value: this.formatDate(invoice.OrderDate) },
-                        { label: bundle.getText("freightLabel"), value: this.formatCurrency(invoice.Freight) }
-                    ]
-                });
+                this.setStickyHeaderForProductsTable();
             },
 
             loadOrderData: async function (orderID) {
@@ -108,25 +41,17 @@ sap.ui.define(
                         // Use any entry for invoice details
                         // since they all share the same order information (OrderID, CustomerName, OrderDate, etc.)
                         const oInvoice = data.value[0];
-
-                        // Set invoice details model using the selected entry
                         var oInvoiceModel = this.loadInvoiceProperties(oInvoice);
                         this.getView().setModel(oInvoiceModel, "invoiceModel");
 
-                        // Set products model with all entries - each entry represents one product line
                         var oProductsModel = new JSONModel({
                             products: data.value
                         });
                         this.getView().setModel(oProductsModel, "productsModel");
-
-                        // Set sticky headers after data is loaded
-                        this._setStickyHeaderForProductsTable();
                     }
                 } catch (error) {
                     console.error("Error loading order data:", error);
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    MessageToast.show(bundle.getText("failedToLoadOrderDataMessage"));
-                    // Set empty models on error
+                    MessageBox.error(this._bundle.getText("failedToLoadOrderDataMessage"));
                     var oProductsModel = new JSONModel({
                         products: []
                     });
@@ -138,26 +63,83 @@ sap.ui.define(
                 }
             },
 
+            onNavBack() {
+                const oHistory = History.getInstance();
+                const sPreviousHash = oHistory.getPreviousHash();
+
+                if (sPreviousHash !== undefined) {
+                    window.history.go(-1);
+                } else {
+                    const oRouter = this.getOwnerComponent().getRouter();
+                    oRouter.navTo("overview", {}, true);
+                }
+            },
+
+            setStickyHeaderForProductsTable: function () {
+                sap.ui.require([
+                    "sap/m/library"
+                ], function (mobileLibrary) {
+                    const Sticky = mobileLibrary.Sticky;
+
+                    // Set sticky for products table
+                    const oProductsTable = this.byId("productsTable");
+                    if (oProductsTable) {
+                        oProductsTable.setSticky([Sticky.ColumnHeaders]);
+                    }
+                }.bind(this));
+            },
+
+            formatCurrency: function (value) {
+                if (!value) return "0.00";
+                return parseFloat(value).toFixed(2);
+            },
+
+            formatDate: function (dateString) {
+                if (!dateString) return "";
+                var date = new Date(dateString);
+                return date.toLocaleDateString();
+            },
+
+            formatDiscount: function (value) {
+                if (!value) return "0%";
+                return (value * 100).toFixed(1) + "%";
+            },
+
+            loadInvoiceProperties(invoice) {
+                return new JSONModel({
+                    invoiceDetails: [
+                        { label: this._bundle.getText("orderIdColumn"), value: invoice.OrderID },
+                        { label: this._bundle.getText("productNameColumn"), value: invoice.ProductName },
+                        { label: this._bundle.getText("customerColumn"), value: invoice.CustomerName },
+                        { label: this._bundle.getText("quantityLabel"), value: invoice.Quantity },
+                        { label: this._bundle.getText("unitPriceLabel"), value: this.formatCurrency(invoice.UnitPrice) },
+                        { label: this._bundle.getText("discountLabel"), value: (invoice.Discount * 100).toFixed(1) + "%" },
+                        { label: this._bundle.getText("extendedPriceLabel"), value: this.formatCurrency(invoice.ExtendedPrice) },
+                        { label: this._bundle.getText("salespersonLabel"), value: invoice.Salesperson },
+                        { label: this._bundle.getText("shipperNameLabel"), value: invoice.ShipperName },
+                        { label: this._bundle.getText("orderDateColumn"), value: this.formatDate(invoice.OrderDate) },
+                        { label: this._bundle.getText("freightLabel"), value: this.formatCurrency(invoice.Freight) }
+                    ]
+                });
+            },
+
             onGoToCustomerDetails: async function () {
                 const oInvoiceModel = this.getView().getModel("invoiceModel");
                 const aInvoiceDetails = oInvoiceModel.getProperty("/invoiceDetails");
 
                 // Find customer name from the invoice details
                 const oCustomerDetail = aInvoiceDetails.find(function (detail) {
-                    return detail.label === this.getOwnerComponent().getModel("i18n").getResourceBundle().getText("customerColumn");
+                    return detail.label === this._bundle.getText("customerColumn");
                 }.bind(this));
 
                 if (oCustomerDetail && oCustomerDetail.value) {
                     const customerName = oCustomerDetail.value;
                     let oCustomer = null;
 
-                    // Check if customers model exists
                     const oCustomersModel = this.getOwnerComponent().getModel("customers");
                     if (!oCustomersModel || !oCustomersModel.getProperty("/value")) {
-                        // Model doesn't exist, fetch customer from API
                         oCustomer = await this.loadCustomerByName(customerName);
                     } else {
-                        // Find CustomerID from CustomerName in existing model
                         const aCustomers = oCustomersModel.getProperty("/value");
                         oCustomer = aCustomers.find(function (customer) {
                             return customer.CompanyName === customerName;
@@ -183,14 +165,12 @@ sap.ui.define(
                         return data.value[0];
                     } else {
                         console.error("Customer not found in API:", customerName);
-                        var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                        MessageToast.show(bundle.getText("customerNotFoundMessage", [customerName]));
+                        MessageBox.error(this._bundle.getText("customerNotFoundMessage", [customerName]));
                         return null;
                     }
                 } catch (error) {
                     console.error("Error loading customer by name:", error);
-                    var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                    MessageToast.show(bundle.getText("failedToLoadCustomerMessage", [customerName]));
+                    MessageBox.error(this._bundle.getText("failedToLoadCustomerMessage", [customerName]));
                     return null;
                 }
             },
@@ -210,14 +190,11 @@ sap.ui.define(
             },
 
             onSettingsSave: function () {
-                // Placeholder for save functionality
-                var bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                MessageToast.show(bundle.getText("settingsSavedMessage"));
+                MessageToast.show(this._bundle.getText("settingsSavedMessage"));
                 this.settingsDialog.close();
             },
 
             onCloseDialog: function () {
-                // Generic close function for all dialogs
                 if (this.settingsDialog && this.settingsDialog.isOpen()) {
                     this.settingsDialog.close();
                 }

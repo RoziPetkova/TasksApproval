@@ -18,33 +18,21 @@ sap.ui.define(
                 this.getView().setModel(oViewModel, "view");
             },
 
-            /**
-             * Navigate to Review Orders view
-             */
             onReviewOrdersPress: function () {
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("revieworders");
             },
 
-            /**
-             * Navigate to Review Customers view
-             */
             onReviewCustomersPress: function () {
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("reviewcustomers");
             },
 
-            /**
-             * Navigate to Review Invoices view
-             */
             onReviewInvoicesPress: function () {
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("reviewinvoices");
             },
 
-            /**
-             * Navigate to Overview
-             */
             onOverviewPress: function () {
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("overview");
