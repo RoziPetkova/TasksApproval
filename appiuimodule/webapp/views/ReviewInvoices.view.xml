@@ -48,17 +48,26 @@
                                 </Toolbar>
                             </VBox>
 
-                            <VBox renderType="Bare" height="75%">
+                            <VBox renderType="Bare" height="85%">
                                 <!-- Single Table with Programmatic Sticky Headers -->
                                 <ScrollContainer height="100%" vertical="true"
                                     horizontal="false">
                                     <Table
                                         id="reviewInvoicesTable"
-                                        items="{ path: 'invoices>/value' }"
+                                        items="{
+                                                path: 'odataModel>/Invoices',
+                                                parameters: {
+                                                    $top: 10,
+                                                    operationMode: 'Server'
+                                                }
+                                            }"
                                         width="100%"
                                         showNoData="false"
                                         mode="None"
-                                        busyIndicatorDelay="0">
+                                        busyIndicatorDelay="0"
+                                        growing="true"
+                                        growingThreshold="10"
+                                        growingTriggerText="{i18n>loadMoreInvoicesButton}">
                                         <columns>
                                             <Column width="5em">
                                                 <Text text="{i18n>orderIdColumn}" />
@@ -96,13 +105,13 @@
                                                 type="Navigation"
                                                 press=".onInvoicePress">
                                                 <cells>
-                                                    <Text text="{invoices>OrderID}" />
-                                                    <Text text="{invoices>ProductName}" />
-                                                    <Text text="{invoices>CustomerName}" />
+                                                    <Text text="{odataModel>OrderID}" />
+                                                    <Text text="{odataModel>ProductName}" />
+                                                    <Text text="{odataModel>CustomerName}" />
                                                     <Text
-                                                        text="{path: 'invoices>OrderDate', formatter: '.formatDate'}" />
+                                                        text="{path: 'odataModel>OrderDate', formatter: '.formatDate'}" />
                                                     <Text text="{i18n>activeStatusValue}" />
-                                                    <Text text="{invoices>ExtendedPrice}" />
+                                                    <Text text="{odataModel>ExtendedPrice}" />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>
@@ -110,16 +119,6 @@
                                 </ScrollContainer>
                             </VBox>
 
-                            <!-- Load More Button at Bottom -->
-                            <HBox justifyContent="End">
-                                <Button
-                                    id="loadMoreInvoicesBtn"
-                                    text="{i18n>loadMoreInvoicesButton}"
-                                    type="Transparent"
-                                    press=".onLoadMoreInvoices"
-                                    enabled="{invoices>/hasMore}"
-                                    class="sapUiSmallMarginTop sapUiSmallMarginEnd" />
-                            </HBox>
                         </VBox>
                     </f:content>
                 </f:Card>

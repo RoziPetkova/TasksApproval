@@ -21,9 +21,8 @@ sap.ui.define(
 
             onInit: function () {
                 this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                this._loadInvoicesModel().then(() => {
-                    this._setStickyHeaderForInvoicesTable();
-                });
+                
+                this._setStickyHeaderForInvoicesTable();
                 this.setViewModel();
             },
 
@@ -49,80 +48,6 @@ sap.ui.define(
                         oInvoicesTable.setSticky([Sticky.ColumnHeaders]);
                     }
                 }.bind(this));
-            },
-
-            _loadInvoicesModel: async function () {
-                var oInvoicesModel = new JSONModel();
-                const oTable = this.byId("reviewInvoicesTable");
-                if (oTable) {
-                    oTable.setBusy(true);
-                }
-
-                try {
-                    const response = await fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$top=50");
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-
-                    data.hasMore = data.value && data.value.length === 50;
-
-                    oInvoicesModel.setData(data);
-
-                    this._invoicesSkip = 50;
-                    this._invoicesHasMore = data.hasMore;
-                } catch (error) {
-                    console.error("Error loading invoices data:", error);
-                    oInvoicesModel.setData({ value: [], hasMore: false });
-                    MessageBox.error(this._bundle.getText("failedToLoadInvoicesMessage"));
-                } finally {
-                    oTable.setBusy(false);
-                }
-
-                this.getOwnerComponent().setModel(oInvoicesModel, "invoices");
-            },
-
-            onLoadMoreInvoices: async function () {
-                if (!this._invoicesHasMore) {
-                    return;
-                }
-
-                const oInvoicesModel = this.getOwnerComponent().getModel("invoices");
-                const currentData = oInvoicesModel.getData();
-                const oTable = this.byId("reviewInvoicesTable");
-                if (oTable) {
-                    oTable.setBusy(true);
-                }
-
-                try {
-                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$top=50&$skip=${this._invoicesSkip}`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const newData = await response.json();
-
-                    if (newData.value && newData.value.length > 0) {
-                        currentData.value = currentData.value.concat(newData.value);
-
-                        this._invoicesSkip += newData.value.length;
-                        this._invoicesHasMore = newData.value.length === 50;
-                        currentData.hasMore = this._invoicesHasMore;
-
-                        oInvoicesModel.setData(currentData);
-                    } else {
-                        this._invoicesHasMore = false;
-                        currentData.hasMore = false;
-                        oInvoicesModel.setData(currentData);
-                    }
-                } catch (error) {
-                    console.error("Error loading more invoices data: ", error);
-                    this._invoicesHasMore = false;
-                    currentData.hasMore = false;
-                    oInvoicesModel.setData(currentData);
-                    MessageBox.error(this._bundle.getText("failedToLoadMoreInvoicesMessage"));
-                } finally {
-                    oTable.setBusy(false);
-                }
             },
 
             onNavBack: function () {
@@ -159,39 +84,24 @@ sap.ui.define(
             },
 
             onFilterInvoices: async function (oEvent) {
-                const query = oEvent.getParameter("query");
-                await this.searchInvoices(query);
-            },
+                const sQuery = oEvent.getParameter("query");
+                const oTable = this.byId("reviewInvoicesTable");
+                //take the binding object - the link between table content and data
+                const oBinding = oTable.getBinding("items");
 
-            searchInvoices: async function (query) {
-                const oInvoicesModel = this.getOwnerComponent().getModel("invoices");
-
-                try {
-                    let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Invoices";
-
-                    if (query && query.trim()) {
-                        const escapedQuery = query.replace(/'/g, "''");
-                        const filter = `contains(CustomerName,'${escapedQuery}')`;
-                        url += `?$filter=${encodeURIComponent(filter)}`;
-                    } else {
-                        url += "?$top=50";
-                    }
-
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-
-                    data.hasMore = data.value && data.value.length === 50;
-
-                    oInvoicesModel.setData(data);
-
-                    this._invoicesSkip = data.value ? data.value.length : 0;
-                    this._invoicesHasMore = data.hasMore;
-                } catch (error) {
-                    console.error("Error searching invoices:", error);
-                    MessageBox.error(this._bundle.getText("failedToSearchInvoicesMessage"));
+                if (sQuery && sQuery.trim()) {
+                    const oFilter = new Filter({
+                        filters: [
+                            new Filter("CustomerID", FilterOperator.Contains, sQuery),
+                            new Filter("ProductName", FilterOperator.Contains, sQuery)
+                        ],
+                        and: false
+                    });
+                    //"Application"	Your app’s logical/user filters (search, select, etc.)
+                    //"Control"	Filters applied by SAPUI5 controls internally
+                    oBinding.filter(oFilter, "Application");
+                } else {
+                    oBinding.filter([], "Application");
                 }
             },
 

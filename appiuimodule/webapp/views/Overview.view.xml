@@ -45,7 +45,12 @@
                                         <SearchField
                                             width="{= ${viewModel>/isMobile} ? '100%' : '50%' }"
                                             placeholder="{i18n>searchCustomersPlaceholder}"
-                                            search=".onFilterCustomers" />
+                                            search=".onFilter">
+                                            <customData>
+                                                <core:CustomData key="tableId" value="customersTable" />
+                                                <core:CustomData key="filterFields" value="CustomerID,CompanyName" />
+                                            </customData>
+                                        </SearchField>
                                     </Toolbar>
                                 </VBox>
 
@@ -54,11 +59,14 @@
                                         horizontal="false">
                                         <Table
                                             id="customersTable"
-                                            items="{ path: 'customers>/value' }"
+                                            items="{ path: 'odataModel>/Customers', parameters: {$top: 10}}"
                                             width="100%"
                                             showNoData="false"
                                             mode="None"
-                                            busyIndicatorDelay="0">
+                                            busyIndicatorDelay="0"
+                                            growingThreshold = "10"
+                                            growingTriggerText = "More customers"
+                                            growing = "true">
                                             <columns>
                                                 <Column
                                                     width="7em">
@@ -91,10 +99,10 @@
                                                     type="Navigation"
                                                     press=".onCustomerPress">
                                                     <cells>
-                                                        <Text text="{customers>CustomerID}" />
-                                                        <Text text="{customers>CompanyName}" />
-                                                        <Text text="{customers>ContactName}" />
-                                                        <Text text="{customers>Country}" />
+                                                        <Text text="{odataModel>CustomerID}" />
+                                                        <Text text="{odataModel>CompanyName}" />
+                                                        <Text text="{odataModel>ContactName}" />
+                                                        <Text text="{odataModel>Country}" />
                                                     </cells>
                                                 </ColumnListItem>
                                             </items>
@@ -108,7 +116,6 @@
                                         text="{i18n>loadMoreCustomersButton}"
                                         type="Transparent"
                                         press=".onLoadMoreCustomers"
-                                        enabled="{customers>/hasMore}"
                                         class="sapUiSmallMarginTop sapUiSmallMarginEnd" />
                                 </HBox>
                             </VBox>
@@ -255,21 +262,34 @@
                                         <SearchField
                                             width="{= ${viewModel>/isMobile} ? '100%' : '50%' }"
                                             placeholder="{i18n>searchInvoicesPlaceholder}"
-                                            search=".onFilterInvoices" />
+                                            search=".onFilter">
+                                            <customData>
+                                                <core:CustomData key="tableId" value="invoicesTable" />
+                                                <core:CustomData key="filterFields" value="CustomerName,ProductName" />
+                                            </customData>
+                                        </SearchField>
                                     </Toolbar>
                                 </VBox>
 
                                 <VBox renderType="Bare" height="75%">
-                                    <!-- Single Table with Programmatic Sticky Headers -->
                                     <ScrollContainer height="100%" vertical="true"
                                         horizontal="false">
                                         <Table
                                             id="invoicesTable"
-                                            items="{ path: 'invoices>/value' }"
+                                            items="{
+                                                path: 'odataModel>/Invoices',
+                                                parameters: {
+                                                    $top: 10,
+                                                    operationMode: 'Server'
+                                                }
+                                            }"
                                             width="100%"
                                             showNoData="false"
                                             mode="None"
-                                            busyIndicatorDelay="0">
+                                            busyIndicatorDelay="0"
+                                            growing="true"
+                                            growingThreshold="10"
+                                            growingTriggerText="{i18n>loadMoreInvoicesButton}">
                                             <columns>
                                                 <Column width="5em">
                                                     <Text text="{i18n>orderIdColumn}" />
@@ -307,13 +327,13 @@
                                                     type="Navigation"
                                                     press=".onInvoicePress">
                                                     <cells>
-                                                        <Text text="{invoices>OrderID}" />
-                                                        <Text text="{invoices>ProductName}" />
-                                                        <Text text="{invoices>CustomerName}" />
+                                                        <Text text="{odataModel>OrderID}" />
+                                                        <Text text="{odataModel>ProductName}" />
+                                                        <Text text="{odataModel>CustomerName}" />
                                                         <Text
-                                                            text="{path: 'invoices>OrderDate', formatter: '.formatDate'}" />
+                                                            text="{path: 'odataModel>OrderDate', formatter: '.formatDate'}" />
                                                         <Text text="{i18n>activeStatusValue}" />
-                                                        <Text text="{invoices>ExtendedPrice}" />
+                                                        <Text text="{odataModel>ExtendedPrice}" />
                                                     </cells>
                                                 </ColumnListItem>
                                             </items>
@@ -321,14 +341,12 @@
                                     </ScrollContainer>
                                 </VBox>
 
-                                <!-- Load More Button at Bottom -->
                                 <HBox justifyContent="End">
                                     <Button
                                         id="loadMoreInvoicesBtn"
                                         text="{i18n>loadMoreInvoicesButton}"
                                         type="Transparent"
                                         press=".onLoadMoreInvoices"
-                                        enabled="{invoices>/hasMore}"
                                         class="sapUiSmallMarginTop sapUiSmallMarginEnd" />
                                 </HBox>
                             </VBox>

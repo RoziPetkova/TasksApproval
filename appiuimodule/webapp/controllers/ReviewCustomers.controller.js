@@ -1,28 +1,26 @@
 sap.ui.define(
     [
         'sap/ui/core/mvc/Controller',
-        "sap/ui/model/Filter",
-        "sap/ui/model/FilterOperator",
         "sap/ui/core/routing/History",
         "sap/ui/model/Sorter",
+        "sap/ui/model/Filter",
+        "sap/ui/model/FilterOperator",
         "sap/m/MessageToast",
-        "sap/ui/model/json/JSONModel",
         "sap/m/MessageBox"
     ],
-    function (Controller, Filter, FilterOperator, History, Sorter, MessageToast, JSONModel, MessageBox) {
+    function (Controller, History, Sorter, Filter, FilterOperator, MessageToast, MessageBox) {
         'use strict';
 
         return Controller.extend('appiuimodule.controllers.ReviewCustomers', {
             _bundle: null,
             _sortState: {},
-            _customersSkip: 0,
-            _customersHasMore: true,
 
             onInit: function () {
                 this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                this._loadCustomersModel().then(() => {
-                    this._setStickyHeaderForCustomersTable();
-                });
+            },
+
+            onAfterRendering: function () {
+                this._setStickyHeaderForCustomersTable();
             },
 
             _setStickyHeaderForCustomersTable: function() {
@@ -38,85 +36,6 @@ sap.ui.define(
                 }.bind(this));
             },
 
-            _loadCustomersModel: async function () {
-                var oCustomersModel = new JSONModel();
-                const oTable = this.byId("reviewCustomersTable");
-                if (oTable) {
-                    oTable.setBusy(true);
-                }
-
-                try {
-                    const response = await fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$top=20");
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-
-                    data.hasMore = data.value && data.value.length === 20;
-
-                    oCustomersModel.setData(data);
-
-                    this._customersSkip = 20;
-                    this._customersHasMore = data.hasMore;
-                } catch (error) {
-                    console.error("Error loading customers data: ", error);
-                    oCustomersModel.setData({ value: [], hasMore: false });
-                    MessageBox.error(this._bundle.getText("failedToLoadCustomersMessage"));
-                } finally {
-                    const oTable = this.byId("reviewCustomersTable");
-                    if (oTable) {
-                        oTable.setBusy(false);
-                    }
-                }
-
-                this.getOwnerComponent().setModel(oCustomersModel, "customers");
-            },
-
-            onLoadMoreCustomers: async function () {
-                if (!this._customersHasMore) {
-                    return;
-                }
-
-                const oCustomersModel = this.getOwnerComponent().getModel("customers");
-                const currentData = oCustomersModel.getData();
-                const oTable = this.byId("reviewCustomersTable");
-                if (oTable) {
-                    oTable.setBusy(true);
-                }
-
-                try {
-                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$top=20&$skip=${this._customersSkip}`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const newData = await response.json();
-
-                    if (newData.value && newData.value.length > 0) {
-                        currentData.value = currentData.value.concat(newData.value);
-
-                        this._customersSkip += newData.value.length;
-                        this._customersHasMore = newData.value.length === 20;
-                        currentData.hasMore = this._customersHasMore;
-
-                        oCustomersModel.setData(currentData);
-                    } else {
-                        this._customersHasMore = false;
-                        currentData.hasMore = false;
-                        oCustomersModel.setData(currentData);
-                    }
-                } catch (error) {
-                    console.error("Error loading more customers data: ", error);
-                    this._customersHasMore = false;
-                    currentData.hasMore = false;
-                    oCustomersModel.setData(currentData);
-                    MessageBox.error(this._bundle.getText("failedToLoadMoreCustomersMessage"));
-                } finally {
-                    const oTable = this.byId("reviewCustomersTable");
-                    if (oTable) {
-                        oTable.setBusy(false);
-                    }
-                }
-            },
 
             onNavBack: function () {
                 const oHistory = History.getInstance();
@@ -133,56 +52,32 @@ sap.ui.define(
             onCustomerPress(oEvent) {
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("customerdetails",
-                    { CustomerID: oEvent.getSource().getBindingContext("customers").getObject().CustomerID });
+                    { CustomerID: oEvent.getSource().getBindingContext("odataModel").getObject().CustomerID });
             },
 
-            onFilterCustomers: async function (oEvent) {
-                const query = oEvent.getParameter("query");
-                await this.searchCustomers(query);
-            },
-
-            searchCustomers: async function (query) {
-                const oCustomersModel = this.getOwnerComponent().getModel("customers");
+            onFilterCustomers: function (oEvent) {
+                const sQuery = oEvent.getParameter("query");
                 const oTable = this.byId("reviewCustomersTable");
-                if (oTable) {
-                    oTable.setBusy(true);
-                }
+                //take the binding object - the link between table content and data
+                const oBinding = oTable.getBinding("items");
 
-                try {
-                    let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Customers";
-
-                    if (query && query.trim()) {
-                        const escapedQuery = query.replace(/'/g, "''");
-                        const filter = `contains(CustomerID,'${escapedQuery}') or contains(CompanyName,'${escapedQuery}')`;
-                        url += `?$filter=${encodeURIComponent(filter)}`;
-                    } else {
-                        url += "?$top=20";
-                    }
-
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-
-                    data.hasMore = data.value && data.value.length === 20;
-
-                    oCustomersModel.setData(data);
-
-                    this._customersSkip = data.value ? data.value.length : 0;
-                    this._customersHasMore = data.hasMore;
-                } catch (error) {
-                    console.error("Error searching customers:", error);
-                    MessageBox.error(this._bundle.getText("failedToSearchCustomersMessage"));
-                } finally {
-                    const oTable = this.byId("reviewCustomersTable");
-                    if (oTable) {
-                        oTable.setBusy(false);
-                    }
+                if (sQuery && sQuery.trim()) {
+                    const oFilter = new Filter({
+                        filters: [
+                            new Filter("CustomerID", FilterOperator.Contains, sQuery),
+                            new Filter("CompanyName", FilterOperator.Contains, sQuery)
+                        ],
+                        and: false
+                    });
+                    //"Application"	Your app’s logical/user filters (search, select, etc.)
+                    //"Control"	Filters applied by SAPUI5 controls internally
+                    oBinding.filter(oFilter, "Application");
+                } else {
+                    oBinding.filter([], "Application");
                 }
             },
 
-            onSortCustomersColumn(fieldPath, columnIndex) {
+            onSortCustomersColumn: function(fieldPath, columnIndex) {
                 const table = this.byId("reviewCustomersTable");
                 const binding = table.getBinding("items");
 
@@ -219,7 +114,7 @@ sap.ui.define(
                 }
             },
 
-            _resetCustomersHeaderIcons() {
+            _resetCustomersHeaderIcons: function() {
                 const table = this.byId("reviewCustomersTable");
                 const columns = table.getColumns();
 
@@ -240,11 +135,11 @@ sap.ui.define(
                 });
             },
 
-            onSortCustomerId() {
+            onSortCustomerId: function() {
                 this.onSortCustomersColumn("CustomerID", 0);
             },
 
-            onSortCountry() {
+            onSortCountry: function() {
                 this.onSortCustomersColumn("Country", 3);
             },
 

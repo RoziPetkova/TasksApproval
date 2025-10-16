@@ -48,16 +48,25 @@
                                 </Toolbar>
                             </VBox>
 
-                            <VBox height="75%" renderType="Bare">
+                            <VBox height="85%" renderType="Bare">
                                 <ScrollContainer height="100%" vertical="true"
                                     horizontal="false">
                                     <Table
                                         id="reviewCustomersTable"
-                                        items="{ path: 'customers>/value' }"
+                                        items="{
+                                            path: 'odataModel>/Customers',
+                                            parameters: {
+                                                $top: 20,
+                                                operationMode: 'Server'
+                                            }
+                                        }"
                                         width="100%"
                                         showNoData="false"
                                         mode="None"
-                                        busyIndicatorDelay="0">
+                                        busyIndicatorDelay="0"
+                                        growing="true"
+                                        growingThreshold="20"
+                                        growingTriggerText="{i18n>loadMoreCustomersButton}">
                                         <columns>
                                             <Column
                                                 width="7em">
@@ -90,26 +99,16 @@
                                                 type="Navigation"
                                                 press=".onCustomerPress">
                                                 <cells>
-                                                    <Text text="{customers>CustomerID}" />
-                                                    <Text text="{customers>CompanyName}" />
-                                                    <Text text="{customers>ContactName}" />
-                                                    <Text text="{customers>Country}" />
+                                                    <Text text="{odataModel>CustomerID}" />
+                                                    <Text text="{odataModel>CompanyName}" />
+                                                    <Text text="{odataModel>ContactName}" />
+                                                    <Text text="{odataModel>Country}" />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>
                                     </Table>
                                 </ScrollContainer>
                             </VBox>
-                            <!-- Load More Button at Bottom -->
-                            <HBox justifyContent="End">
-                                <Button
-                                    id="loadMoreCustomersBtn"
-                                    text="{i18n>loadMoreCustomersButton}"
-                                    type="Transparent"
-                                    press=".onLoadMoreCustomers"
-                                    enabled="{customers>/hasMore}"
-                                    class="sapUiSmallMarginTop sapUiSmallMarginEnd" />
-                            </HBox>
                         </VBox>
                     </f:content>
                 </f:Card>

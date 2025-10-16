@@ -14,15 +14,15 @@ sap.ui.define(
         return Controller.extend("appiuimodule.controllers.CustomerDetails", {
             _sortState: {},
             bundle: null,
+            _router: null,
 
             onInit() {
                 this.bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-
-                const oRouter = this.getOwnerComponent().getRouter();
+                this._router = this.getOwnerComponent().getRouter();
                 //The context (scope) for the callback function
                 // Ensures that inside onPatternMatched, this refers to the
                 // controller instance
-                oRouter.getRoute("customerdetails").attachPatternMatched(this.onPatternMatched, this);
+                _router.getRoute("customerdetails").attachPatternMatched(this.onPatternMatched, this);
             },
 
             onPatternMatched: async function (oEvent) {
@@ -159,8 +159,7 @@ sap.ui.define(
                     //is the property key of the previous hash
                     window.history.go(-1);
                 } else {
-                    const oRouter = this.getOwnerComponent().getRouter();
-                    oRouter.navTo("overview", {}, true);
+                    cthis._router.navTo("overview", {}, true);
                 }
             },
 
@@ -207,25 +206,22 @@ sap.ui.define(
             },
 
             onCustomerOrderPress(oEvent) {
-                const oRouter = this.getOwnerComponent().getRouter();
                 const oOrder = oEvent.getSource().getBindingContext("customerOrdersModel").getObject();
-                oRouter.navTo("orderdetails", { OrderID: oOrder.OrderID });
+                this._router.navTo("orderdetails", { OrderID: oOrder.OrderID });
             },
 
             onCustomerInvoicePress(oEvent) {
-                const oRouter = this.getOwnerComponent().getRouter();
                 const oInvoice = oEvent.getSource().getBindingContext("customerInvoicesModel").getObject();
                 // Encode ProductName to handle special characters in URL
                 const encodedProductName = encodeURIComponent(oInvoice.ProductName);
-                oRouter.navTo("invoicedetails", {
+                this._router.navTo("invoicedetails", {
                     OrderID: oInvoice.OrderID,
                     ProductName: encodedProductName
                 });
             },
 
             onHomePress: function () {
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("overview");
+                this._router.navTo("overview");
             },
 
             onSettingsPress: async function () {
@@ -262,14 +258,12 @@ sap.ui.define(
             },
 
             onLogoutConfirm: function () {
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("logout");
+                this._router.navTo("logout");
                 this.logoutDialog.close();
             },
 
             onHomepagePress: function () {
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("entrypanel");
+                this._router.navTo("entrypanel");
             },
 
             onSortOrderDate() {
