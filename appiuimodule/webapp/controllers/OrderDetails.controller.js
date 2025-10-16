@@ -4,13 +4,24 @@ sap.ui.define(
         "sap/ui/core/routing/History",
         "sap/ui/model/json/JSONModel",
         "sap/m/MessageToast",
-        "sap/m/MessageBox"
+        "sap/m/MessageBox",
+        "../utils/Formatter",
+        "../utils/Helper"
     ],
-    function (Controller, History, JSONModel, MessageToast, MessageBox) {
+    function (Controller, History, JSONModel, MessageToast, MessageBox, Formatter, Helper) {
         "use strict";
 
         return Controller.extend("appiuimodule.controllers.OrderDetails", {
+            formatter: Formatter,
             _bundle: null,
+
+            formatDate: function (dateString) {
+                return Formatter.formatDate(dateString);
+            },
+
+            formatStatusState: function (status) {
+                return Formatter.formatStatusState(status);
+            },
 
             onInit() {
                 this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
@@ -45,15 +56,7 @@ sap.ui.define(
             },
 
             onNavBack() {
-                const oHistory = History.getInstance();
-                const sPreviousHash = oHistory.getPreviousHash();
-
-                if (sPreviousHash !== undefined) {
-                    window.history.go(-1);
-                } else {
-                    const oRouter = this.getOwnerComponent().getRouter();
-                    oRouter.navTo("overview", {}, true);
-                }
+                Helper.onNavBack(this);
             },
 
             async onApprove() {
@@ -72,18 +75,7 @@ sap.ui.define(
             },
 
             onCloseDialog: function () {
-                if (this.approveDialog && this.approveDialog.isOpen()) {
-                    this.approveDialog.close();
-                }
-                if (this.declineDialog && this.declineDialog.isOpen()) {
-                    this.declineDialog.close();
-                }
-                if (this.settingsDialog && this.settingsDialog.isOpen()) {
-                    this.settingsDialog.close();
-                }
-                if (this.logoutDialog && this.logoutDialog.isOpen()) {
-                    this.logoutDialog.close();
-                }
+                Helper.onCloseDialog(this);
             },
 
             async onDecline() {
@@ -187,42 +179,27 @@ sap.ui.define(
             },
 
             onHomePress: function () {
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("overview");
+                Helper.onHomePress(this);
             },
 
             onSettingsPress: async function () {
-                if (!this.settingsDialog) {
-                    this.settingsDialog = await this.loadFragment({
-                        name: "appiuimodule.views.SettingsDialog"
-                    });
-                }
-                this.settingsDialog.open();
+                await Helper.onSettingsPress(this);
             },
 
             onSettingsSave: function () {
-                MessageToast.show(this._bundle.getText("settingsSavedMessage"));
-                this.settingsDialog.close();
+                Helper.onSettingsSave(this);
             },
 
             onLogoutPress: async function () {
-                if (!this.logoutDialog) {
-                    this.logoutDialog = await this.loadFragment({
-                        name: "appiuimodule.views.LogoutDialog"
-                    });
-                }
-                this.logoutDialog.open();
+                await Helper.onLogoutPress(this);
             },
 
             onLogoutConfirm: function () {
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("logout");
-                this.logoutDialog.close();
+                Helper.onLogoutConfirm(this);
             },
 
             onHomepagePress: function () {
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("entrypanel");
+                Helper.onHomepagePress(this);
             },
 
             handleApproveOrder: async function () {
@@ -234,7 +211,7 @@ sap.ui.define(
 
                     updatedOrderData.forEach(detail => {
                         if (detail.label.includes("Shipped Date") || detail.label.includes("shippedDate")) {
-                            detail.value = this.formatDate(new Date().toISOString());
+                            detail.value = Formatter.formatDate(new Date().toISOString());
                         }
                         if (detail.label.includes("Status") || detail.label.includes("status")) {
                             detail.value = "Shipped";
@@ -313,8 +290,8 @@ sap.ui.define(
                     { label: this._bundle.getText("orderIdColumn"), value: order.OrderID },
                     { label: this._bundle.getText("taskTypeLabel"), value: this._bundle.getText("orderTaskTypeValue") },
                     { label: this._bundle.getText("customerIdColumn"), value: order.CustomerID },
-                    { label: this._bundle.getText("orderDateColumn"), value: this.formatDate(order.OrderDate) },
-                    { label: this._bundle.getText("shippedDateLabel"), value: this.formatDate(order.ShippedDate) },
+                    { label: this._bundle.getText("orderDateColumn"), value: Formatter.formatDate(order.OrderDate) },
+                    { label: this._bundle.getText("shippedDateLabel"), value: Formatter.formatDate(order.ShippedDate) },
                     { label: this._bundle.getText("countryLabel"), value: order.ShipCountry },
                     { label: this._bundle.getText("cityLabel"), value: order.ShipCity },
                     { label: this._bundle.getText("statusLabel"), value: order.Status }
@@ -332,16 +309,6 @@ sap.ui.define(
                 });
             },
 
-             formatStatus: function (shippedDate) {
-                return shippedDate ? "Shipped" : "Pending";
-            },
-
-            formatDate: function (dateString) {
-                if (!dateString) return "";
-                var date = new Date(dateString);
-                return date.toLocaleDateString();
-            },
-
             formatCustomerRowType: function (label) {
                 var customerIdLabel = this._bundle.getText("customerIdColumn");
                 return (label === customerIdLabel) ? "Navigation" : "Inactive";
@@ -349,15 +316,8 @@ sap.ui.define(
 
             formatStatusColor: function (label, value) {
                 var statusLabel = this._bundle.getText("statusLabel");
-
                 if (label === statusLabel) {
-                    if (value === "Shipped" || value === "Approved") {
-                        return "Success";
-                    } else if (value === "Pending") {
-                        return "Warning";
-                    } else if (value === "Declined" || value === "Rejected") {
-                        return "Error";
-                    }
+                    return Formatter.formatStatusState(value);
                 }
                 return "None";
             },
