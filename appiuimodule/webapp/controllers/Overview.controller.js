@@ -5,14 +5,16 @@ sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/m/library",
-    "sap/ui/Device",
     "sap/m/MessageToast",
     "sap/ui/model/json/JSONModel",
-    "sap/m/MessageBox"
-], function (Controller, History, Sorter, Filter, FilterOperator, mobileLibrary, Device, MessageToast, JSONModel, MessageBox) {
+    "sap/m/MessageBox",
+    "../utils/Formatter",
+    "../utils/Helper"
+], function (Controller, History, Sorter, Filter, FilterOperator, mobileLibrary, MessageToast, JSONModel, MessageBox, Formatter, Helper) {
     'use strict';
 
     return Controller.extend('appiuimodule.controllers.Overview', {
+        formatter: Formatter,
         _bundle: null,
         _router: null,
         _sortState: {
@@ -27,73 +29,13 @@ sap.ui.define([
             this._router = this.getOwnerComponent().getRouter();
 
             this._loadAllOrders();
-            this.setViewModel();
         },
 
         onAfterRendering: function () {
-            this._setStickyHeaderForTables();
+            Helper.setStickyHeader(this, "customersTable");
+            Helper.setStickyHeader(this, "ordersTable");
+            Helper.setStickyHeader(this, "invoicesTable");
         },
-
-        _setStickyHeaderForTables: function () {
-            const Sticky = mobileLibrary.Sticky;
-            const oCustomersTable = this.byId("customersTable");
-            if (oCustomersTable) {
-                oCustomersTable.setSticky([Sticky.ColumnHeaders]);
-            }
-            const oOrdersTable = this.byId("ordersTable");
-            if (oOrdersTable) {
-                oOrdersTable.setSticky([Sticky.ColumnHeaders]);
-            }
-            const oInvoicesTable = this.byId("invoicesTable");
-            if (oInvoicesTable) {
-                oInvoicesTable.setSticky([Sticky.ColumnHeaders]);
-            }
-        },
-
-        setViewModel() {
-            let isMobile = false;
-            if (Device.system.phone || Device.system.tablet) {
-                isMobile = true;
-            }
-            var viewModel = new JSONModel({
-                isMobile: isMobile
-            });
-            this.getView().setModel(viewModel, "viewModel");
-        },
-
-        // _loadCustomersModel: async function () {
-        //     const oCustomersTable = this.byId("customersTable");
-        //     if (oCustomersTable) {
-        //         oCustomersTable.setBusy(true);
-        //     }
-
-        //     var oCustomersModel = new JSONModel();
-
-        //     try {
-        //         const response = await fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$top=10");
-        //         if (!response.ok) {
-        //             throw new Error(`HTTP error! status: ${response.status}`);
-        //         }
-        //         const data = await response.json();
-
-        //         data.hasMore = data.value && data.value.length === 10;
-
-        //         oCustomersModel.setData(data);
-
-        //         this._customersSkip = 10;
-        //         this._customersHasMore = data.hasMore;
-        //     } catch (error) {
-        //         console.error("Error loading customers data: ", error);
-        //         oCustomersModel.setData({ value: [], hasMore: false });
-        //         MessageBox.error(this._bundle.getText("failedToLoadCustomersMessage"));
-        //     } finally {
-        //         if (oCustomersTable) {
-        //             oCustomersTable.setBusy(false);
-        //         }
-        //     }
-
-        //     this.getOwnerComponent().setModel(oCustomersModel, "customers");
-        // },
 
         onLoadMoreCustomers: function () {
             this._router.navTo("reviewcustomers");
@@ -163,31 +105,6 @@ sap.ui.define([
             });
         },
 
-        formatStatusState: function (status) {
-            if (status === "Shipped") {
-                return "Success";
-            } else if (status === "Pending") {
-                return "Warning";
-            } else if (status === "Declined") {
-                return "Error";
-            }
-            return "None";
-        },
-
-        formatDate: function (dateString) {
-            if (!dateString) return "";
-            var date = new Date(dateString);
-            return date.toLocaleDateString();
-        },
-
-        formatShippedDate: function (shippedDate, status) {
-            if (status === "Declined") {
-                return "None";
-            }
-            if (!shippedDate) return "";
-            var date = new Date(shippedDate);
-            return date.toLocaleDateString();
-        },
 
         onFilterOrders: function (oEvent) {
             const query = oEvent.getParameter("query");
@@ -257,27 +174,11 @@ sap.ui.define([
         },
 
         onFilter: function (oEvent) {
-            const sQuery = oEvent.getParameter("query");
             const oSearchField = oEvent.getSource();
             const sTableId = oSearchField.data("tableId");
-            const aFieldNames = oSearchField.data("filterFields").split(",");;
+            const aFieldNames = oSearchField.data("filterFields").split(",");
 
-            const oTable = this.byId(sTableId);
-            const oBinding = oTable.getBinding("items");
-
-            if (sQuery && sQuery.trim()) {
-                const aFilters = aFieldNames.map(function(sFieldName) {
-                    return new Filter(sFieldName.trim(), FilterOperator.Contains, sQuery);
-                });
-
-                const oFilter = new Filter({
-                    filters: aFilters,
-                    and: false
-                });
-                oBinding.filter(oFilter, "Application");
-            } else {
-                oBinding.filter([], "Application");
-            }
+            Helper.onFilter(oEvent, this, sTableId, aFieldNames);
         },
 
         onSortCustomersColumn(fieldPath, columnIndex) {
@@ -469,6 +370,22 @@ sap.ui.define([
             });
         },
 
+          formatDate: function (dateString) {
+            return Formatter.formatDate(dateString);
+        },
+
+        formatStatusState: function (status) {
+            return Formatter.formatStatusState(status);
+        },
+
+        formatShippedDate: function (shippedDate, status) {
+            return Formatter.formatShippedDate(shippedDate, status);
+        },
+
+        formatCurrency: function (value) {
+            return Formatter.formatCurrency(value);
+        },
+
         onSortCustomerId() {
             this.onSortCustomersColumn("CustomerID", 0);
         },
@@ -498,73 +415,31 @@ sap.ui.define([
         },
 
         onSettingsPress: async function () {
-            if (!this.settingsDialog) {
-                this.settingsDialog = await this.loadFragment({
-                    name: "appiuimodule.views.SettingsDialog"
-                });
-            }
-            this.settingsDialog.open();
+            await Helper.onSettingsPress(this);
         },
 
         onLogoutPress: async function () {
-            if (!this.logoutDialog) {
-                this.logoutDialog = await this.loadFragment({
-                    name: "appiuimodule.views.LogoutDialog"
-                });
-            }
-
-            this.logoutDialog.setTitle(this._bundle.getText("logoutTitle"));
-            this.logoutDialog.setIcon("sap-icon://log");
-
-            this.logoutDialog.removeAllContent();
-            this.logoutDialog.addContent(
-                new sap.m.VBox({
-                    alignItems: "Center",
-                    items: [
-                        new sap.m.Text({
-                            text: this._bundle.getText("logoutConfirmationMessage"),
-                            textAlign: "Center",
-                            width: "100%"
-                        })
-                    ]
-                })
-            );
-
-            this.logoutDialog.open();
+            await Helper.onLogoutPress(this);
         },
 
         onSettingsSave: function () {
-            MessageToast.show(this._bundle.getText("settingsSavedMessage"));
-            this.settingsDialog.close();
+            Helper.onSettingsSave(this);
         },
 
         onCloseDialog: function () {
-            if (this.settingsDialog && this.settingsDialog.isOpen()) {
-                this.settingsDialog.close();
-            }
-            if (this.logoutDialog && this.logoutDialog.isOpen()) {
-                this.logoutDialog.close();
-            }
+            Helper.onCloseDialog(this);
         },
 
         onLogoutConfirm: function () {
-            cthis._router.navTo("logout");
-            this.logoutDialog.close();
+            Helper.onLogoutConfirm(this);
         },
 
         onHomepagePress: function () {
-            this._router.navTo("entrypanel");
+            Helper.onHomepagePress(this);
         },
 
         onNavBack: function () {
-            const oHistory = History.getInstance();
-            const sPreviousHash = oHistory.getPreviousHash();
-
-            if (sPreviousHash !== undefined) {
-                window.history.go(-1);
-            } else {
-                this._router.navTo("entrypanel", {}, true);
-            }
+            Helper.onNavBack(this, "entrypanel");
         },
     });
 });

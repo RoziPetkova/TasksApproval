@@ -111,7 +111,7 @@
                                                     <Text
                                                         text="{path: 'odataModel>OrderDate', formatter: '.formatDate'}" />
                                                     <Text text="{i18n>activeStatusValue}" />
-                                                    <Text text="{odataModel>ExtendedPrice}" />
+                                                    <Text text="{invoices>ExtendedPrice}" />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>

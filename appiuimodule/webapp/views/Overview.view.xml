@@ -8,6 +8,7 @@
     xmlns:card="sap.f.cards"
     xmlns:table="sap.ui.table"
     controllerName="appiuimodule.controllers.Overview">
+    <!-- Updated formatters 2025-10-16 -->
 
     <f:DynamicPage
         id="OverviewDynamicPage">
@@ -47,8 +48,10 @@
                                             placeholder="{i18n>searchCustomersPlaceholder}"
                                             search=".onFilter">
                                             <customData>
-                                                <core:CustomData key="tableId" value="customersTable" />
-                                                <core:CustomData key="filterFields" value="CustomerID,CompanyName" />
+                                                <core:CustomData key="tableId"
+                                                    value="customersTable" />
+                                                <core:CustomData key="filterFields"
+                                                    value="CustomerID,CompanyName" />
                                             </customData>
                                         </SearchField>
                                     </Toolbar>
@@ -64,9 +67,9 @@
                                             showNoData="false"
                                             mode="None"
                                             busyIndicatorDelay="0"
-                                            growingThreshold = "10"
-                                            growingTriggerText = "More customers"
-                                            growing = "true">
+                                            growingThreshold="10"
+                                            growingTriggerText="More customers"
+                                            growing="true">
                                             <columns>
                                                 <Column
                                                     width="7em">
@@ -78,7 +81,7 @@
                                                             class="sapUiTinyMarginBegin sortIcon" />
                                                     </HBox>
                                                 </Column>
-                                                <Column>
+                                                <Column sortIndicator="None">
                                                     <Text text="{i18n>companyNameColumn}" />
                                                 </Column>
                                                 <Column>
@@ -162,7 +165,7 @@
                                     </OverflowToolbar>
                                 </HBox>
 
-                                <VBox renderType="Bare" height="80%">
+                                <VBox renderType="Bare" height="75%">
                                     <!-- Single Table with Programmatic Sticky Headers -->
                                     <ScrollContainer height="100%" vertical="true"
                                         horizontal="false">
@@ -240,6 +243,15 @@
                                         </Table>
                                     </ScrollContainer>
                                 </VBox>
+
+                                <HBox justifyContent="End">
+                                    <Button
+                                        id="loadMoreOrdersBtn"
+                                        text="{i18n>loadMoreInvoicesButton}"
+                                        type="Transparent"
+                                        press=".onLoadMoreInvoices"
+                                        class="sapUiSmallMarginTop sapUiSmallMarginEnd" />
+                                </HBox>
                             </VBox>
                         </f:content>
                     </f:Card>
@@ -265,7 +277,8 @@
                                             search=".onFilter">
                                             <customData>
                                                 <core:CustomData key="tableId" value="invoicesTable" />
-                                                <core:CustomData key="filterFields" value="CustomerName,ProductName" />
+                                                <core:CustomData key="filterFields"
+                                                    value="CustomerName,ProductName" />
                                             </customData>
                                         </SearchField>
                                     </Toolbar>
@@ -318,7 +331,7 @@
                                                 <Column demandPopin="true" minScreenWidth="Small">
                                                     <Text text="{i18n>statusColumn}" />
                                                 </Column>
-                                                <Column >
+                                                <Column>
                                                     <Text text="{i18n>priceColumn}" />
                                                 </Column>
                                             </columns>
@@ -333,7 +346,8 @@
                                                         <Text
                                                             text="{path: 'odataModel>OrderDate', formatter: '.formatDate'}" />
                                                         <Text text="{i18n>activeStatusValue}" />
-                                                        <Text text="{odataModel>ExtendedPrice}" />
+                                                        <Text
+                                                            text="{path: 'odataModel>ExtendedPrice', formatter: '.formatCurrency'}" />
                                                     </cells>
                                                 </ColumnListItem>
                                             </items>

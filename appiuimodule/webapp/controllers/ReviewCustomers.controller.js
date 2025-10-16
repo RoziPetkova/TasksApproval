@@ -6,9 +6,10 @@ sap.ui.define(
         "sap/ui/model/Filter",
         "sap/ui/model/FilterOperator",
         "sap/m/MessageToast",
-        "sap/m/MessageBox"
+        "sap/m/MessageBox",
+        "../utils/Helper"
     ],
-    function (Controller, History, Sorter, Filter, FilterOperator, MessageToast, MessageBox) {
+    function (Controller, History, Sorter, Filter, FilterOperator, MessageToast, MessageBox, Helper) {
         'use strict';
 
         return Controller.extend('appiuimodule.controllers.ReviewCustomers', {
@@ -20,33 +21,11 @@ sap.ui.define(
             },
 
             onAfterRendering: function () {
-                this._setStickyHeaderForCustomersTable();
+                Helper.setStickyHeader(this, "reviewCustomersTable");
             },
-
-            _setStickyHeaderForCustomersTable: function() {
-                sap.ui.require([
-                    "sap/m/library"
-                ], function(mobileLibrary) {
-                    const Sticky = mobileLibrary.Sticky;
-                    
-                    const oCustomersTable = this.byId("reviewCustomersTable");
-                    if (oCustomersTable) {
-                        oCustomersTable.setSticky([Sticky.ColumnHeaders]);
-                    }
-                }.bind(this));
-            },
-
 
             onNavBack: function () {
-                const oHistory = History.getInstance();
-                const sPreviousHash = oHistory.getPreviousHash();
-
-                if (sPreviousHash !== undefined) {
-                    window.history.go(-1);
-                } else {
-                    const oRouter = this.getOwnerComponent().getRouter();
-                    oRouter.navTo("overview", {}, true);
-                }
+                Helper.onNavBack(this);
             },
 
             onCustomerPress(oEvent) {
@@ -56,28 +35,10 @@ sap.ui.define(
             },
 
             onFilterCustomers: function (oEvent) {
-                const sQuery = oEvent.getParameter("query");
-                const oTable = this.byId("reviewCustomersTable");
-                //take the binding object - the link between table content and data
-                const oBinding = oTable.getBinding("items");
-
-                if (sQuery && sQuery.trim()) {
-                    const oFilter = new Filter({
-                        filters: [
-                            new Filter("CustomerID", FilterOperator.Contains, sQuery),
-                            new Filter("CompanyName", FilterOperator.Contains, sQuery)
-                        ],
-                        and: false
-                    });
-                    //"Application"	Your app’s logical/user filters (search, select, etc.)
-                    //"Control"	Filters applied by SAPUI5 controls internally
-                    oBinding.filter(oFilter, "Application");
-                } else {
-                    oBinding.filter([], "Application");
-                }
+                Helper.onFilter(oEvent, this, "reviewCustomersTable", ["CustomerID", "CompanyName"]);
             },
 
-            onSortCustomersColumn: function(fieldPath, columnIndex) {
+            onSortCustomersColumn: function (fieldPath, columnIndex) {
                 const table = this.byId("reviewCustomersTable");
                 const binding = table.getBinding("items");
 
@@ -114,7 +75,7 @@ sap.ui.define(
                 }
             },
 
-            _resetCustomersHeaderIcons: function() {
+            _resetCustomersHeaderIcons: function () {
                 const table = this.byId("reviewCustomersTable");
                 const columns = table.getColumns();
 
@@ -135,55 +96,36 @@ sap.ui.define(
                 });
             },
 
-            onSortCustomerId: function() {
+            onSortCustomerId: function () {
                 this.onSortCustomersColumn("CustomerID", 0);
             },
 
-            onSortCountry: function() {
+            onSortCountry: function () {
                 this.onSortCustomersColumn("Country", 3);
             },
 
             onSettingsPress: async function () {
-                if (!this.settingsDialog) {
-                    this.settingsDialog = await this.loadFragment({
-                        name: "appiuimodule.views.SettingsDialog"
-                    });
-                }
-                this.settingsDialog.open();
+                await Helper.onSettingsPress(this);
             },
 
-            onLogoutPress: async function() {
-                if (!this.logoutDialog) {
-                    this.logoutDialog = await this.loadFragment({
-                        name: "appiuimodule.views.LogoutDialog"
-                    });
-                }
-                this.logoutDialog.open();
+            onLogoutPress: async function () {
+                await Helper.onLogoutPress(this);
             },
 
-            onSettingsSave: function() {
-                MessageToast.show(this._bundle.getText("settingsSavedMessage"));
-                this.settingsDialog.close();
+            onSettingsSave: function () {
+                Helper.onSettingsSave(this);
             },
 
-            onCloseDialog: function() {
-                if (this.settingsDialog && this.settingsDialog.isOpen()) {
-                    this.settingsDialog.close();
-                }
-                if (this.logoutDialog && this.logoutDialog.isOpen()) {
-                    this.logoutDialog.close();
-                }
+            onCloseDialog: function () {
+                Helper.onCloseDialog(this);
             },
 
-            onLogoutConfirm: function() {
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("logout");
-                this.logoutDialog.close();
+            onLogoutConfirm: function () {
+                Helper.onLogoutConfirm(this);
             },
 
-            onHomepagePress: function() {
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("entrypanel");
+            onHomepagePress: function () {
+                Helper.onHomepagePress(this);
             },
         });
     }

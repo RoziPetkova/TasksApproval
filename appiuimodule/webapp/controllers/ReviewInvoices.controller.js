@@ -5,104 +5,53 @@ sap.ui.define(
         "sap/ui/model/FilterOperator",
         "sap/ui/core/routing/History",
         "sap/ui/model/Sorter",
-        "sap/ui/Device",
         "sap/m/MessageToast",
         "sap/ui/model/json/JSONModel",
-        "sap/m/MessageBox"
+        "sap/m/MessageBox",
+        "../utils/Formatter",
+        "../utils/Helper"
     ],
-    function (Controller, Filter, FilterOperator, History, Sorter, Device, MessageToast, JSONModel, MessageBox) {
+    function (Controller, Filter, FilterOperator, History, Sorter, MessageToast, JSONModel, MessageBox, Formatter, Helper) {
         'use strict';
 
         return Controller.extend('appiuimodule.controllers.ReviewInvoices', {
+            formatter: Formatter,
             _bundle: null,
             _sortState: {},
             _invoicesSkip: 0,
             _invoicesHasMore: true,
+            _router: null, 
+
+            formatDate: function (dateString) {
+                return Formatter.formatDate(dateString);
+            },
+
+            formatCurrency: function (value) {
+                return Formatter.formatCurrency(value);
+            },
 
             onInit: function () {
                 this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                
-                this._setStickyHeaderForInvoicesTable();
-                this.setViewModel();
-            },
+                this._router = this.getOwnerComponent().getRouter();
 
-            setViewModel() {
-                let isMobile = false;
-                if (Device.system.phone || Device.system.tablet) {
-                    isMobile = true;
-                }
-                var viewModel = new JSONModel({
-                    isMobile: isMobile
-                });
-                this.getView().setModel(viewModel, "viewModel");
-            },
-
-            _setStickyHeaderForInvoicesTable: function () {
-                sap.ui.require([
-                    "sap/m/library"
-                ], function (mobileLibrary) {
-                    const Sticky = mobileLibrary.Sticky;
-
-                    const oInvoicesTable = this.byId("reviewInvoicesTable");
-                    if (oInvoicesTable) {
-                        oInvoicesTable.setSticky([Sticky.ColumnHeaders]);
-                    }
-                }.bind(this));
+                Helper.setStickyHeader(this, "reviewInvoicesTable");
             },
 
             onNavBack: function () {
-                const oHistory = History.getInstance();
-                const sPreviousHash = oHistory.getPreviousHash();
-
-                if (sPreviousHash !== undefined) {
-                    window.history.go(-1);
-                } else {
-                    const oRouter = this.getOwnerComponent().getRouter();
-                    oRouter.navTo("overview", {}, true);
-                }
+                Helper.onNavBack(this);
             },
 
             onInvoicePress(oEvent) {
-                const oRouter = this.getOwnerComponent().getRouter();
                 const oInvoice = oEvent.getSource().getBindingContext("invoices").getObject();
                 const encodedProductName = encodeURIComponent(oInvoice.ProductName);
-                oRouter.navTo("invoicedetails", {
+                this._router.navTo("invoicedetails", {
                     OrderID: oInvoice.OrderID,
                     ProductName: encodedProductName
                 });
             },
 
-            formatDate: function (dateString) {
-                if (!dateString) return "";
-                var date = new Date(dateString);
-                return date.toLocaleDateString();
-            },
-
-            formatCurrency: function (amount) {
-                if (!amount) return "";
-                return parseFloat(amount).toFixed(2) + " USD";
-            },
-
-            onFilterInvoices: async function (oEvent) {
-                const sQuery = oEvent.getParameter("query");
-                const oTable = this.byId("reviewInvoicesTable");
-                //take the binding object - the link between table content and data
-                const oBinding = oTable.getBinding("items");
-
-                if (sQuery && sQuery.trim()) {
-                    const oFilter = new Filter({
-                        filters: [
-                            new Filter("CustomerID", FilterOperator.Contains, sQuery),
-                            new Filter("ProductName", FilterOperator.Contains, sQuery)
-                        ],
-                        and: false
-                    });
-                    //"Application"	Your app’s logical/user filters (search, select, etc.)
-                    //"Control"	Filters applied by SAPUI5 controls internally
-                    oBinding.filter(oFilter, "Application");
-                } else {
-                    oBinding.filter([], "Application");
-                }
+            onFilterInvoices: function (oEvent) {
+                Helper.onFilter(oEvent, this, "reviewInvoicesTable", ["CustomerID", "ProductName"]);
             },
 
             onSortInvoicesColumn(fieldPath, columnIndex) {
@@ -172,46 +121,27 @@ sap.ui.define(
             },
 
             onSettingsPress: async function () {
-                if (!this.settingsDialog) {
-                    this.settingsDialog = await this.loadFragment({
-                        name: "appiuimodule.views.SettingsDialog"
-                    });
-                }
-                this.settingsDialog.open();
+                await Helper.onSettingsPress(this);
             },
 
             onLogoutPress: async function () {
-                if (!this.logoutDialog) {
-                    this.logoutDialog = await this.loadFragment({
-                        name: "appiuimodule.views.LogoutDialog"
-                    });
-                }
-                this.logoutDialog.open();
+                await Helper.onLogoutPress(this);
             },
 
             onSettingsSave: function () {
-                MessageToast.show(this._bundle.getText("settingsSavedMessage"));
-                this.settingsDialog.close();
+                Helper.onSettingsSave(this);
             },
 
             onCloseDialog: function () {
-                if (this.settingsDialog && this.settingsDialog.isOpen()) {
-                    this.settingsDialog.close();
-                }
-                if (this.logoutDialog && this.logoutDialog.isOpen()) {
-                    this.logoutDialog.close();
-                }
+                Helper.onCloseDialog(this);
             },
 
             onLogoutConfirm: function () {
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("logout");
-                this.logoutDialog.close();
+                Helper.onLogoutConfirm(this);
             },
 
             onHomepagePress: function () {
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("entrypanel");
+                Helper.onHomepagePress(this);
             },
         });
     }

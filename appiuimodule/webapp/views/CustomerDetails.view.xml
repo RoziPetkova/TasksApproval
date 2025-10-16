@@ -18,14 +18,14 @@
                         <Button type="Transparent" icon="sap-icon://nav-back"
                             press=".onNavBack" />
                         <Title class="sapUiTinyMarginTop sapUiSmallMarginBegin"
-                            text="{customerModel>/CompanyName}" />
+                            text="{odataModel>CompanyName}" />
                     </HBox>
                 </f:heading>
                 <f:expandedContent>
-                    <Label class=" sapUiLargeMarginBegin" text="{customerModel>/CustomerID}" />
+                    <Label class=" sapUiLargeMarginBegin" text="{odataModel>CustomerID}" />
                 </f:expandedContent>
                 <f:snappedContent>
-                    <Label class=" sapUiLargeMarginBegin" text="{customerModel>/CustomerID}" />
+                    <Label class=" sapUiLargeMarginBegin" text="{odataModel>CustomerID}" />
                 </f:snappedContent>
                 <f:actions>
                     <core:Fragment fragmentName="appiuimodule.views.HeaderButtons" type="XML" />
@@ -43,9 +43,9 @@
                                 class="sapUiTinyMarginBottom" />
                             <VBox>
                                 <ObjectAttribute title="{i18n>customerIdColumn}"
-                                    text="{customerModel>/CustomerID}" />
+                                    text="{odataModel>CustomerID}" />
                                 <ObjectAttribute title="{i18n>companyNameColumn}"
-                                    text="{customerModel>/CompanyName}" />
+                                    text="{odataModel>CompanyName}" />
                             </VBox>
                         </layout:VerticalLayout>
 
@@ -55,13 +55,13 @@
                                 class="sapUiTinyMarginBottom" />
                             <VBox>
                                 <ObjectAttribute title="{i18n>contactNameColumn}"
-                                    text="{customerModel>/ContactName}" />
+                                    text="{odataModel>ContactName}" />
                                 <ObjectAttribute title="{i18n>contactTitleLabel}"
-                                    text="{customerModel>/ContactTitle}" />
+                                    text="{odataModel>ContactTitle}" />
                                 <ObjectAttribute title="{i18n>phoneColumn}"
-                                    text="{customerModel>/Phone}" />
+                                    text="{odataModel>Phone}" />
                                 <ObjectAttribute title="{i18n>faxLabel}"
-                                    text="{path: 'customerModel>/Fax', formatter: '.formatFax'}" />
+                                    text="{path: 'odataModel>Fax', formatter: '.formatFax'}" />
                             </VBox>
                         </layout:VerticalLayout>
 
@@ -69,12 +69,12 @@
                         <layout:VerticalLayout class="sapUiLargeMarginEnd sapUiSmallMarginBottom">
                             <Label text="{i18n>addressLabel}" class="sapUiTinyMarginBottom" />
                             <VBox>
-                                <ObjectAttribute title="Address" text="{customerModel>/Address}" />
+                                <ObjectAttribute title="Address" text="{odataModel>Address}" />
                                 <ObjectAttribute title="City"
-                                    text="{customerModel>/City}, {path: 'customerModel>/Region', formatter: '.formatRegion'}" />
+                                    text="{odataModel>City}, {path: 'odataModel>Region', formatter: '.formatRegion'}" />
                                 <ObjectAttribute title="Postal Code"
-                                    text="{customerModel>/PostalCode}" />
-                                <ObjectAttribute title="Country" text="{customerModel>/Country}" />
+                                    text="{odataModel>PostalCode}" />
+                                <ObjectAttribute title="Country" text="{odataModel>Country}" />
                             </VBox>
                         </layout:VerticalLayout>
 
@@ -99,7 +99,7 @@
                                 <ScrollContainer height="90%" vertical="true" horizontal="false">
                                     <Table
                                         id="customerOrdersTable"
-                                        items="{ path: 'customerOrdersModel>/orders' }"
+                                        items="{ path: 'odataModel>/Orders' }"
                                         width="100%"
                                         showNoData="true"
                                         noDataText="No orders available"
@@ -145,20 +145,20 @@
                                                 type="Navigation"
                                                 press=".onCustomerOrderPress">
                                                 <cells>
-                                                    <Text text="{customerOrdersModel>OrderID}" />
+                                                    <Text text="{odataModel>OrderID}" />
                                                     <Text text="{i18n>orderTaskTypeValue}" />
-                                                    <Text text="{customerOrdersModel>CustomerID}" />
-                                                    <Text text="{customerOrdersModel>ShipCountry}" />
+                                                    <Text text="{odataModel>CustomerID}" />
+                                                    <Text text="{odataModel>ShipCountry}" />
                                                     <Text
-                                                        text="{path: 'customerOrdersModel>OrderDate', formatter: '.formatDate'}" />
+                                                        text="{path: 'odataModel>OrderDate', formatter: '.formatDate'}" />
                                                     <Text
                                                         text="{
-                                                    parts: ['customerOrdersModel>ShippedDate', 'customerOrdersModel>Status'],
+                                                    parts: ['odataModel>ShippedDate', 'odataModel>Status'],
                                                     formatter: '.formatShippedDate'
                                                 }" />
                                                     <ObjectStatus
-                                                        text="{customerOrdersModel>Status}"
-                                                        state="{path: 'customerOrdersModel>Status', formatter: '.formatStatusState'}" />
+                                                        text="{odataModel>Status}"
+                                                        state="{path: 'odataModel>Status', formatter: '.formatStatusState'}" />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>
@@ -184,7 +184,7 @@
                                 <ScrollContainer height="90%" vertical="true" horizontal="false">
                                     <Table
                                         id="customerInvoicesTable"
-                                        items="{ path: 'customerInvoicesModel>/invoices' }"
+                                        items="{ path: 'odataModel>/Invoices' }"
                                         width="100%"
                                         showNoData="true"
                                         noDataText="No invoices available"
@@ -227,12 +227,12 @@
                                                 type="Navigation"
                                                 press=".onCustomerInvoicePress">
                                                 <cells>
-                                                    <Text text="{customerInvoicesModel>OrderID}" />
-                                                    <Text text="{customerInvoicesModel>ProductName}" />
-                                                    <Text text="{customerInvoicesModel>CustomerName}" />
-                                                    <Text text="{path: 'customerInvoicesModel>OrderDate', formatter: '.formatDate'}" />
+                                                    <Text text="{odataModel>OrderID}" />
+                                                    <Text text="{odataModel>ProductName}" />
+                                                    <Text text="{odataModel>CustomerName}" />
+                                                    <Text text="{path: 'odataModel>OrderDate', formatter: '.formatDate'}" />
                                                     <Text text="{i18n>activeStatusValue}" />
-                                                    <Text text="{customerInvoicesModel>ExtendedPrice}" />
+                                                    <Text text="{path: 'odataModel>ExtendedPrice', formatter: '.formatCurrency'}" />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>

@@ -5,51 +5,40 @@ sap.ui.define(
         "sap/ui/model/FilterOperator",
         "sap/ui/core/routing/History",
         "sap/ui/model/Sorter",
-        "sap/ui/Device",
         "sap/m/MessageToast",
         "sap/ui/model/json/JSONModel",
-        "sap/m/MessageBox"
+        "sap/m/MessageBox",
+        "../utils/Formatter",
+        "../utils/Helper"
     ],
-    function (Controller, Filter, FilterOperator, History, Sorter, Device, MessageToast, JSONModel, MessageBox) {
+    function (Controller, Filter, FilterOperator, History, Sorter, MessageToast, JSONModel, MessageBox, Formatter, Helper) {
         'use strict';
 
         return Controller.extend('appiuimodule.controllers.ReviewOrders', {
+            formatter: Formatter,
             _bundle: null,
             _sortState: {},
             _originalOrdersData: null,
             _ordersSkip: 0,
             _ordersHasMore: true,
 
+            formatDate: function (dateString) {
+                return Formatter.formatDate(dateString);
+            },
+
+            formatStatusState: function (status) {
+                return Formatter.formatStatusState(status);
+            },
+
+            formatShippedDate: function (shippedDate, status) {
+                return Formatter.formatShippedDate(shippedDate, status);
+            },
+
             onInit: function () {
                 this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
                 this._loadOrdersModel().then(() => {
-                    this._setStickyHeaderForOrdersTable();
+                    Helper.setStickyHeader(this, "reviewOrdersTable");
                 });
-                this.setViewModel();
-            },
-
-            setViewModel() {
-                let isMobile = false;
-                if (Device.system.phone || Device.system.tablet) {
-                    isMobile = true;
-                }
-                var viewModel = new JSONModel({
-                    isMobile: isMobile
-                });
-                this.getView().setModel(viewModel, "viewModel");
-            },
-
-            _setStickyHeaderForOrdersTable: function () {
-                sap.ui.require([
-                    "sap/m/library"
-                ], function (mobileLibrary) {
-                    const Sticky = mobileLibrary.Sticky;
-
-                    const oOrdersTable = this.byId("reviewOrdersTable");
-                    if (oOrdersTable) {
-                        oOrdersTable.setSticky([Sticky.ColumnHeaders]);
-                    }
-                }.bind(this));
             },
 
             _loadOrdersModel: async function () {
@@ -146,15 +135,7 @@ sap.ui.define(
             },
 
             onNavBack: function () {
-                const oHistory = History.getInstance();
-                const sPreviousHash = oHistory.getPreviousHash();
-
-                if (sPreviousHash !== undefined) {
-                    window.history.go(-1);
-                } else {
-                    const oRouter = this.getOwnerComponent().getRouter();
-                    oRouter.navTo("overview", {}, true);
-                }
+                Helper.onNavBack(this);
             },
 
             onOrderPress(oEvent) {
@@ -163,32 +144,6 @@ sap.ui.define(
                     { OrderID: oEvent.getSource().getBindingContext("orders").getObject().OrderID });
             },
 
-            formatStatusState: function (status) {
-                if (status === "Shipped") {
-                    return "Success";
-                } else if (status === "Pending") {
-                    return "Warning";
-                } else if (status === "Declined") {
-                    return "Error";
-                }
-                return "None";
-            },
-
-            formatDate: function (dateString) {
-                if (!dateString) return "";
-                var date = new Date(dateString);
-                return date.toLocaleDateString();
-            },
-
-            formatShippedDate: function (shippedDate, status) {
-                // Show "None" for declined orders
-                if (status === "Declined") {
-                    return "None";
-                }
-                if (!shippedDate) return "";
-                var date = new Date(shippedDate);
-                return date.toLocaleDateString();
-            },
 
             onFilterOrders: function (oEvent) {
                 const query = oEvent.getParameter("query");
@@ -328,46 +283,27 @@ sap.ui.define(
             },
 
             onSettingsPress: async function () {
-                if (!this.settingsDialog) {
-                    this.settingsDialog = await this.loadFragment({
-                        name: "appiuimodule.views.SettingsDialog"
-                    });
-                }
-                this.settingsDialog.open();
+                await Helper.onSettingsPress(this);
             },
 
             onLogoutPress: async function () {
-                if (!this.logoutDialog) {
-                    this.logoutDialog = await this.loadFragment({
-                        name: "appiuimodule.views.LogoutDialog"
-                    });
-                }
-                this.logoutDialog.open();
+                await Helper.onLogoutPress(this);
             },
 
             onSettingsSave: function () {
-                MessageToast.show(this._bundle.getText("settingsSavedMessage"));
-                this.settingsDialog.close();
+                Helper.onSettingsSave(this);
             },
 
             onCloseDialog: function () {
-                if (this.settingsDialog && this.settingsDialog.isOpen()) {
-                    this.settingsDialog.close();
-                }
-                if (this.logoutDialog && this.logoutDialog.isOpen()) {
-                    this.logoutDialog.close();
-                }
+                Helper.onCloseDialog(this);
             },
 
             onLogoutConfirm: function () {
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("logout");
-                this.logoutDialog.close();
+                Helper.onLogoutConfirm(this);
             },
 
             onHomepagePress: function () {
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("entrypanel");
+                Helper.onHomepagePress(this);
             },
         });
     }

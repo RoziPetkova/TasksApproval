@@ -1,9 +1,11 @@
 sap.ui.define(
     [
         "sap/ui/core/UIComponent",
-        "sap/ui/model/odata/v2/ODataModel"
+        "sap/ui/model/odata/v2/ODataModel",
+        "sap/ui/Device",
+        "sap/ui/model/json/JSONModel"
     ],
-    function (UIComponent, ODataModel) {
+    function (UIComponent, ODataModel, Device, JSONModel) {
         "use strict";
 
         return UIComponent.extend("appiuimodule.Component", {
@@ -42,6 +44,13 @@ sap.ui.define(
                 });
 
                 oRouter.initialize();
+
+                // Set view model with device information (set once at component level)
+                const isMobile = Device.system.phone || Device.system.tablet;
+                const oViewModel = new JSONModel({
+                    isMobile: isMobile
+                });
+                this.setModel(oViewModel, "viewModel");
 
                 // set data model
                 const customersModel = new ODataModel({

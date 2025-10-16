@@ -4,14 +4,19 @@ sap.ui.define(
         "sap/ui/core/routing/History",
         "sap/m/library",
         "sap/ui/model/Sorter",
+        "sap/ui/model/Filter",
+        "sap/ui/model/FilterOperator",
         "sap/m/MessageToast",
         "sap/ui/model/json/JSONModel",
-        "sap/m/MessageBox"
+        "sap/m/MessageBox",
+        "../utils/Formatter",
+        "../utils/Helper"
     ],
-    function (Controller, History, mobileLibrary, Sorter, MessageToast, JSONModel, MessageBox) {
+    function (Controller, History, mobileLibrary, Sorter, Filter, FilterOperator, MessageToast, JSONModel, MessageBox, Formatter, Helper) {
         "use strict";
 
         return Controller.extend("appiuimodule.controllers.CustomerDetails", {
+            formatter: Formatter,
             _sortState: {},
             bundle: null,
             _router: null,
@@ -22,196 +27,77 @@ sap.ui.define(
                 //The context (scope) for the callback function
                 // Ensures that inside onPatternMatched, this refers to the
                 // controller instance
-                _router.getRoute("customerdetails").attachPatternMatched(this.onPatternMatched, this);
+                this._router.getRoute("customerdetails").attachPatternMatched(this.onPatternMatched, this);
             },
 
-            onPatternMatched: async function (oEvent) {
-                var currentCustomerId = oEvent.getParameter("arguments").CustomerID;
-                var oModel = this.getOwnerComponent().getModel("customers");
-                let currentCustomer = null;
+            onPatternMatched: function (oEvent) {
+                var sCustomerId = oEvent.getParameter("arguments").CustomerID;
+                this.bindCustomerData(sCustomerId);
 
-                if (!(oModel && oModel.getProperty("/value") && oModel.getProperty("/value").length === 0)) {
-                    currentCustomer = await this.loadCustomerById(currentCustomerId);
-                } else {
-                    currentCustomer = aCustomers.find(function (customer) {
-                        return customer.CustomerID === currentCustomerId;
-                    });
-                    if (!currentCustomer) {
-                        currentCustomer = await this.loadCustomerById(currentCustomerId);
-                    }
-                }
-
-                this.getView().setModel(new JSONModel(currentCustomer), "customerModel");
-
-                // Fetch orders and invoices 
-                await this.loadCustomerOrders(currentCustomerId);
-                await this.loadCustomerInvoices(currentCustomerId);
+                // Apply filters to orders and invoices tables
+                this.filterCustomerOrders(sCustomerId);
+                this.filterCustomerInvoices(sCustomerId);
 
                 this.setStickyHeadersForTables();
             },
 
-              loadCustomerById: async function (customerId) {
-                try {
-                    // Escape single quotes for OData filter
-                    const escapedCustomerId = customerId.replace(/'/g, "''");
-                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$filter=CustomerID eq '${escapedCustomerId}'`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
+            bindCustomerData: function (sCustomerId) {
+                const oView = this.getView();
+                const sPath = "/Customers('" + sCustomerId + "')";
 
-                    if (data.value && data.value.length > 0) {
-                        const oCustomer = data.value[0];
-                        return oCustomer;
-                    } else {
-                        console.error("Customer not found:", customerId);
+                oView.bindElement({
+                    path: sPath,
+                    model: "odataModel",
+                    events: {
+                        dataRequested: function () {
+                            oView.setBusy(true);
+                        },
+                        dataReceived: function () {
+                            oView.setBusy(false);
+                        }
                     }
-                } catch (error) {
-                    console.error("Error loading customer by ID:", error);
-                    MessageBox.error(this.bundle.getText("failedToLoadCustomerMessage"));
-                }
+                });
             },
 
-            loadCustomerOrders: function (customerId) {
+            filterCustomerOrders: function (sCustomerId) {
                 const oTable = this.byId("customerOrdersTable");
-                if (oTable) {
-                    oTable.setBusy(true);
-                }
-                try {
-                    // Get orders from local orders model
-                    const oOrdersModel = this.getOwnerComponent().getModel("orders");
-                    let customerOrders = [];
+                if (!oTable) return;
 
-                    if (oOrdersModel && oOrdersModel.getProperty("/value")) {
-                        const allOrders = oOrdersModel.getProperty("/value");
-                        // Filter orders for this customer
-                        customerOrders = allOrders.filter(function (order) {
-                            return order.CustomerID === customerId;
-                        });
-                    }
-
-                    var oCustomerOrdersModel = new JSONModel({
-                        orders: customerOrders
-                    });
-                    this.getView().setModel(oCustomerOrdersModel, "customerOrdersModel");
-                } catch (error) {
-                    console.error("Error loading customer orders from local model:", error);
-                    MessageBox.error(this.bundle.getText("failedToLoadCustomerOrdersMessage"));
-                    // Set empty model on error
-                    var oCustomerOrdersModel = new JSONModel({
-                        orders: []
-                    });
-                    this.getView().setModel(oCustomerOrdersModel, "customerOrdersModel");
-                } finally {
-                    oTable.setBusy(false);
+                const oBinding = oTable.getBinding("items");
+                if (oBinding) {
+                    const oFilter = new Filter("CustomerID", FilterOperator.EQ, sCustomerId);
+                    oBinding.filter([oFilter], "Application");
                 }
             },
 
-            loadCustomerInvoices: async function (sCustomerId) {
+            filterCustomerInvoices: function (sCustomerId) {
                 const oTable = this.byId("customerInvoicesTable");
-                oTable.setBusy(true);
-                try {
-                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$filter=CustomerID eq '${sCustomerId}'`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
+                if (!oTable) return;
 
-                    var oCustomerInvoicesModel = new JSONModel({
-                        invoices: data.value || []
-                    });
-                    this.getView().setModel(oCustomerInvoicesModel, "customerInvoicesModel");
-                } catch (error) {
-                    console.error("Error loading customer invoices:", error);
-                    MessageBox.error(this.bundle.getText("failedToLoadCustomerInvoicesMessage"));
-                    // Set empty model on error
-                    var oCustomerInvoicesModel = new JSONModel({
-                        invoices: []
-                    });
-                    this.getView().setModel(oCustomerInvoicesModel, "customerInvoicesModel");
-                } finally {
-                    oTable.setBusy(false);
+                const oBinding = oTable.getBinding("items");
+                if (oBinding) {
+                    const oFilter = new Filter("CustomerID", FilterOperator.EQ, sCustomerId);
+                    oBinding.filter([oFilter], "Application");
                 }
             },
 
             setStickyHeadersForTables: function () {
-                const Sticky = mobileLibrary.Sticky;
-
-                // Set sticky for customer orders table
-                const oOrdersTable = this.byId("customerOrdersTable");
-                if (oOrdersTable) {
-                    oOrdersTable.setSticky([Sticky.ColumnHeaders]);
-                }
-
-                // Set sticky for customer invoices table
-                const oInvoicesTable = this.byId("customerInvoicesTable");
-                if (oInvoicesTable) {
-                    oInvoicesTable.setSticky([Sticky.ColumnHeaders]);
-                }
+                Helper.setStickyHeader(this, "customerOrdersTable");
+                Helper.setStickyHeader(this, "customerInvoicesTable");
             },
 
             onNavBack() {
-                const oHistory = History.getInstance();
-                const sPreviousHash = oHistory.getPreviousHash();
-
-                if (sPreviousHash !== undefined) {
-                    //cannot be done by router - we need to split the history and then check what
-                    //is the property key of the previous hash
-                    window.history.go(-1);
-                } else {
-                    cthis._router.navTo("overview", {}, true);
-                }
+                Helper.onNavBack(this);
             },
 
-            formatDate: function (dateString) {
-                if (!dateString) return "";
-                var date = new Date(dateString);
-                return date.toLocaleDateString();
-            },
-
-            formatCurrency: function (value) {
-                if (!value) return "0.00";
-                return parseFloat(value).toFixed(2);
-            },
-
-            formatFax: function (value) {
-                return value || "N/A";
-            },
-
-            formatRegion: function (value) {
-                return value || "N/A";
-            },
-
-            formatStatusState: function (status) {
-                switch (status) {
-                    case "Shipped":
-                        return "Success";
-                    case "Pending":
-                        return "Warning";
-                    case "Declined":
-                        return "Error";
-                    default:
-                        return "None";
-                }
-            },
-
-            formatShippedDate: function (shippedDate, status) {
-                // Show "None" for declined orders
-                if (status === "Declined") {
-                    return "None";
-                }
-                if (!shippedDate) return "";
-                var date = new Date(shippedDate);
-                return date.toLocaleDateString();
-            },
 
             onCustomerOrderPress(oEvent) {
-                const oOrder = oEvent.getSource().getBindingContext("customerOrdersModel").getObject();
+                const oOrder = oEvent.getSource().getBindingContext("odataModel").getObject();
                 this._router.navTo("orderdetails", { OrderID: oOrder.OrderID });
             },
 
             onCustomerInvoicePress(oEvent) {
-                const oInvoice = oEvent.getSource().getBindingContext("customerInvoicesModel").getObject();
+                const oInvoice = oEvent.getSource().getBindingContext("odataModel").getObject();
                 // Encode ProductName to handle special characters in URL
                 const encodedProductName = encodeURIComponent(oInvoice.ProductName);
                 this._router.navTo("invoicedetails", {
@@ -221,49 +107,31 @@ sap.ui.define(
             },
 
             onHomePress: function () {
-                this._router.navTo("overview");
+                Helper.onHomePress(this);
             },
 
             onSettingsPress: async function () {
-                if (!this.settingsDialog) {
-                    this.settingsDialog = await this.loadFragment({
-                        name: "appiuimodule.views.SettingsDialog"
-                    });
-                }
-                this.settingsDialog.open();
+                await Helper.onSettingsPress(this);
             },
 
             onSettingsSave: function () {
-                MessageToast.show(this.bundle.getText("settingsSavedMessage"));
-                this.settingsDialog.close();
+                Helper.onSettingsSave(this);
             },
 
             onCloseDialog: function () {
-                // Generic close function for all dialogs
-                if (this.settingsDialog && this.settingsDialog.isOpen()) {
-                    this.settingsDialog.close();
-                }
-                if (this.logoutDialog && this.logoutDialog.isOpen()) {
-                    this.logoutDialog.close();
-                }
+                Helper.onCloseDialog(this);
             },
 
             onLogoutPress: async function () {
-                if (!this.logoutDialog) {
-                    this.logoutDialog = await this.loadFragment({
-                        name: "appiuimodule.views.LogoutDialog"
-                    });
-                }
-                this.logoutDialog.open();
+                await Helper.onLogoutPress(this);
             },
 
             onLogoutConfirm: function () {
-                this._router.navTo("logout");
-                this.logoutDialog.close();
+                Helper.onLogoutConfirm(this);
             },
 
             onHomepagePress: function () {
-                this._router.navTo("entrypanel");
+                Helper.onHomepagePress(this);
             },
 
             onSortOrderDate() {
@@ -358,6 +226,30 @@ sap.ui.define(
                         }
                     }
                 });
+            },
+
+            formatDate: function (dateString) {
+                return Formatter.formatDate(dateString);
+            },
+
+            formatStatusState: function (status) {
+                return Formatter.formatStatusState(status);
+            },
+
+            formatShippedDate: function (shippedDate, status) {
+                return Formatter.formatShippedDate(shippedDate, status);
+            },
+
+            formatCurrency: function (value) {
+                return Formatter.formatCurrency(value);
+            },
+
+            formatFax: function (value) {
+                return Formatter.formatFax(value);
+            },
+
+            formatRegion: function (value) {
+                return Formatter.formatRegion(value);
             },
         });
     }
