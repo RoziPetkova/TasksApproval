@@ -17,11 +17,6 @@ sap.ui.define([
         formatter: Formatter,
         _bundle: null,
         _router: null,
-        _sortState: {
-            customersTable: {},
-            invoicesTable: {},
-            ordersTable: {}
-        },
         _originalOrdersData: null,
 
         onInit: function () {
@@ -39,6 +34,10 @@ sap.ui.define([
 
         onLoadMoreCustomers: function () {
             this._router.navTo("reviewcustomers");
+        },
+
+         onLoadMoreOrders: function () {
+            this._router.navTo("revieworders");
         },
 
         onLoadMoreInvoices: function () {
@@ -104,7 +103,6 @@ sap.ui.define([
                 OrderID: oInvoice.OrderID
             });
         },
-
 
         onFilterOrders: function (oEvent) {
             const query = oEvent.getParameter("query");
@@ -181,193 +179,16 @@ sap.ui.define([
             Helper.onFilter(oEvent, this, sTableId, aFieldNames);
         },
 
-        onSortCustomersColumn(fieldPath, columnIndex) {
-            const table = this.byId("customersTable");
-            const binding = table.getBinding("items");
-
-            if (!this._sortState["customersTable"]) {
-                this._sortState["customersTable"] = {};
-            }
-
-            this._resetCustomersHeaderIcons();
-
-            if (this._sortState["customersTable"][fieldPath] === undefined) {
-                this._sortState["customersTable"][fieldPath] = false;
-            }
-
-            this._sortState["customersTable"][fieldPath] = !this._sortState["customersTable"][fieldPath];
-            const isAscending = this._sortState["customersTable"][fieldPath];
-
-            const sorter = new Sorter(fieldPath, !isAscending);
-
-            binding.sort(sorter);
-
-            const columns = table.getColumns();
-            const column = columns[columnIndex];
-            const header = column.getHeader();
-
-            let icon = null;
-            if (header.getMetadata().getName() === "sap.m.HBox") {
-                const headerItems = header.getItems();
-                if (headerItems && headerItems[1]) {
-                    icon = headerItems[1];
-                }
-            }
-
-            if (icon && icon.getMetadata().getName() === "sap.ui.core.Icon") {
-                if (isAscending) {
-                    icon.setSrc("sap-icon://sort-ascending");
-                } else {
-                    icon.setSrc("sap-icon://sort-descending");
-                }
-            }
+        onSortCustomersColumn: function (oEvent) {
+            Helper.onSortColumn(oEvent, this, "customersTable");
         },
 
-        _resetCustomersHeaderIcons() {
-            const table = this.byId("customersTable");
-            const columns = table.getColumns();
-
-            columns.forEach(function (column) {
-                const header = column.getHeader();
-
-                if (header && header.getMetadata().getName() === "sap.m.HBox") {
-                    const headerItems = header.getItems();
-                    if (headerItems) {
-                        headerItems.forEach(function (item) {
-                            if (item.getMetadata().getName() === "sap.ui.core.Icon" &&
-                                (item.getSrc().includes("sort") || item.getSrc() === "sap-icon://text-align-center")) {
-                                item.setSrc("sap-icon://sort");
-                            }
-                        });
-                    }
-                }
-            });
+        onSortInvoicesColumn: function (oEvent) {
+            Helper.onSortColumn(oEvent, this, "invoicesTable");
         },
 
-        onSortInvoicesColumn(fieldPath, columnIndex) {
-            const table = this.byId("invoicesTable");
-            const binding = table.getBinding("items");
-
-            if (!this._sortState["invoicesTable"]) {
-                this._sortState["invoicesTable"] = {};
-            }
-
-            this._resetInvoicesHeaderIcons();
-
-            if (this._sortState["invoicesTable"][fieldPath] === undefined) {
-                this._sortState["invoicesTable"][fieldPath] = false;
-            }
-
-            this._sortState["invoicesTable"][fieldPath] = !this._sortState["invoicesTable"][fieldPath];
-            const isAscending = this._sortState["invoicesTable"][fieldPath];
-
-            const sorter = new Sorter(fieldPath, !isAscending);
-
-            binding.sort(sorter);
-
-            const columns = table.getColumns();
-            const column = columns[columnIndex];
-            const header = column.getHeader();
-
-            let icon = null;
-            if (header.getMetadata().getName() === "sap.m.HBox") {
-                const headerItems = header.getItems();
-                if (headerItems && headerItems[1]) {
-                    icon = headerItems[1];
-                }
-            }
-
-            if (icon && icon.getMetadata().getName() === "sap.ui.core.Icon") {
-                if (isAscending) {
-                    icon.setSrc("sap-icon://sort-ascending");
-                } else {
-                    icon.setSrc("sap-icon://sort-descending");
-                }
-            }
-        },
-
-        _resetInvoicesHeaderIcons() {
-            const table = this.byId("invoicesTable");
-            const columns = table.getColumns();
-
-            columns.forEach(function (column) {
-                const header = column.getHeader();
-
-                if (header && header.getMetadata().getName() === "sap.m.HBox") {
-                    const headerItems = header.getItems();
-                    if (headerItems) {
-                        headerItems.forEach(function (item) {
-                            if (item.getMetadata().getName() === "sap.ui.core.Icon" &&
-                                (item.getSrc().includes("sort") || item.getSrc() === "sap-icon://text-align-center")) {
-                                item.setSrc("sap-icon://sort");
-                            }
-                        });
-                    }
-                }
-            });
-        },
-
-        onSortOrdersColumn(fieldPath, columnIndex) {
-            const table = this.byId("ordersTable");
-            const binding = table.getBinding("items");
-
-            if (!this._sortState["ordersTable"]) {
-                this._sortState["ordersTable"] = {};
-            }
-
-            this._resetOrdersHeaderIcons();
-
-            if (this._sortState["ordersTable"][fieldPath] === undefined) {
-                this._sortState["ordersTable"][fieldPath] = false;
-            }
-
-            this._sortState["ordersTable"][fieldPath] = !this._sortState["ordersTable"][fieldPath];
-            const isAscending = this._sortState["ordersTable"][fieldPath];
-
-            const sorter = new Sorter(fieldPath, !isAscending);
-
-            binding.sort(sorter);
-
-            const columns = table.getColumns();
-            const column = columns[columnIndex];
-            const header = column.getHeader();
-
-            let icon = null;
-            if (header.getMetadata().getName() === "sap.m.HBox") {
-                const headerItems = header.getItems();
-                if (headerItems && headerItems[1]) {
-                    icon = headerItems[1];
-                }
-            }
-
-            if (icon && icon.getMetadata().getName() === "sap.ui.core.Icon") {
-                if (isAscending) {
-                    icon.setSrc("sap-icon://sort-ascending");
-                } else {
-                    icon.setSrc("sap-icon://sort-descending");
-                }
-            }
-        },
-
-        _resetOrdersHeaderIcons() {
-            const table = this.byId("ordersTable");
-            const columns = table.getColumns();
-
-            columns.forEach(function (column) {
-                const header = column.getHeader();
-
-                if (header && header.getMetadata().getName() === "sap.m.HBox") {
-                    const headerItems = header.getItems();
-                    if (headerItems) {
-                        headerItems.forEach(function (item) {
-                            if (item.getMetadata().getName() === "sap.ui.core.Icon" &&
-                                (item.getSrc().includes("sort") || item.getSrc() === "sap-icon://text-align-center")) {
-                                item.setSrc("sap-icon://sort");
-                            }
-                        });
-                    }
-                }
-            });
+        onSortOrdersColumn: function (oEvent) {
+            Helper.onSortColumnJSON(oEvent, this, "ordersTable", "orders", "/value");
         },
 
           formatDate: function (dateString) {
@@ -384,34 +205,6 @@ sap.ui.define([
 
         formatCurrency: function (value) {
             return Formatter.formatCurrency(value);
-        },
-
-        onSortCustomerId() {
-            this.onSortCustomersColumn("CustomerID", 0);
-        },
-
-        onSortCountry() {
-            this.onSortCustomersColumn("Country", 3);
-        },
-
-        onSortProductName: function() {
-            this.onSortInvoicesColumn("ProductName", 1);
-        },
-
-        onSortCustomerName: function() {
-            this.onSortInvoicesColumn("CustomerName", 2);
-        },
-
-        onSortCustomerIdOrders() {
-            this.onSortOrdersColumn("CustomerID", 2);
-        },
-
-        onSortOrderDate() {
-            this.onSortOrdersColumn("OrderDate", 4);
-        },
-
-        onSortStatus() {
-            this.onSortOrdersColumn("Status", 6);
         },
 
         onSettingsPress: async function () {

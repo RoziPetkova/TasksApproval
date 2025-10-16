@@ -99,7 +99,7 @@
                                 <ScrollContainer height="90%" vertical="true" horizontal="false">
                                     <Table
                                         id="customerOrdersTable"
-                                        items="{ path: 'odataModel>/Orders' }"
+                                        items="{ path: 'customerOrders>/value' }"
                                         width="100%"
                                         showNoData="true"
                                         noDataText="No orders available"
@@ -107,37 +107,49 @@
                                         busyIndicatorDelay="0">
                                         <columns>
                                             <Column width="5em">
-                                                <Text text="{i18n>orderIdColumn}" />
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="OrderID" />
+                                                </customData>
+                                                <Link text="{i18n>orderIdColumn}"
+                                                    press=".onSortOrdersColumn" />
                                             </Column>
                                             <Column minScreenWidth="Small">
                                                 <Text text="{i18n>taskTypeColumn}" />
                                             </Column>
                                             <Column minScreenWidth="Small">
-                                                <Text text="{i18n>customerIdColumn}" />
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="CustomerID" />
+                                                </customData>
+                                                <Link text="{i18n>customerIdColumn}"
+                                                    press=".onSortOrdersColumn" />
                                             </Column>
                                             <Column demandPopin="true" minScreenWidth="Small">
-                                                <Text text="{i18n>countryColumn}" />
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="ShipCountry" />
+                                                </customData>
+                                                <Link text="{i18n>countryColumn}"
+                                                    press=".onSortOrdersColumn" />
                                             </Column>
-                                            <Column >
-                                                <HBox alignItems="Center">
-                                                    <Text text="{i18n>orderDateColumn}" />
-                                                    <core:Icon
-                                                        src="sap-icon://sort"
-                                                        press=".onSortOrderDate"
-                                                        class="sapUiTinyMarginBegin sortIcon" />
-                                                </HBox>
+                                            <Column>
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="OrderDate" />
+                                                </customData>
+                                                <Link text="{i18n>orderDateColumn}"
+                                                    press=".onSortOrdersColumn" />
                                             </Column>
-                                            <Column >
-                                                <Text text="{i18n>shippedDateColumn}" />
+                                            <Column>
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="ShippedDate" />
+                                                </customData>
+                                                <Link text="{i18n>shippedDateColumn}"
+                                                    press=".onSortOrdersColumn" />
                                             </Column>
-                                            <Column >
-                                                <HBox alignItems="Center">
-                                                    <Text text="{i18n>statusColumn}" />
-                                                    <core:Icon
-                                                        src="sap-icon://sort"
-                                                        press=".onSortStatus"
-                                                        class="sapUiTinyMarginBegin sortIcon" />
-                                                </HBox>
+                                            <Column>
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="Status" />
+                                                </customData>
+                                                <Link text="{i18n>statusColumn}"
+                                                    press=".onSortOrdersColumn" />
                                             </Column>
                                         </columns>
                                         <items>
@@ -145,20 +157,20 @@
                                                 type="Navigation"
                                                 press=".onCustomerOrderPress">
                                                 <cells>
-                                                    <Text text="{odataModel>OrderID}" />
+                                                    <Text text="{customerOrders>OrderID}" />
                                                     <Text text="{i18n>orderTaskTypeValue}" />
-                                                    <Text text="{odataModel>CustomerID}" />
-                                                    <Text text="{odataModel>ShipCountry}" />
+                                                    <Text text="{customerOrders>CustomerID}" />
+                                                    <Text text="{customerOrders>ShipCountry}" />
                                                     <Text
-                                                        text="{path: 'odataModel>OrderDate', formatter: '.formatDate'}" />
+                                                        text="{path: 'customerOrders>OrderDate', formatter: '.formatDate'}" />
                                                     <Text
                                                         text="{
-                                                    parts: ['odataModel>ShippedDate', 'odataModel>Status'],
+                                                    parts: ['customerOrders>ShippedDate', 'customerOrders>Status'],
                                                     formatter: '.formatShippedDate'
                                                 }" />
                                                     <ObjectStatus
-                                                        text="{odataModel>Status}"
-                                                        state="{path: 'odataModel>Status', formatter: '.formatStatusState'}" />
+                                                        text="{customerOrders>Status}"
+                                                        state="{path: 'customerOrders>Status', formatter: '.formatStatusState'}" />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>

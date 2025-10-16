@@ -69,35 +69,47 @@
                                         growingThreshold="10"
                                         growingTriggerText="{i18n>loadMoreInvoicesButton}">
                                         <columns>
-                                            <Column width="5em">
-                                                <Text text="{i18n>orderIdColumn}" />
+                                            <Column width="7em">
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="OrderID" />
+                                                </customData>
+                                                <Link text="{i18n>orderIdColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                             <Column demandPopin="true">
-                                                <HBox alignItems="Center">
-                                                    <Text text="{i18n>productNameColumn}" />
-                                                    <core:Icon
-                                                        src="sap-icon://sort"
-                                                        press=".onSortProductName"
-                                                        class="sapUiTinyMarginBegin sortIcon" />
-                                                </HBox>
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="ProductName" />
+                                                </customData>
+                                                <Link text="{i18n>productNameColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                             <Column demandPopin="true">
-                                                <HBox alignItems="Center">
-                                                    <Text text="{i18n>customerColumn}" />
-                                                    <core:Icon
-                                                        src="sap-icon://sort"
-                                                        press=".onSortCustomerName"
-                                                        class="sapUiTinyMarginBegin sortIcon" />
-                                                </HBox>
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="CustomerName" />
+                                                </customData>
+                                                <Link text="{i18n>customerColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                             <Column demandPopin="true" minScreenWidth="Small">
-                                                <Text text="{i18n>orderDateColumn}" />
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="OrderDate" />
+                                                </customData>
+                                                <Link text="{i18n>orderDateColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                             <Column demandPopin="true" minScreenWidth="Small">
-                                                <Text text="{i18n>statusColumn}" />
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="Status" />
+                                                </customData>
+                                                <Link text="{i18n>statusColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                             <Column>
-                                                <Text text="{i18n>priceColumn}" />
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="ExtendedPrice" />
+                                                </customData>
+                                                <Link text="{i18n>priceColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                         </columns>
                                         <items>

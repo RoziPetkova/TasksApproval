@@ -68,30 +68,33 @@
                                         growingThreshold="20"
                                         growingTriggerText="{i18n>loadMoreCustomersButton}">
                                         <columns>
-                                            <Column
-                                                width="7em">
-                                                <HBox alignItems="Center">
-                                                    <Text text="{i18n>customerIdColumn}" />
-                                                    <core:Icon
-                                                        src="sap-icon://sort"
-                                                        press=".onSortCustomerId"
-                                                        class="sapUiTinyMarginBegin sortIcon" />
-                                                </HBox>
+                                            <Column width="7em">
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="CustomerID" />
+                                                </customData>
+                                                <Link text="{i18n>customerIdColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                             <Column>
-                                                <Text text="{i18n>companyNameColumn}" />
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="CompanyName" />
+                                                </customData>
+                                                <Link text="{i18n>companyNameColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                             <Column>
-                                                <Text text="{i18n>contactNameColumn}" />
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="ContactName" />
+                                                </customData>
+                                                <Link text="{i18n>contactNameColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                             <Column minScreenWidth="Small" demandPopin="true">
-                                                <HBox alignItems="Center">
-                                                    <Text text="{i18n>countryColumn}" />
-                                                    <core:Icon
-                                                        src="sap-icon://sort"
-                                                        press=".onSortCountry"
-                                                        class="sapUiTinyMarginBegin sortIcon" />
-                                                </HBox>
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="Country" />
+                                                </customData>
+                                                <Link text="{i18n>countryColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                         </columns>
                                         <items>

@@ -17,7 +17,6 @@ sap.ui.define(
         return Controller.extend('appiuimodule.controllers.ReviewInvoices', {
             formatter: Formatter,
             _bundle: null,
-            _sortState: {},
             _invoicesSkip: 0,
             _invoicesHasMore: true,
             _router: null, 
@@ -54,70 +53,8 @@ sap.ui.define(
                 Helper.onFilter(oEvent, this, "reviewInvoicesTable", ["CustomerID", "ProductName"]);
             },
 
-            onSortInvoicesColumn(fieldPath, columnIndex) {
-                const table = this.byId("reviewInvoicesTable");
-                const binding = table.getBinding("items");
-
-                if (!this._sortState[fieldPath]) {
-                    this._sortState[fieldPath] = false;
-                }
-
-                this._resetInvoicesHeaderIcons();
-
-                this._sortState[fieldPath] = !this._sortState[fieldPath];
-                const isAscending = this._sortState[fieldPath];
-
-                const sorter = new Sorter(fieldPath, !isAscending);
-                binding.sort(sorter);
-
-                const columns = table.getColumns();
-                const column = columns[columnIndex];
-                const header = column.getHeader();
-
-                let icon = null;
-                if (header.getMetadata().getName() === "sap.m.HBox") {
-                    const headerItems = header.getItems();
-                    if (headerItems && headerItems[1]) {
-                        icon = headerItems[1];
-                    }
-                }
-
-                if (icon && icon.getMetadata().getName() === "sap.ui.core.Icon") {
-                    if (isAscending) {
-                        icon.setSrc("sap-icon://sort-ascending");
-                    } else {
-                        icon.setSrc("sap-icon://sort-descending");
-                    }
-                }
-            },
-
-            _resetInvoicesHeaderIcons() {
-                const table = this.byId("reviewInvoicesTable");
-                const columns = table.getColumns();
-
-                columns.forEach(function (column) {
-                    const header = column.getHeader();
-
-                    if (header && header.getMetadata().getName() === "sap.m.HBox") {
-                        const headerItems = header.getItems();
-                        if (headerItems) {
-                            headerItems.forEach(function (item) {
-                                if (item.getMetadata().getName() === "sap.ui.core.Icon" &&
-                                    (item.getSrc().includes("sort") || item.getSrc() === "sap-icon://text-align-center")) {
-                                    item.setSrc("sap-icon://sort");
-                                }
-                            });
-                        }
-                    }
-                });
-            },
-
-            onSortProductName() {
-                this.onSortInvoicesColumn("ProductName", 1);
-            },
-
-            onSortCustomerName() {
-                this.onSortInvoicesColumn("CustomerName", 2);
+            onSortColumn: function (oEvent) {
+                Helper.onSortColumn(oEvent, this, "reviewInvoicesTable");
             },
 
             onSettingsPress: async function () {

@@ -3,8 +3,9 @@ sap.ui.define([
     "sap/ui/core/routing/History",
     "sap/m/library",
     "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator"
-], function (MessageToast, History, mobileLibrary, Filter, FilterOperator) {
+    "sap/ui/model/FilterOperator",
+    "sap/ui/model/Sorter"
+], function (MessageToast, History, mobileLibrary, Filter, FilterOperator, Sorter) {
     "use strict";
 
     return {
@@ -82,13 +83,6 @@ sap.ui.define([
             oRouter.navTo("overview");
         },
 
-        /**
-         * Generic filter function for table search
-         * @param {sap.ui.base.Event} oEvent - The search event
-         * @param {sap.ui.core.mvc.Controller} oController - The controller instance
-         * @param {string} sTableId - The ID of the table to filter
-         * @param {Array<string>} aFieldNames - Array of field names to filter on
-         */
         onFilter: function (oEvent, oController, sTableId, aFieldNames) {
             const sQuery = oEvent.getParameter("query");
             const oTable = oController.byId(sTableId);
@@ -106,6 +100,103 @@ sap.ui.define([
                 oBinding.filter(oFilter, "Application");
             } else {
                 oBinding.filter([], "Application");
+            }
+        },
+
+        onSortColumn: function (oEvent, oController, sTableId) {
+            const oControl = oEvent.getSource();
+            const oColumn = oControl.getParent();
+            const sFieldPath = oColumn.data("fieldPath");
+            const oTable = oController.byId(sTableId);
+            const oBinding = oTable.getBinding("items");
+
+            const initialSortOrder = oColumn.getSortIndicator();
+
+            oTable.getColumns().forEach(function (col) {
+                col.setSortIndicator("None");
+            });
+
+            // new Sort order
+            let bDescending = false;
+            let sNewSortIndicator = "Ascending";
+
+            if (initialSortOrder === "Ascending") {
+                bDescending = true;
+                sNewSortIndicator = "Descending";
+            } else if (initialSortOrder === "Descending") {
+                bDescending = false;
+                sNewSortIndicator = "Ascending";
+            }
+
+            // Set sort indicator on clicked column
+            oColumn.setSortIndicator(sNewSortIndicator);
+
+            // Apply sort to binding
+            const oSorter = new Sorter(sFieldPath, bDescending);
+            oBinding.sort(oSorter);
+        },
+
+        /**
+         * Generic sort function for table columns with sort indicator (JSON model)
+         * @param {sap.ui.base.Event} oEvent - The press event from Link/Button
+         * @param {sap.ui.core.mvc.Controller} oController - The controller instance
+         * @param {string} sTableId - The ID of the table to sort
+         * @param {string} sModelName - The name of the JSON model
+         * @param {string} sDataPath - The path to the data array in the model (e.g., "/value")
+         */
+        onSortColumnJSON: function (oEvent, oController, sTableId, sModelName, sDataPath) {
+            const oControl = oEvent.getSource();
+            const oColumn = oControl.getParent();
+            const sFieldPath = oColumn.data("fieldPath");
+            const oTable = oController.byId(sTableId);
+            const oModel = oController.getOwnerComponent().getModel(sModelName);
+
+            const initialSortOrder = oColumn.getSortIndicator();
+
+            // Reset all columns' sort indicators
+            oTable.getColumns().forEach(function (col) {
+                col.setSortIndicator("None");
+            });
+
+            // Determine new sort order
+            let sNewSortIndicator = "Ascending";
+
+            if (initialSortOrder === "Ascending") {
+                sNewSortIndicator = "Descending";
+            } else if (initialSortOrder === "Descending") {
+                sNewSortIndicator = "Ascending";
+            }
+
+            // Set sort indicator on clicked column
+            oColumn.setSortIndicator(sNewSortIndicator);
+
+            // Get data array from model
+            const aData = oModel.getProperty(sDataPath);
+
+            if (aData && aData.length > 0) {
+                // Sort the data array
+                aData.sort(function (a, b) {
+                    const valueA = a[sFieldPath];
+                    const valueB = b[sFieldPath];
+
+                    // Handle null/undefined values
+                    if (valueA == null && valueB == null) return 0;
+                    if (valueA == null) return sNewSortIndicator === "Ascending" ? 1 : -1;
+                    if (valueB == null) return sNewSortIndicator === "Ascending" ? -1 : 1;
+
+                    // Compare values
+                    let comparison = 0;
+                    if (typeof valueA === "string" && typeof valueB === "string") {
+                        comparison = valueA.localeCompare(valueB);
+                    } else {
+                        comparison = valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
+                    }
+
+                    return sNewSortIndicator === "Ascending" ? comparison : -comparison;
+                });
+
+                // Update model with sorted data
+                oModel.setProperty(sDataPath, aData);
             }
         }
     };

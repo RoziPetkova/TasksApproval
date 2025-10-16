@@ -34,8 +34,10 @@ sap.ui.define(
                 var sCustomerId = oEvent.getParameter("arguments").CustomerID;
                 this.bindCustomerData(sCustomerId);
 
-                // Apply filters to orders and invoices tables
-                this.filterCustomerOrders(sCustomerId);
+                // Filter orders from JSON model and create customer-specific model
+                this.filterCustomerOrdersJSON(sCustomerId);
+
+                // Apply filters to invoices table (still using OData)
                 this.filterCustomerInvoices(sCustomerId);
 
                 this.setStickyHeadersForTables();
@@ -59,15 +61,24 @@ sap.ui.define(
                 });
             },
 
-            filterCustomerOrders: function (sCustomerId) {
-                const oTable = this.byId("customerOrdersTable");
-                if (!oTable) return;
-
-                const oBinding = oTable.getBinding("items");
-                if (oBinding) {
-                    const oFilter = new Filter("CustomerID", FilterOperator.EQ, sCustomerId);
-                    oBinding.filter([oFilter], "Application");
+            filterCustomerOrdersJSON: function (sCustomerId) {
+                // Get the global orders model
+                const oOrdersModel = this.getOwnerComponent().getModel("orders");
+                if (!oOrdersModel) {
+                    console.warn("Orders model not available");
+                    return;
                 }
+
+                const allOrders = oOrdersModel.getProperty("/value") || [];
+
+                // Filter orders for this customer
+                const customerOrders = allOrders.filter(function (order) {
+                    return order.CustomerID === sCustomerId;
+                });
+
+                // Create a customer-specific orders model
+                const oCustomerOrdersModel = new JSONModel({ value: customerOrders });
+                this.getView().setModel(oCustomerOrdersModel, "customerOrders");
             },
 
             filterCustomerInvoices: function (sCustomerId) {
@@ -92,7 +103,7 @@ sap.ui.define(
 
 
             onCustomerOrderPress(oEvent) {
-                const oOrder = oEvent.getSource().getBindingContext("odataModel").getObject();
+                const oOrder = oEvent.getSource().getBindingContext("customerOrders").getObject();
                 this._router.navTo("orderdetails", { OrderID: oOrder.OrderID });
             },
 
@@ -134,23 +145,19 @@ sap.ui.define(
                 Helper.onHomepagePress(this);
             },
 
-            onSortOrderDate() {
-                this.onSortColumn("customerOrdersTable", "OrderDate", 4);
-            },
-
-            onSortStatus() {
-                this.onSortColumn("customerOrdersTable", "Status", 6);
+            onSortOrdersColumn: function (oEvent) {
+                Helper.onSortColumnJSON(oEvent, this, "customerOrdersTable", "customerOrders", "/value");
             },
 
             onSortProductName() {
-                this.onSortColumn("customerInvoicesTable", "ProductName", 1);
+                this.onSortInvoicesColumn("customerInvoicesTable", "ProductName", 1);
             },
 
             onSortInvoiceOrderDate() {
-                this.onSortColumn("customerInvoicesTable", "OrderDate", 3);
+                this.onSortInvoicesColumn("customerInvoicesTable", "OrderDate", 3);
             },
 
-            onSortColumn(tableId, fieldPath, columnIndex, iconIndex = 1) {
+            onSortInvoicesColumn(tableId, fieldPath, columnIndex, iconIndex = 1) {
                 const table = this.byId(tableId);
                 const binding = table.getBinding("items");
 
