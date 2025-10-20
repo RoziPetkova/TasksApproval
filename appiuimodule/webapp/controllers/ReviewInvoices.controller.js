@@ -12,7 +12,7 @@ sap.ui.define(
     ],
     function (Controller, Filter, FilterOperator, History, Sorter, Device, MessageToast, JSONModel, MessageBox) {
         'use strict';
-        
+
         return Controller.extend('appiuimodule.controllers.ReviewInvoices', {
             _bundle: null,
             _sortState: {},
@@ -154,6 +154,9 @@ sap.ui.define(
             },
 
             formatCurrency: function (amount) {
+                //Such one-line if's can be hard to track, please use the brackets {} for any case.
+                //Further more - what do you think of doing it with a ternary operator ->
+                // return !amount ? "" :  parseFloat(amount).toFixed(2) + " USD"
                 if (!amount) return "";
                 return parseFloat(amount).toFixed(2) + " USD";
             },

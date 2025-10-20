@@ -11,7 +11,7 @@ sap.ui.define(
     ],
     function (Controller, Filter, FilterOperator, History, Sorter, MessageToast, JSONModel, MessageBox) {
         'use strict';
-        
+
         return Controller.extend('appiuimodule.controllers.ReviewCustomers', {
             _bundle: null,
             _sortState: {},
@@ -46,19 +46,24 @@ sap.ui.define(
                 }
 
                 try {
+                    ///this hardcoded URL needs to be extracted and also the MAGIC number 20 :) 
+                    //Extract it as a constants, since it is being used here and there
                     const response = await fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$top=20");
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const data = await response.json();
-
+                    //Hard coded 'magic' number . Let's don't do this, since it is very hard to track and maintain :)
                     data.hasMore = data.value && data.value.length === 20;
 
                     oCustomersModel.setData(data);
 
+                    //Hard coded 'magic' number . Let's don't do this, since it is very hard to track and maintain :)
                     this._customersSkip = 20;
                     this._customersHasMore = data.hasMore;
                 } catch (error) {
+                    ///Lets not hard code such errors and don't log them. If anything goes wrong in the try block, the error will be logged anyway.
+                    ///Remove the console error statement.
                     console.error("Error loading customers data: ", error);
                     oCustomersModel.setData({ value: [], hasMore: false });
                     MessageBox.error(this._bundle.getText("failedToLoadCustomersMessage"));
@@ -80,6 +85,9 @@ sap.ui.define(
                 const oCustomersModel = this.getOwnerComponent().getModel("customers");
                 const currentData = oCustomersModel.getData();
                 const oTable = this.byId("reviewCustomersTable");
+
+                ////Don't do such checks, it should be imperative - if the table is not loaded, there is a bigger issue.
+                ///Remove those type of checks from every method :)
                 if (oTable) {
                     oTable.setBusy(true);
                 }
@@ -95,6 +103,7 @@ sap.ui.define(
                         currentData.value = currentData.value.concat(newData.value);
 
                         this._customersSkip += newData.value.length;
+                        //Hard coded 'magic' number . Let's don't do this, since it is very hard to track and maintain :)
                         this._customersHasMore = newData.value.length === 20;
                         currentData.hasMore = this._customersHasMore;
 
@@ -105,12 +114,16 @@ sap.ui.define(
                         oCustomersModel.setData(currentData);
                     }
                 } catch (error) {
+                    ///Lets not hard code such errors and don't log them. If anything goes wrong in the try block, the error will be logged anyway.
+                    ///Remove the console error statement.
                     console.error("Error loading more customers data: ", error);
                     this._customersHasMore = false;
                     currentData.hasMore = false;
                     oCustomersModel.setData(currentData);
                     MessageBox.error(this._bundle.getText("failedToLoadMoreCustomersMessage"));
                 } finally {
+                    ////Don't do such checks, it should be imperative - if the table is not loaded, there is a bigger issue.
+                    ///Remove those type of checks from every method :) And it is already fetched from the DOM on line 88 
                     const oTable = this.byId("reviewCustomersTable");
                     if (oTable) {
                         oTable.setBusy(false);
@@ -122,6 +135,8 @@ sap.ui.define(
                 const oHistory = History.getInstance();
                 const sPreviousHash = oHistory.getPreviousHash();
 
+
+                ///What do you think of reworking this check as !!sPrevioushHas ?
                 if (sPreviousHash !== undefined) {
                     window.history.go(-1);
                 } else {
@@ -149,6 +164,8 @@ sap.ui.define(
                 }
 
                 try {
+                    ///Extract the base URL https://services.odata.org/V4/Northwind/Northwind.svc in Constants and replace it everywhere it is being used
+                    ///If we need to do some modifications for the BASE url, we need to change in a lot of places.
                     let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Customers";
 
                     if (query && query.trim()) {
@@ -156,15 +173,18 @@ sap.ui.define(
                         const filter = `contains(CustomerID,'${escapedQuery}') or contains(CompanyName,'${escapedQuery}')`;
                         url += `?$filter=${encodeURIComponent(filter)}`;
                     } else {
+                        //Hard coded 'magic' number in a string. Let's don't do this, since it is very hard to track and maintain :)
                         url += "?$top=20";
                     }
 
                     const response = await fetch(url);
                     if (!response.ok) {
+                        ///This error is being repeated everywhere - HTTP error! status: . Let's extract it in constants file
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const data = await response.json();
 
+                    ///Hard coded magic number 20
                     data.hasMore = data.value && data.value.length === 20;
 
                     oCustomersModel.setData(data);
@@ -172,6 +192,8 @@ sap.ui.define(
                     this._customersSkip = data.value ? data.value.length : 0;
                     this._customersHasMore = data.hasMore;
                 } catch (error) {
+                    ///Lets not hard code such errors and don't log them. If anything goes wrong in the try block, the error will be logged anyway.
+                    ///Remove the console error statement.
                     console.error("Error searching customers:", error);
                     MessageBox.error(this._bundle.getText("failedToSearchCustomersMessage"));
                 } finally {
@@ -203,6 +225,8 @@ sap.ui.define(
                 const header = column.getHeader();
 
                 let icon = null;
+
+                ///What are we doing here ? Why ?
                 if (header.getMetadata().getName() === "sap.m.HBox") {
                     const headerItems = header.getItems();
                     if (headerItems && headerItems[1]) {
@@ -210,6 +234,7 @@ sap.ui.define(
                     }
                 }
 
+                ///What are we doing here ? Why ?
                 if (icon && icon.getMetadata().getName() === "sap.ui.core.Icon") {
                     if (isAscending) {
                         icon.setSrc("sap-icon://sort-ascending");
@@ -245,6 +270,7 @@ sap.ui.define(
             },
 
             onSortCountry() {
+                //What is the magic number 3 doing here ?
                 this.onSortCustomersColumn("Country", 3);
             },
 
