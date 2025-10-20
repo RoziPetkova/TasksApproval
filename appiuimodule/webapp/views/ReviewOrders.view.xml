@@ -65,7 +65,7 @@
                                     horizontal="false">
                                     <Table
                                         id="reviewOrdersTable"
-                                        items="{ path: 'orders>/value' }"
+                                        items="{ path: 'orders>/' }"
                                         width="100%"
                                         showNoData="false"
                                         mode="None"

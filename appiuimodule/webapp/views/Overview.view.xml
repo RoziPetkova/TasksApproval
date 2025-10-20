@@ -68,7 +68,7 @@
                                             mode="None"
                                             busyIndicatorDelay="0"
                                             growingThreshold="10"
-                                            growingTriggerText="More customers"
+                                            growingTriggerText="{i18n>loadMoreButton}"
                                             growing="true">
                                             <columns>
                                                 <Column width="7em">
@@ -174,7 +174,7 @@
                                         horizontal="false">
                                         <Table
                                             id="ordersTable"
-                                            items="{ path: 'orders>/value' }"
+                                            items="{ path: 'orders>/' }"
                                             width="100%"
                                             showNoData="false"
                                             mode="None"
@@ -306,7 +306,7 @@
                                             busyIndicatorDelay="0"
                                             growing="true"
                                             growingThreshold="10"
-                                            growingTriggerText="{i18n>loadMoreInvoicesButton}">
+                                            growingTriggerText="{i18n>loadMoreButton}">
                                             <columns>
                                                 <Column width="5em">
                                                     <customData>

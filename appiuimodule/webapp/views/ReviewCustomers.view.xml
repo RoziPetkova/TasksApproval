@@ -66,7 +66,7 @@
                                         busyIndicatorDelay="0"
                                         growing="true"
                                         growingThreshold="20"
-                                        growingTriggerText="{i18n>loadMoreCustomersButton}">
+                                        growingTriggerText="{i18n>loadMoreButton}">
                                         <columns>
                                             <Column width="7em">
                                                 <customData>
