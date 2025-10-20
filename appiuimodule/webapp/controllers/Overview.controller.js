@@ -36,7 +36,7 @@ sap.ui.define([
             this._router.navTo("reviewcustomers");
         },
 
-         onLoadMoreOrders: function () {
+        onLoadMoreOrders: function () {
             this._router.navTo("revieworders");
         },
 
@@ -44,42 +44,33 @@ sap.ui.define([
             this._router.navTo("reviewinvoices");
         },
 
-        _loadAllOrders: async function () {
+        _loadAllOrders: function () {
             const oOrdersTable = this.byId("ordersTable");
-            if (oOrdersTable) {
-                oOrdersTable.setBusy(true);
-            }
+            oOrdersTable.setBusy(true);
 
-            try {
-                let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Orders";
+            const oODataModel = this.getOwnerComponent().getModel("odataModel");
 
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
+            oODataModel.read("/Orders", {
+                success: (data) => {
+                    this.handleStatusProperty(data.results);
+                    this._originalOrdersData = data.results;
 
-                if (data && data.value) {
-                    this.handleStatusProperty(data);
-                }
+                    const oOrdersModel = new JSONModel(data.results);
+                    this.getOwnerComponent().setModel(oOrdersModel, "orders");
 
-                this._originalOrdersData = data.value;
-
-                const oOrdersModel = new JSONModel();
-                oOrdersModel.setData(data);
-                this.getOwnerComponent().setModel(oOrdersModel, "orders");
-            } catch (error) {
-                console.error("Error loading all orders:", error);
-                MessageBox.error(this._bundle.getText("failedToLoadOrdersMessage"));
-            } finally {
-                if (oOrdersTable) {
+                    oOrdersTable.setBusy(false);
+                },
+                error: (error) => {
+                    console.error("Error:", error);
                     oOrdersTable.setBusy(false);
                 }
-            }
+            });
+
+           
         },
 
         handleStatusProperty(data) {
-            data.value.forEach(function (order) {
+            data.forEach(function (order) {
                 if (order.OrderID % 2 == 0) {
                     order.ShippedDate = null;
                 }
@@ -97,7 +88,7 @@ sap.ui.define([
                 { CustomerID: oEvent.getSource().getBindingContext("odataModel").getObject().CustomerID });
         },
 
-        onInvoicePress: function(oEvent) {
+        onInvoicePress: function (oEvent) {
             const oInvoice = oEvent.getSource().getBindingContext("odataModel").getObject();
             this._router.navTo("invoicedetails", {
                 OrderID: oInvoice.OrderID
@@ -113,8 +104,8 @@ sap.ui.define([
             const oOrdersModel = this.getOwnerComponent().getModel("orders");
 
             if (!this._originalOrdersData) {
-                if (oOrdersModel && oOrdersModel.getProperty("/value")) {
-                    this._originalOrdersData = oOrdersModel.getProperty("/value");
+                if (oOrdersModel && oOrdersModel.getData()) {
+                    this._originalOrdersData = oOrdersModel.getData();
                 } else {
                     console.warn("Orders data not available for search");
                     return;
@@ -133,7 +124,7 @@ sap.ui.define([
                 filteredOrders = allOrders;
             }
 
-            oOrdersModel.setProperty("/value", filteredOrders);
+            oOrdersModel.setData(filteredOrders);
         },
 
         onStatusFilterChange: function (oEvent) {
@@ -145,8 +136,8 @@ sap.ui.define([
             const oOrdersModel = this.getOwnerComponent().getModel("orders");
 
             if (!this._originalOrdersData) {
-                if (oOrdersModel && oOrdersModel.getProperty("/value")) {
-                    this._originalOrdersData = oOrdersModel.getProperty("/value");
+                if (oOrdersModel && oOrdersModel.getData()) {
+                    this._originalOrdersData = oOrdersModel.getData();
                 } else {
                     console.warn("Orders data not available for status filtering");
                     return;
@@ -168,7 +159,7 @@ sap.ui.define([
                 filteredOrders = allOrders;
             }
 
-            oOrdersModel.setProperty("/value", filteredOrders);
+            oOrdersModel.setData(filteredOrders);
         },
 
         onFilter: function (oEvent) {
@@ -188,10 +179,10 @@ sap.ui.define([
         },
 
         onSortOrdersColumn: function (oEvent) {
-            Helper.onSortColumnJSON(oEvent, this, "ordersTable", "orders", "/value");
+            Helper.onSortColumnJSON(oEvent, this, "ordersTable", "orders", "/");
         },
 
-          formatDate: function (dateString) {
+        formatDate: function (dateString) {
             return Formatter.formatDate(dateString);
         },
 

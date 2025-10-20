@@ -99,7 +99,7 @@
                                 <ScrollContainer height="90%" vertical="true" horizontal="false">
                                     <Table
                                         id="customerOrdersTable"
-                                        items="{ path: 'customerOrders>/value' }"
+                                        items="{ path: 'customerOrders>/' }"
                                         width="100%"
                                         showNoData="true"
                                         noDataText="No orders available"
@@ -112,9 +112,6 @@
                                                 </customData>
                                                 <Link text="{i18n>orderIdColumn}"
                                                     press=".onSortOrdersColumn" />
-                                            </Column>
-                                            <Column minScreenWidth="Small">
-                                                <Text text="{i18n>taskTypeColumn}" />
                                             </Column>
                                             <Column minScreenWidth="Small">
                                                 <customData>
@@ -158,7 +155,6 @@
                                                 press=".onCustomerOrderPress">
                                                 <cells>
                                                     <Text text="{customerOrders>OrderID}" />
-                                                    <Text text="{i18n>orderTaskTypeValue}" />
                                                     <Text text="{customerOrders>CustomerID}" />
                                                     <Text text="{customerOrders>ShipCountry}" />
                                                     <Text
@@ -183,7 +179,7 @@
 
                 <!-- Customer Invoices Card with Fixed Height -->
                 <VBox renderType="Bare" class="sapUiLargeMarginTop">
-                    <f:Card renderType="Bare" class="sapUiContentPadding responsiveCard">
+                    <f:Card class="sapUiContentPadding responsiveCard">
                         <f:header>
                             <card:Header
                                 title="{i18n>customerInvoicesTitle}"
@@ -204,34 +200,46 @@
                                         busyIndicatorDelay="0">
                                         <columns>
                                             <Column width="5em">
-                                                <Text text="{i18n>orderIdColumn}" />
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="OrderID" />
+                                                </customData>
+                                                <Link text="{i18n>orderIdColumn}"
+                                                    press=".onSortInvoicesColumn" />
                                             </Column>
                                             <Column>
-                                                <HBox alignItems="Center">
-                                                    <Text text="{i18n>productNameColumn}" />
-                                                    <core:Icon
-                                                        src="sap-icon://sort"
-                                                        press=".onSortProductName"
-                                                        class="sapUiTinyMarginBegin sortIcon" />
-                                                </HBox>
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="ProductName" />
+                                                </customData>
+                                                <Link text="{i18n>productNameColumn}"
+                                                    press=".onSortInvoicesColumn" />
                                             </Column>
                                             <Column minScreenWidth="Small">
-                                                <Text text="{i18n>customerColumn}" />
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="CustomerName" />
+                                                </customData>
+                                                <Link text="{i18n>customerColumn}"
+                                                    press=".onSortInvoicesColumn" />
                                             </Column>
-                                            <Column >
-                                                <HBox alignItems="Center">
-                                                    <Text text="{i18n>orderDateColumn}" />
-                                                    <core:Icon
-                                                        src="sap-icon://sort"
-                                                        press=".onSortInvoiceOrderDate"
-                                                        class="sapUiTinyMarginBegin sortIcon" />
-                                                </HBox>
+                                            <Column>
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="OrderDate" />
+                                                </customData>
+                                                <Link text="{i18n>orderDateColumn}"
+                                                    press=".onSortInvoicesColumn" />
                                             </Column>
                                             <Column minScreenWidth="Small" demandPopin="true">
-                                                <Text text="{i18n>statusColumn}" />
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="Status" />
+                                                </customData>
+                                                <Link text="{i18n>statusColumn}"
+                                                    press=".onSortInvoicesColumn" />
                                             </Column>
-                                            <Column >
-                                                <Text text="{i18n>priceColumn}" />
+                                            <Column>
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="ExtendedPrice" />
+                                                </customData>
+                                                <Link text="{i18n>priceColumn}"
+                                                    press=".onSortInvoicesColumn" />
                                             </Column>
                                         </columns>
                                         <items>

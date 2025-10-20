@@ -17,7 +17,6 @@ sap.ui.define(
 
         return Controller.extend("appiuimodule.controllers.CustomerDetails", {
             formatter: Formatter,
-            _sortState: {},
             bundle: null,
             _router: null,
 
@@ -69,7 +68,7 @@ sap.ui.define(
                     return;
                 }
 
-                const allOrders = oOrdersModel.getProperty("/value") || [];
+                const allOrders = oOrdersModel.getData() || [];
 
                 // Filter orders for this customer
                 const customerOrders = allOrders.filter(function (order) {
@@ -77,7 +76,7 @@ sap.ui.define(
                 });
 
                 // Create a customer-specific orders model
-                const oCustomerOrdersModel = new JSONModel({ value: customerOrders });
+                const oCustomerOrdersModel = new JSONModel(customerOrders);
                 this.getView().setModel(oCustomerOrdersModel, "customerOrders");
             },
 
@@ -146,93 +145,11 @@ sap.ui.define(
             },
 
             onSortOrdersColumn: function (oEvent) {
-                Helper.onSortColumnJSON(oEvent, this, "customerOrdersTable", "customerOrders", "/value");
+                Helper.onSortColumnJSON(oEvent, this, "customerOrdersTable", "customerOrders", "/");
             },
 
-            onSortProductName() {
-                this.onSortInvoicesColumn("customerInvoicesTable", "ProductName", 1);
-            },
-
-            onSortInvoiceOrderDate() {
-                this.onSortInvoicesColumn("customerInvoicesTable", "OrderDate", 3);
-            },
-
-            onSortInvoicesColumn(tableId, fieldPath, columnIndex, iconIndex = 1) {
-                const table = this.byId(tableId);
-                const binding = table.getBinding("items");
-
-                if (!this._sortState[tableId]) {
-                    this._sortState[tableId] = {};
-                }
-
-                this._resetAllSortIcons(tableId);
-
-                if (this._sortState[tableId][fieldPath] === undefined) {
-                    this._sortState[tableId][fieldPath] = false; // false = descending first
-                }
-
-                // Toggle sort direction
-                this._sortState[tableId][fieldPath] = !this._sortState[tableId][fieldPath];
-                const isAscending = this._sortState[tableId][fieldPath];
-
-                // Create sorter
-                const sorter = new Sorter(fieldPath, !isAscending);
-
-                // Apply sorting
-                binding.sort(sorter);
-
-                // Update icon to show current sort direction
-                const columns = table.getColumns();
-                const column = columns[columnIndex];
-                const header = column.getHeader();
-
-                // Handle different header structures
-                let icon = null;
-                if (header.getMetadata().getName() === "sap.m.HBox") {
-                    // Header is an HBox containing items
-                    const headerItems = header.getItems();
-                    if (headerItems && headerItems[iconIndex]) {
-                        icon = headerItems[iconIndex];
-                    }
-                } else if (header.getMetadata().getName() === "sap.ui.core.Icon") {
-                    // Header is directly an Icon
-                    icon = header;
-                }
-
-                if (icon && icon.getMetadata().getName() === "sap.ui.core.Icon") {
-                    if (isAscending) {
-                        icon.setSrc("sap-icon://sort-ascending");
-                    } else {
-                        icon.setSrc("sap-icon://sort-descending");
-                    }
-                }
-            },
-
-            _resetAllSortIcons(tableId) {
-                const table = this.byId(tableId);
-                const columns = table.getColumns();
-
-                columns.forEach(function (column) {
-                    const header = column.getHeader();
-
-                    if (header.getMetadata().getName() === "sap.m.HBox") {
-                        // Header is an HBox containing items
-                        const headerItems = header.getItems();
-                        if (headerItems) {
-                            headerItems.forEach(function (item) {
-                                if (item.getMetadata().getName() === "sap.ui.core.Icon" &&
-                                    (item.getSrc().includes("sort") || item.getSrc() === "sap-icon://sort")) {
-                                    item.setSrc("sap-icon://sort");
-                                }
-                            });
-                        }
-                    } else if (header.getMetadata().getName() === "sap.ui.core.Icon") {
-                        // Header is directly an Icon
-                        if (header.getSrc().includes("sort") || header.getSrc() === "sap-icon://sort") {
-                            header.setSrc("sap-icon://sort");
-                        }
-                    }
-                });
+            onSortInvoicesColumn: function (oEvent) {
+                Helper.onSortColumn(oEvent, this, "customerInvoicesTable");
             },
 
             formatDate: function (dateString) {
