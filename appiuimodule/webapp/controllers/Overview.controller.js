@@ -49,14 +49,12 @@ sap.ui.define([
                     this.handleStatusProperty(data.results);
                     this._originalOrdersData = data.results;
 
-                    //once in component and setProperty
                     const oOrdersModel = new JSONModel(data.results);
                     this.getOwnerComponent().setModel(oOrdersModel, "orders");
 
                     oOrdersTable.setBusy(false);
                 },
                 error: (error) => {
-                    //mess box
                     console.error("Error:", error);
                     oOrdersTable.setBusy(false);
                 }
@@ -99,8 +97,8 @@ sap.ui.define([
             const oOrdersModel = this.getOwnerComponent().getModel("orders");
 
             if (!this._originalOrdersData) {
-                if (oOrdersModel && oOrdersModel.getProperty("/value")) {
-                    this._originalOrdersData = oOrdersModel.getProperty("/value");
+                if (oOrdersModel && oOrdersModel.getData()) {
+                    this._originalOrdersData = oOrdersModel.getData();
                 } else {
                     console.warn("Orders data not available for search");
                     return;
@@ -119,7 +117,7 @@ sap.ui.define([
                 filteredOrders = allOrders;
             }
 
-            oOrdersModel.setProperty("/value", filteredOrders);
+            oOrdersModel.setData(filteredOrders);
         },
 
         onStatusFilterChange: function (oEvent) {
@@ -131,8 +129,8 @@ sap.ui.define([
             const oOrdersModel = this.getOwnerComponent().getModel("orders");
 
             if (!this._originalOrdersData) {
-                if (oOrdersModel && oOrdersModel.getProperty("/value")) {
-                    this._originalOrdersData = oOrdersModel.getProperty("/value");
+                if (oOrdersModel && oOrdersModel.getData()) {
+                    this._originalOrdersData = oOrdersModel.getData();
                 } else {
 
                     //mess box
@@ -156,7 +154,7 @@ sap.ui.define([
                 filteredOrders = allOrders;
             }
 
-            oOrdersModel.setProperty("/value", filteredOrders);
+            oOrdersModel.setData(filteredOrders);
         },
 
         onFilter: function (oEvent) {
@@ -176,7 +174,7 @@ sap.ui.define([
         },
 
         onSortOrdersColumn: function (oEvent) {
-            Helper.onSortColumnJSON(oEvent, this, "ordersTable", "orders", "/value");
+            Helper.onSortColumnJSON(oEvent, this, "ordersTable", "orders", "/");
         },
 
         formatDate: function (dateString) {

@@ -32,24 +32,11 @@ sap.ui.define(
                 var sOrderId = oEvent.getParameter("arguments").OrderID;
                 var oModel = this.getOwnerComponent().getModel("orders");
 
-                if (!oModel || !oModel.getProperty("/value")) {
-                    await this.loadOrderById(sOrderId);
-                    return;
-                }
-
-                var aOrders = oModel.getProperty("/value");
+                var aOrders = oModel.getData();
                 var oOrder = aOrders.find(function (order) {
                     return String(order.OrderID) === String(sOrderId);
                 });
 
-                // If order not found in loaded model, try fetching from API
-                if (!oOrder) {
-                    console.warn("Order not found in loaded model, fetching from API:", sOrderId);
-                    await this.loadOrderById(sOrderId);
-                    return;
-                }
-
-                // oOrder found in model - use it
                 var oOrderModel = this.loadOrderProperties(oOrder);
                 this.getView().setModel(oOrderModel, "orderModel");
             },
@@ -128,52 +115,6 @@ sap.ui.define(
                     const customerId = oCustomerDetail.value;
                     const oRouter = this.getOwnerComponent().getRouter();
                     oRouter.navTo("customerdetails", { CustomerID: customerId });
-                }
-            },
-
-            loadOrderById: async function (orderId) {
-                const card = this.byId("orderCard");
-                if (card) {
-                    card.setBusyIndicatorDelay(0);
-                    card.setBusy(true);
-                }
-                try {
-                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Orders?$filter=OrderID eq ${orderId}`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-
-                    if (data.value && data.value.length > 0) {
-                        const oOrder = data.value[0];
-
-                        oOrder.Status = oOrder.ShippedDate ? "Shipped" : "Pending";
-
-                        var oOrderModel = this.loadOrderProperties(oOrder);
-                        this.getView().setModel(oOrderModel, "orderModel");
-                    } else {
-                        console.error("Order not found in API:", orderId);
-                        MessageBox.error(this._bundle.getText("orderNotFoundMessage", [orderId]));
-
-                        this.getView().setModel(new JSONModel({
-                            taskDetails: [
-                                { label: this._bundle.getText("errorLabel"), value: this._bundle.getText("orderNotFoundLabel", [orderId]) },
-                                { label: this._bundle.getText("statusLabel"), value: this._bundle.getText("notAvailableLabel") }
-                            ]
-                        }), "orderModel");
-                    }
-                } catch (error) {
-                    console.error("Error loading order by ID:", error);
-                    MessageBox.error(this._bundle.getText("failedToLoadOrderMessage", [orderId]));
-
-                    this.getView().setModel(new JSONModel({
-                        taskDetails: [
-                            { label: this._bundle.getText("errorLabel"), value: this._bundle.getText("failedToLoadOrderLabel", [orderId]) },
-                            { label: this._bundle.getText("statusLabel"), value: this._bundle.getText("errorStatusLabel") }
-                        ]
-                    }), "orderModel");
-                } finally {
-                    card.setBusy(false);
                 }
             },
 
@@ -267,7 +208,7 @@ sap.ui.define(
             },
 
             updateOrdersModel(allOrdersModel, updatedOrderData, status) {
-                const allOrders = allOrdersModel.getProperty("/value");
+                const allOrders = allOrdersModel.getData();
                 if (allOrders) {
                     const orderIndex = allOrders.findIndex(order => String(order.OrderID) === String(updatedOrderData[0].value));
                     if (orderIndex !== -1) {
@@ -279,7 +220,7 @@ sap.ui.define(
                             allOrders[orderIndex].ShippedDate = updatedOrderData[4].value;
                             allOrders[orderIndex].Status = updatedOrderData[7].value;
                         }
-                        allOrdersModel.setProperty("/value", allOrders);
+                        allOrdersModel.setData(allOrders);
                     }
                 }
             },
