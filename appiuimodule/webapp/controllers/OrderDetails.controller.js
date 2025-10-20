@@ -1,14 +1,13 @@
 sap.ui.define(
     [
         "sap/ui/core/mvc/Controller",
-        "sap/ui/core/routing/History",
         "sap/ui/model/json/JSONModel",
         "sap/m/MessageToast",
         "sap/m/MessageBox",
         "../utils/Formatter",
         "../utils/Helper"
     ],
-    function (Controller, History, JSONModel, MessageToast, MessageBox, Formatter, Helper) {
+    function (Controller, JSONModel, MessageToast, MessageBox, Formatter, Helper) {
         "use strict";
 
         return Controller.extend("appiuimodule.controllers.OrderDetails", {

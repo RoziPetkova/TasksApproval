@@ -81,7 +81,6 @@ sap.ui.define(
                         oView.setBusy(false);
                     }.bind(this),
                     error: function (oError) {
-                        console.error("Error loading invoice header:", oError);
                         MessageBox.error(this._bundle.getText("failedToLoadOrderDataMessage"));
                         oView.setBusy(false);
                     }.bind(this)

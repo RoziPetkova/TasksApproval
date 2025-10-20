@@ -1,18 +1,15 @@
 sap.ui.define(
     [
         "sap/ui/core/mvc/Controller",
-        "sap/ui/core/routing/History",
-        "sap/m/library",
         "sap/ui/model/Sorter",
         "sap/ui/model/Filter",
         "sap/ui/model/FilterOperator",
-        "sap/m/MessageToast",
         "sap/ui/model/json/JSONModel",
         "sap/m/MessageBox",
         "../utils/Formatter",
         "../utils/Helper"
     ],
-    function (Controller, History, mobileLibrary, Sorter, Filter, FilterOperator, MessageToast, JSONModel, MessageBox, Formatter, Helper) {
+    function (Controller, Sorter, Filter, FilterOperator, JSONModel, MessageBox, Formatter, Helper) {
         "use strict";
 
         return Controller.extend("appiuimodule.controllers.CustomerDetails", {
@@ -64,10 +61,6 @@ sap.ui.define(
             filterCustomerOrdersJSON: function (sCustomerId) {
                 // Get the global orders model
                 const oOrdersModel = this.getOwnerComponent().getModel("orders");
-                if (!oOrdersModel) {
-                    console.warn("Orders model not available");
-                    return;
-                }
 
                 const allOrders = oOrdersModel.getProperty("/value") || [];
 

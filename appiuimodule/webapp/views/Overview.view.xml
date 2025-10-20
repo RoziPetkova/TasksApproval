@@ -7,8 +7,11 @@
     xmlns:f="sap.f"
     xmlns:card="sap.f.cards"
     xmlns:table="sap.ui.table"
-    controllerName="appiuimodule.controllers.Overview">
-    <!-- Updated formatters 2025-10-16 -->
+    controllerName="appiuimodule.controllers.Overview"
+    core:require="{
+		Constants: 'com/roiable/roiam/ui5/root/util/processes/Constants'
+	}"> 
+    <!-- Constants........-->
 
     <f:DynamicPage
         id="OverviewDynamicPage">
