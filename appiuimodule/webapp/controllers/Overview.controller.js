@@ -4,6 +4,7 @@ sap.ui.define([
     "../utils/Formatter",
     "../utils/Helper"
 ], function (Controller, JSONModel, Formatter, Helper) {
+
     'use strict';
 
     return Controller.extend('appiuimodule.controllers.Overview', {
