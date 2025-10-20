@@ -9,7 +9,7 @@ sap.ui.define([
     "sap/m/MessageBox"
 ], function (Controller, History, Sorter, mobileLibrary, Device, MessageToast, JSONModel, MessageBox) {
     'use strict';
-
+    
     return Controller.extend('appiuimodule.controllers.Overview', {
         _bundle: null,
         _sortState: {

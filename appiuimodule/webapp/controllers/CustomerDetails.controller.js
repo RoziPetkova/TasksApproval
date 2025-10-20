@@ -10,7 +10,7 @@ sap.ui.define(
     ],
     function (Controller, History, mobileLibrary, Sorter, MessageToast, JSONModel, MessageBox) {
         "use strict";
-
+        
         return Controller.extend("appiuimodule.controllers.CustomerDetails", {
             _sortState: {},
             bundle: null,

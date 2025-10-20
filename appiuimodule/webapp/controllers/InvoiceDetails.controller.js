@@ -8,7 +8,7 @@ sap.ui.define(
     ],
     function (Controller, History, MessageToast, JSONModel, MessageBox) {
         "use strict";
-
+        
         return Controller.extend("appiuimodule.controllers.InvoiceDetails", {
             _bundle: null,
 

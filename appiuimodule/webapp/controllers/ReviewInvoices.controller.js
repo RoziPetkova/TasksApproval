@@ -12,7 +12,7 @@ sap.ui.define(
     ],
     function (Controller, Filter, FilterOperator, History, Sorter, Device, MessageToast, JSONModel, MessageBox) {
         'use strict';
-
+        
         return Controller.extend('appiuimodule.controllers.ReviewInvoices', {
             _bundle: null,
             _sortState: {},

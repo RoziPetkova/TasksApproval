@@ -9,7 +9,7 @@ sap.ui.define(
             
             onInit: function () {
             },
-
+            
             onLoginAgain: function () {
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("entrypanel", {}, true);

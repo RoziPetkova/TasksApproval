@@ -41,7 +41,7 @@ html[dir="rtl"] .myAppDemoWT .myCustomButton.sapMBtn {
     text-decoration: underline !important;
     cursor: pointer !important;
 }
-
+    
 .clickableText:hover {
     color: #0056b3 !important;
 }

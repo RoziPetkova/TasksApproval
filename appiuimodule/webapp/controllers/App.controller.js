@@ -5,5 +5,5 @@ sap.ui.define([
 
    return Controller.extend("appiuimodule.controllers.App", {
       
-   });
+   });   
 });

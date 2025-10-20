@@ -11,7 +11,7 @@ sap.ui.define(
     ],
     function (Controller, Filter, FilterOperator, History, Sorter, MessageToast, JSONModel, MessageBox) {
         'use strict';
-
+        
         return Controller.extend('appiuimodule.controllers.ReviewCustomers', {
             _bundle: null,
             _sortState: {},

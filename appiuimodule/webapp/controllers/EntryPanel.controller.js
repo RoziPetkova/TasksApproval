@@ -8,7 +8,7 @@ sap.ui.define(
         'use strict';
 
         return Controller.extend('appiuimodule.controllers.EntryPanel', {
-
+            
             onInit: function () {
                 // Initialize entry panel
                 // Set view model to hide homepage button since we're already on the homepage

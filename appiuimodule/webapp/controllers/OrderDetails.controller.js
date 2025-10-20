@@ -11,7 +11,7 @@ sap.ui.define(
 
         return Controller.extend("appiuimodule.controllers.OrderDetails", {
             _bundle: null,
-
+            
             onInit() {
                 this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
                 const oRouter = this.getOwnerComponent().getRouter();
