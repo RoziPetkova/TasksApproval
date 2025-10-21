@@ -1,15 +1,13 @@
 sap.ui.define(
     [
         "sap/ui/core/mvc/Controller",
-        "sap/ui/model/Sorter",
         "sap/ui/model/Filter",
         "sap/ui/model/FilterOperator",
         "sap/ui/model/json/JSONModel",
-        "sap/m/MessageBox",
         "../utils/Formatter",
         "../utils/Helper"
     ],
-    function (Controller, Sorter, Filter, FilterOperator, JSONModel, MessageBox, Formatter, Helper) {
+    function (Controller, Filter, FilterOperator, JSONModel, Formatter, Helper) {
         "use strict";
 
         return Controller.extend("appiuimodule.controllers.CustomerDetails", {

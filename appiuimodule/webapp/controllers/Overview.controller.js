@@ -2,8 +2,9 @@ sap.ui.define([
     'sap/ui/core/mvc/Controller',
     "sap/ui/model/json/JSONModel",
     "../utils/Formatter",
-    "../utils/Helper"
-], function (Controller, JSONModel, Formatter, Helper) {
+    "../utils/Helper",
+    "../utils/Constants"
+], function (Controller, JSONModel, Formatter, Helper, Constants) {
 
     'use strict';
 
@@ -66,8 +67,7 @@ sap.ui.define([
                 if (order.OrderID % 2 == 0) {
                     order.ShippedDate = null;
                 }
-                //extract in constant
-                order.Status = order.ShippedDate ? "Shipped" : "Pending";
+                order.Status = order.ShippedDate ? Constants.OrderStatus.SHIPPED : Constants.OrderStatus.PENDING;
             });
         },
 
@@ -142,13 +142,13 @@ sap.ui.define([
             const allOrders = this._originalOrdersData || [];
             let filteredOrders;
 
-            if (status === "Shipped") {
+            if (status === Constants.OrderStatus.SHIPPED) {
                 filteredOrders = allOrders.filter(function (order) {
-                    return order.Status === "Shipped";
+                    return order.Status === Constants.OrderStatus.SHIPPED;
                 });
-            } else if (status === "Pending") {
+            } else if (status === Constants.OrderStatus.PENDING) {
                 filteredOrders = allOrders.filter(function (order) {
-                    return order.Status === "Pending";
+                    return order.Status === Constants.OrderStatus.PENDING;
                 });
             } else {
                 filteredOrders = allOrders;

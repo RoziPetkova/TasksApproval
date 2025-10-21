@@ -6,7 +6,10 @@
     xmlns:card="sap.f.cards"
     xmlns:macros="sap.fe.macros"
     xmlns:html="http://www.w3.org/1999/xhtml"
-    controllerName="appiuimodule.controllers.ReviewOrders">
+    controllerName="appiuimodule.controllers.ReviewOrders"
+    core:require="{
+		Constants: 'appiuimodule/utils/Constants'
+	}">
 
     <f:DynamicPage
         id="ReviewOrdersDynamicPage">
@@ -51,9 +54,9 @@
                                         class="sapUiTinyMarginBegin"
                                         width="{= ${viewModel>/isMobile} ? '44%' : '20%' }">
                                         <core:Item key="All" text="{i18n>allStatusFilter}" />
-                                        <core:Item key="Pending"
+                                        <core:Item key="{= Constants.OrderStatus.PENDING}"
                                             text="{i18n>pendingStatusFilter}" />
-                                        <core:Item key="Shipped"
+                                        <core:Item key="{= Constants.OrderStatus.SHIPPED}"
                                             text="{i18n>shippedStatusFilter}" />
                                     </Select>
                                 </OverflowToolbar>
@@ -77,9 +80,6 @@
                                                 </customData>
                                                 <Link text="{i18n>orderIdColumn}"
                                                     press=".onSortColumn" />
-                                            </Column>
-                                            <Column minScreenWidth="Small">
-                                                <Text text="{i18n>taskTypeColumn}" />
                                             </Column>
                                             <Column demandPopin="true" minScreenWidth="Small">
                                                 <customData>
@@ -123,7 +123,6 @@
                                                 press=".onOrderPress">
                                                 <cells>
                                                     <Text text="{orders>OrderID}" />
-                                                    <Text text="{i18n>orderTaskTypeValue}" />
                                                     <Text text="{orders>CustomerID}" />
                                                     <Text text="{orders>ShipCountry}" />
                                                     <Text

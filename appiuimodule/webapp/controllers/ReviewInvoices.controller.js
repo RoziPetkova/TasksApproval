@@ -1,17 +1,10 @@
 sap.ui.define(
     [
         'sap/ui/core/mvc/Controller',
-        "sap/ui/model/Filter",
-        "sap/ui/model/FilterOperator",
-        "sap/ui/core/routing/History",
-        "sap/ui/model/Sorter",
-        "sap/m/MessageToast",
-        "sap/ui/model/json/JSONModel",
-        "sap/m/MessageBox",
         "../utils/Formatter",
         "../utils/Helper"
     ],
-    function (Controller, Filter, FilterOperator, History, Sorter, MessageToast, JSONModel, MessageBox, Formatter, Helper) {
+    function (Controller, Formatter, Helper) {
         'use strict';
 
         return Controller.extend('appiuimodule.controllers.ReviewInvoices', {

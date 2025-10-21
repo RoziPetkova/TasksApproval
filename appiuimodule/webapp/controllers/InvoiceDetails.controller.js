@@ -1,8 +1,6 @@
 sap.ui.define(
     [
         "sap/ui/core/mvc/Controller",
-        "sap/ui/core/routing/History",
-        "sap/m/MessageToast",
         "sap/ui/model/json/JSONModel",
         "sap/m/MessageBox",
         "sap/ui/model/Filter",
@@ -10,7 +8,7 @@ sap.ui.define(
         "../utils/Formatter",
         "../utils/Helper"
     ],
-    function (Controller, History, MessageToast, JSONModel, MessageBox, Filter, FilterOperator, Formatter, Helper) {
+    function (Controller, JSONModel, MessageBox, Filter, FilterOperator, Formatter, Helper) {
         "use strict";
 
         return Controller.extend("appiuimodule.controllers.InvoiceDetails", {

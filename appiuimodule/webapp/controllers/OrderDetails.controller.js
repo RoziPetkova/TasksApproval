@@ -5,9 +5,10 @@ sap.ui.define(
         "sap/m/MessageToast",
         "sap/m/MessageBox",
         "../utils/Formatter",
-        "../utils/Helper"
+        "../utils/Helper",
+        "../utils/Constants"
     ],
-    function (Controller, JSONModel, MessageToast, MessageBox, Formatter, Helper) {
+    function (Controller, JSONModel, MessageToast, MessageBox, Formatter, Helper, Constants) {
         "use strict";
 
         return Controller.extend("appiuimodule.controllers.OrderDetails", {
@@ -154,14 +155,14 @@ sap.ui.define(
                             detail.value = Formatter.formatDate(new Date().toISOString());
                         }
                         if (detail.label.includes("Status") || detail.label.includes("status")) {
-                            detail.value = "Shipped";
+                            detail.value = Constants.OrderStatus.SHIPPED;
                         }
                     });
 
                     oOrderModel.setData({ taskDetails: updatedOrderData });
 
                     const allOrdersModel = this.getOwnerComponent().getModel("orders");
-                    this.updateOrdersModel(allOrdersModel, updatedOrderData, "Shipped");
+                    this.updateOrdersModel(allOrdersModel, updatedOrderData, Constants.OrderStatus.SHIPPED);
 
                     MessageToast.show(this._bundle.getText("orderApprovedMessage", [currentOrderId]));
 
@@ -179,10 +180,10 @@ sap.ui.define(
 
                     updatedOrderData.forEach(detail => {
                         if (detail.label.includes("Shipped Date")) {
-                            detail.value = "None";
+                            detail.value = Constants.NONE;
                         }
                         if (detail.label.includes("Status") || detail.label.includes("status")) {
-                            detail.value = "Declined";
+                            detail.value = Constants.OrderStatus.DECLINED;
                         }
                     });
 
@@ -194,7 +195,7 @@ sap.ui.define(
                     oOrderModel.setData({ taskDetails: updatedOrderData });
 
                     const allOrdersModel = this.getOwnerComponent().getModel("orders");
-                    this.updateOrdersModel(allOrdersModel, updatedOrderData, "Declined");
+                    this.updateOrdersModel(allOrdersModel, updatedOrderData, Constants.OrderStatus.DECLINED);
 
                     const message = rejectionReason
                         ? this._bundle.getText("orderDeclinedWithReasonMessage", [updatedOrderData[0].value, rejectionReason])
@@ -212,11 +213,11 @@ sap.ui.define(
                 if (allOrders) {
                     const orderIndex = allOrders.findIndex(order => String(order.OrderID) === String(updatedOrderData[0].value));
                     if (orderIndex !== -1) {
-                        if (status === "Declined") {
+                        if (status === Constants.OrderStatus.DECLINED) {
                             allOrders[orderIndex].ShippedDate = updatedOrderData[4].value;
                             allOrders[orderIndex].Status = updatedOrderData[7].value;
                             allOrders[orderIndex].RejectionReason = updatedOrderData[8].value || "No reason provided"
-                        } else if (status === "Shipped") {
+                        } else if (status === Constants.OrderStatus.SHIPPED) {
                             allOrders[orderIndex].ShippedDate = updatedOrderData[4].value;
                             allOrders[orderIndex].Status = updatedOrderData[7].value;
                         }
@@ -259,7 +260,7 @@ sap.ui.define(
                 if (label === statusLabel) {
                     return Formatter.formatStatusState(value);
                 }
-                return "None";
+                return Constants.NONE;
             },
         });
     }

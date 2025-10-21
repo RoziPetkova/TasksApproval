@@ -4,8 +4,9 @@ sap.ui.define([
     "sap/m/library",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
-    "sap/ui/model/Sorter"
-], function (MessageToast, History, mobileLibrary, Filter, FilterOperator, Sorter) {
+    "sap/ui/model/Sorter",
+    "../utils/Constants"
+], function (MessageToast, History, mobileLibrary, Filter, FilterOperator, Sorter, Constants) {
     "use strict";
 
     return {
@@ -113,19 +114,19 @@ sap.ui.define([
             const initialSortOrder = oColumn.getSortIndicator();
 
             oTable.getColumns().forEach(function (col) {
-                col.setSortIndicator("None");
+                col.setSortIndicator(Constants.NONE);
             });
 
             // new Sort order
             let bDescending = false;
-            let sNewSortIndicator = "Ascending";
+            let sNewSortIndicator = Constants.SortOrder.ASCENDING;
 
-            if (initialSortOrder === "Ascending") {
+            if (initialSortOrder === Constants.SortOrder.ASCENDING) {
                 bDescending = true;
-                sNewSortIndicator = "Descending";
-            } else if (initialSortOrder === "Descending") {
+                sNewSortIndicator = Constants.SortOrder.DESCENDING;
+            } else if (initialSortOrder === Constants.SortOrder.DESCENDING) {
                 bDescending = false;
-                sNewSortIndicator = "Ascending";
+                sNewSortIndicator = Constants.SortOrder.ASCENDING;
             }
 
             // Set sort indicator on clicked column
@@ -155,16 +156,16 @@ sap.ui.define([
 
             // Reset all columns' sort indicators
             oTable.getColumns().forEach(function (col) {
-                col.setSortIndicator("None");
+                col.setSortIndicator(Constants.NONE);
             });
 
             // Determine new sort order
-            let sNewSortIndicator = "Ascending";
+            let sNewSortIndicator = Constants.SortOrder.ASCENDING;
 
-            if (initialSortOrder === "Ascending") {
-                sNewSortIndicator = "Descending";
-            } else if (initialSortOrder === "Descending") {
-                sNewSortIndicator = "Ascending";
+            if (initialSortOrder === Constants.SortOrder.ASCENDING) {
+                sNewSortIndicator = Constants.SortOrder.DESCENDING;
+            } else if (initialSortOrder === Constants.SortOrder.DESCENDING) {
+                sNewSortIndicator = Constants.SortOrder.ASCENDING;
             }
 
             // Set sort indicator on clicked column
@@ -181,8 +182,8 @@ sap.ui.define([
 
                     // Handle null/undefined values
                     if (valueA == null && valueB == null) return 0;
-                    if (valueA == null) return sNewSortIndicator === "Ascending" ? 1 : -1;
-                    if (valueB == null) return sNewSortIndicator === "Ascending" ? -1 : 1;
+                    if (valueA == null) return sNewSortIndicator === Constants.SortOrder.ASCENDING ? 1 : -1;
+                    if (valueB == null) return sNewSortIndicator === Constants.SortOrder.ASCENDING ? -1 : 1;
 
                     // Compare values
                     let comparison = 0;
@@ -192,7 +193,7 @@ sap.ui.define([
                         comparison = valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
                     }
 
-                    return sNewSortIndicator === "Ascending" ? comparison : -comparison;
+                    return sNewSortIndicator === Constants.SortOrder.ASCENDING ? comparison : -comparison;
                 });
 
                 // Update model with sorted data

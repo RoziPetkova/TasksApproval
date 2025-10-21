@@ -9,8 +9,8 @@
     xmlns:table="sap.ui.table"
     controllerName="appiuimodule.controllers.Overview"
     core:require="{
-		Constants: 'com/roiable/roiam/ui5/root/util/processes/Constants'
-	}"> 
+		Constants: 'appiuimodule/utils/Constants'
+	}">
     <!-- Constants........-->
 
     <f:DynamicPage
@@ -76,28 +76,32 @@
                                             <columns>
                                                 <Column width="7em">
                                                     <customData>
-                                                        <core:CustomData key="fieldPath" value="CustomerID" />
+                                                        <core:CustomData key="fieldPath"
+                                                            value="CustomerID" />
                                                     </customData>
                                                     <Link text="{i18n>customerIdColumn}"
                                                         press=".onSortCustomersColumn" />
                                                 </Column>
                                                 <Column>
                                                     <customData>
-                                                        <core:CustomData key="fieldPath" value="CompanyName" />
+                                                        <core:CustomData key="fieldPath"
+                                                            value="CompanyName" />
                                                     </customData>
                                                     <Link text="{i18n>companyNameColumn}"
                                                         press=".onSortCustomersColumn" />
                                                 </Column>
                                                 <Column>
                                                     <customData>
-                                                        <core:CustomData key="fieldPath" value="ContactName" />
+                                                        <core:CustomData key="fieldPath"
+                                                            value="ContactName" />
                                                     </customData>
                                                     <Link text="{i18n>contactNameColumn}"
                                                         press=".onSortCustomersColumn" />
                                                 </Column>
                                                 <Column minScreenWidth="Small" demandPopin="true">
                                                     <customData>
-                                                        <core:CustomData key="fieldPath" value="Country" />
+                                                        <core:CustomData key="fieldPath"
+                                                            value="Country" />
                                                     </customData>
                                                     <Link text="{i18n>countryColumn}"
                                                         press=".onSortCustomersColumn" />
@@ -163,9 +167,9 @@
                                             class="sapUiTinyMarginBegin"
                                             width="{= ${viewModel>/isMobile} ? '44%' : '15%' }">
                                             <core:Item key="All" text="{i18n>allStatusFilter}" />
-                                            <core:Item key="Pending"
+                                            <core:Item key="{= Constants.OrderStatus.PENDING}"
                                                 text="{i18n>pendingStatusFilter}" />
-                                            <core:Item key="Shipped"
+                                            <core:Item key="{= Constants.OrderStatus.SHIPPED}"
                                                 text="{i18n>shippedStatusFilter}" />
                                         </Select>
                                     </OverflowToolbar>
@@ -185,42 +189,48 @@
                                             <columns>
                                                 <Column width="5em">
                                                     <customData>
-                                                        <core:CustomData key="fieldPath" value="OrderID" />
+                                                        <core:CustomData key="fieldPath"
+                                                            value="OrderID" />
                                                     </customData>
                                                     <Link text="{i18n>orderIdColumn}"
                                                         press=".onSortOrdersColumn" />
                                                 </Column>
                                                 <Column demandPopin="true" minScreenWidth="Small">
                                                     <customData>
-                                                        <core:CustomData key="fieldPath" value="CustomerID" />
+                                                        <core:CustomData key="fieldPath"
+                                                            value="CustomerID" />
                                                     </customData>
                                                     <Link text="{i18n>customerIdColumn}"
                                                         press=".onSortOrdersColumn" />
                                                 </Column>
                                                 <Column demandPopin="true" minScreenWidth="Small">
                                                     <customData>
-                                                        <core:CustomData key="fieldPath" value="ShipCountry" />
+                                                        <core:CustomData key="fieldPath"
+                                                            value="ShipCountry" />
                                                     </customData>
                                                     <Link text="{i18n>countryColumn}"
                                                         press=".onSortOrdersColumn" />
                                                 </Column>
                                                 <Column>
                                                     <customData>
-                                                        <core:CustomData key="fieldPath" value="OrderDate" />
+                                                        <core:CustomData key="fieldPath"
+                                                            value="OrderDate" />
                                                     </customData>
                                                     <Link text="{i18n>orderDateColumn}"
                                                         press=".onSortOrdersColumn" />
                                                 </Column>
                                                 <Column>
                                                     <customData>
-                                                        <core:CustomData key="fieldPath" value="ShippedDate" />
+                                                        <core:CustomData key="fieldPath"
+                                                            value="ShippedDate" />
                                                     </customData>
                                                     <Link text="{i18n>shippedDateColumn}"
                                                         press=".onSortOrdersColumn" />
                                                 </Column>
                                                 <Column>
                                                     <customData>
-                                                        <core:CustomData key="fieldPath" value="Status" />
+                                                        <core:CustomData key="fieldPath"
+                                                            value="Status" />
                                                     </customData>
                                                     <Link text="{i18n>statusColumn}"
                                                         press=".onSortOrdersColumn" />
@@ -313,42 +323,48 @@
                                             <columns>
                                                 <Column width="5em">
                                                     <customData>
-                                                        <core:CustomData key="fieldPath" value="OrderID" />
+                                                        <core:CustomData key="fieldPath"
+                                                            value="OrderID" />
                                                     </customData>
                                                     <Link text="{i18n>orderIdColumn}"
                                                         press=".onSortInvoicesColumn" />
                                                 </Column>
                                                 <Column demandPopin="true">
                                                     <customData>
-                                                        <core:CustomData key="fieldPath" value="ProductName" />
+                                                        <core:CustomData key="fieldPath"
+                                                            value="ProductName" />
                                                     </customData>
                                                     <Link text="{i18n>productNameColumn}"
                                                         press=".onSortInvoicesColumn" />
                                                 </Column>
                                                 <Column demandPopin="true">
                                                     <customData>
-                                                        <core:CustomData key="fieldPath" value="CustomerName" />
+                                                        <core:CustomData key="fieldPath"
+                                                            value="CustomerName" />
                                                     </customData>
                                                     <Link text="{i18n>customerColumn}"
                                                         press=".onSortInvoicesColumn" />
                                                 </Column>
                                                 <Column demandPopin="true" minScreenWidth="Small">
                                                     <customData>
-                                                        <core:CustomData key="fieldPath" value="OrderDate" />
+                                                        <core:CustomData key="fieldPath"
+                                                            value="OrderDate" />
                                                     </customData>
                                                     <Link text="{i18n>orderDateColumn}"
                                                         press=".onSortInvoicesColumn" />
                                                 </Column>
                                                 <Column demandPopin="true" minScreenWidth="Small">
                                                     <customData>
-                                                        <core:CustomData key="fieldPath" value="Status" />
+                                                        <core:CustomData key="fieldPath"
+                                                            value="Status" />
                                                     </customData>
                                                     <Link text="{i18n>statusColumn}"
                                                         press=".onSortInvoicesColumn" />
                                                 </Column>
                                                 <Column>
                                                     <customData>
-                                                        <core:CustomData key="fieldPath" value="ExtendedPrice" />
+                                                        <core:CustomData key="fieldPath"
+                                                            value="ExtendedPrice" />
                                                     </customData>
                                                     <Link text="{i18n>priceColumn}"
                                                         press=".onSortInvoicesColumn" />

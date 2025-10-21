@@ -1,17 +1,11 @@
 sap.ui.define(
     [
         'sap/ui/core/mvc/Controller',
-        "sap/ui/model/Filter",
-        "sap/ui/model/FilterOperator",
-        "sap/ui/core/routing/History",
-        "sap/ui/model/Sorter",
-        "sap/m/MessageToast",
-        "sap/ui/model/json/JSONModel",
-        "sap/m/MessageBox",
         "../utils/Formatter",
-        "../utils/Helper"
+        "../utils/Helper",
+        "../utils/Constants"
     ],
-    function (Controller, Filter, FilterOperator, History, Sorter, MessageToast, JSONModel, MessageBox, Formatter, Helper) {
+    function (Controller, Formatter, Helper, Constants) {
         'use strict';
 
         return Controller.extend('appiuimodule.controllers.ReviewOrders', {
@@ -105,13 +99,13 @@ sap.ui.define(
                 const allOrders = this._originalOrdersData || [];
                 let filteredOrders;
 
-                if (status === "Shipped") {
+                if (status === Constants.OrderStatus.SHIPPED) {
                     filteredOrders = allOrders.filter(function (order) {
-                        return order.Status === "Shipped";
+                        return order.Status === Constants.OrderStatus.SHIPPED;
                     });
-                } else if (status === "Pending") {
+                } else if (status === Constants.OrderStatus.PENDING) {
                     filteredOrders = allOrders.filter(function (order) {
-                        return order.Status === "Pending";
+                        return order.Status === Constants.OrderStatus.PENDING;
                     });
                 } else {
                     filteredOrders = allOrders;

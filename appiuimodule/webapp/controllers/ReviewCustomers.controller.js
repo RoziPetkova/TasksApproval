@@ -1,15 +1,9 @@
 sap.ui.define(
     [
         'sap/ui/core/mvc/Controller',
-        "sap/ui/core/routing/History",
-        "sap/ui/model/Sorter",
-        "sap/ui/model/Filter",
-        "sap/ui/model/FilterOperator",
-        "sap/m/MessageToast",
-        "sap/m/MessageBox",
         "../utils/Helper"
     ],
-    function (Controller, History, Sorter, Filter, FilterOperator, MessageToast, MessageBox, Helper) {
+    function (Controller, Helper) {
         'use strict';
 
         return Controller.extend('appiuimodule.controllers.ReviewCustomers', {

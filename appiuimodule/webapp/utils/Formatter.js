@@ -1,4 +1,6 @@
-sap.ui.define([], function () {
+sap.ui.define([
+     "../utils/Constants"
+], function (Constants) {
     "use strict";
 
     return {
@@ -10,22 +12,20 @@ sap.ui.define([], function () {
 
         formatStatusState: function (status) {
             switch (status) {
-                case "Shipped":
-                case "Approved":
+                case Constants.OrderStatus.SHIPPED:
                     return "Success";
-                case "Pending":
+                case Constants.OrderStatus.PENDING:
                     return "Warning";
-                case "Declined":
-                case "Rejected":
+                case Constants.OrderStatus.DECLINED:
                     return "Error";
                 default:
-                    return "None";
+                    return Constants.NONE;
             }
         },
 
         formatShippedDate: function (shippedDate, status) {
-            if (status === "Declined") {
-                return "None";
+            if (status === Constants.OrderStatus.DECLINED) {
+                return Constants.NONE;
             }
             if (!shippedDate) return "";
             var date = new Date(shippedDate);
