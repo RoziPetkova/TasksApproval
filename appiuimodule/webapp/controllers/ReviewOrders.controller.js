@@ -59,7 +59,7 @@ sap.ui.define(
                     if (oOrdersModel && oOrdersModel.getData()) {
                         this._originalOrdersData = oOrdersModel.getData();
                     } else {
-                        console.warn("Orders data not available for search");
+                        //todo: change logic
                         return;
                     }
                 }
@@ -91,7 +91,7 @@ sap.ui.define(
                     if (oOrdersModel && oOrdersModel.getData()) {
                         this._originalOrdersData = oOrdersModel.getData();
                     } else {
-                        console.warn("Orders data not available for status filtering");
+                        //todo: change logic
                         return;
                     }
                 }

@@ -167,7 +167,6 @@ sap.ui.define(
                     MessageToast.show(this._bundle.getText("orderApprovedMessage", [currentOrderId]));
 
                 } catch (error) {
-                    console.error("Error approving order:", error);
                     MessageBox.error(this._bundle.getText("failedToApproveOrderMessage"));
                 }
             },
@@ -203,7 +202,6 @@ sap.ui.define(
                     MessageToast.show(message);
 
                 } catch (error) {
-                    console.error("Error declining order:", error);
                     MessageBox.error(this._bundle.getText("failedToDeclineOrderMessage"));
                 }
             },

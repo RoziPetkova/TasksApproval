@@ -3,8 +3,9 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "../utils/Formatter",
     "../utils/Helper",
-    "../utils/Constants"
-], function (Controller, JSONModel, Formatter, Helper, Constants) {
+    "../utils/Constants",
+    "sap/m/MessageBox"
+], function (Controller, JSONModel, Formatter, Helper, Constants, MessageBox) {
 
     'use strict';
 
@@ -56,7 +57,7 @@ sap.ui.define([
                     oOrdersTable.setBusy(false);
                 },
                 error: (error) => {
-                    console.error("Error:", error);
+                     MessageBox.error(this._bundle.getText("failedToLoadOrderDataMessage"));
                     oOrdersTable.setBusy(false);
                 }
             });
@@ -100,8 +101,8 @@ sap.ui.define([
                 if (oOrdersModel && oOrdersModel.getData()) {
                     this._originalOrdersData = oOrdersModel.getData();
                 } else {
-                    console.warn("Orders data not available for search");
-                    return;
+                    //todo: change logic
+                     return;
                 }
             }
 
@@ -133,8 +134,7 @@ sap.ui.define([
                     this._originalOrdersData = oOrdersModel.getData();
                 } else {
 
-                    //mess box
-                    console.warn("Orders data not available for status filtering");
+                    //todo: change logic
                     return;
                 }
             }
