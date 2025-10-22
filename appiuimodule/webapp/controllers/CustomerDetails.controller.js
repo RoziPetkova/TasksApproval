@@ -38,9 +38,25 @@ sap.ui.define(
             },
 
             bindCustomerData: function (sCustomerId) {
+
+                // Without element binding:
+
+                //   oModel.read("/Customers('" + sCustomerId + "')", {
+                //       success: function(data) {
+                //           var oCustomerModel = new JSONModel(data);
+                //           oView.setModel(oCustomerModel, "customer");
+                //           oView.setBusy(false);
+                //       }
+                //   });
+
                 const oView = this.getView();
                 const sPath = "/Customers('" + sCustomerId + "')";
 
+                // What bindElement does:
+                //   - Makes an OData request to fetch the customer data
+                //   - Binds the entire view to this single customer entity
+                //   - All controls in the view can now use
+                //   {odataModel>PropertyName} to access customer properties; like shortcut to the properties
                 oView.bindElement({
                     path: sPath,
                     model: "odataModel",
@@ -73,13 +89,10 @@ sap.ui.define(
 
             filterCustomerInvoices: function (sCustomerId) {
                 const oTable = this.byId("customerInvoicesTable");
-                if (!oTable) return;
 
                 const oBinding = oTable.getBinding("items");
-                if (oBinding) {
-                    const oFilter = new Filter("CustomerID", FilterOperator.EQ, sCustomerId);
-                    oBinding.filter([oFilter], "Application");
-                }
+                const oFilter = new Filter("CustomerID", FilterOperator.EQ, sCustomerId);
+                oBinding.filter([oFilter], "Application");
             },
 
             setStickyHeadersForTables: function () {
@@ -99,11 +112,8 @@ sap.ui.define(
 
             onCustomerInvoicePress(oEvent) {
                 const oInvoice = oEvent.getSource().getBindingContext("odataModel").getObject();
-                // Encode ProductName to handle special characters in URL
-                const encodedProductName = encodeURIComponent(oInvoice.ProductName);
                 this._router.navTo("invoicedetails", {
-                    OrderID: oInvoice.OrderID,
-                    ProductName: encodedProductName
+                    OrderID: oInvoice.OrderID
                 });
             },
 

@@ -15,18 +15,6 @@ sap.ui.define(
             formatter: Formatter,
             _bundle: null,
 
-            formatDate: function (dateString) {
-                return Formatter.formatDate(dateString);
-            },
-
-            formatCurrency: function (value) {
-                return Formatter.formatCurrency(value);
-            },
-
-            formatDiscount: function (value) {
-                return Formatter.formatDiscount(value);
-            },
-
             onInit() {
                 this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
                 const oRouter = this.getOwnerComponent().getRouter();
@@ -38,22 +26,17 @@ sap.ui.define(
 
                 // Filter the products table to show only items for this order
                 this.filterInvoiceProducts(sOrderID);
-
                 // Bind the first invoice item to display header details
                 this.bindInvoiceHeader(sOrderID);
-
-                this.setStickyHeaderForProductsTable();
+                Helper.setStickyHeader(this, "productsTable");
             },
 
             filterInvoiceProducts: function (sOrderID) {
                 const oTable = this.byId("productsTable");
-                if (!oTable) return;
 
                 const oBinding = oTable.getBinding("items");
-                if (oBinding) {
-                    const oFilter = new Filter("OrderID", FilterOperator.EQ, parseInt(sOrderID));
-                    oBinding.filter([oFilter], "Application");
-                }
+                const oFilter = new Filter("OrderID", FilterOperator.EQ, parseInt(sOrderID));
+                oBinding.filter([oFilter], "Application");
             },
 
             bindInvoiceHeader: function (sOrderID) {
@@ -71,11 +54,9 @@ sap.ui.define(
                         "$top": "1"
                     },
                     success: function (oData) {
-                        if (oData.results && oData.results.length > 0) {
-                            const oInvoice = oData.results[0];
-                            const oInvoiceModel = this.loadInvoiceProperties(oInvoice);
-                            oView.setModel(oInvoiceModel, "invoiceModel");
-                        }
+                        const oInvoice = oData.results[0];
+                        const oInvoiceModel = this.loadInvoiceProperties(oInvoice);
+                        oView.setModel(oInvoiceModel, "invoiceModel");
                         oView.setBusy(false);
                     }.bind(this),
                     error: function (oError) {
@@ -87,10 +68,6 @@ sap.ui.define(
 
             onNavBack() {
                 Helper.onNavBack(this);
-            },
-
-            setStickyHeaderForProductsTable: function () {
-                Helper.setStickyHeader(this, "productsTable");
             },
 
             loadInvoiceProperties(invoice) {
@@ -154,7 +131,19 @@ sap.ui.define(
 
             onHomepagePress: function () {
                 Helper.onHomepagePress(this);
-            }
+            },
+
+            formatDate: function (dateString) {
+                return Formatter.formatDate(dateString);
+            },
+
+            formatCurrency: function (value) {
+                return Formatter.formatCurrency(value);
+            },
+
+            formatDiscount: function (value) {
+                return Formatter.formatDiscount(value);
+            },
 
         });
     }

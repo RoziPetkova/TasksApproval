@@ -13,18 +13,6 @@ sap.ui.define(
             _bundle: null,
             _originalOrdersData: null,
 
-            formatDate: function (dateString) {
-                return Formatter.formatDate(dateString);
-            },
-
-            formatStatusState: function (status) {
-                return Formatter.formatStatusState(status);
-            },
-
-            formatShippedDate: function (shippedDate, status) {
-                return Formatter.formatShippedDate(shippedDate, status);
-            },
-
             onInit: function () {
                 this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
                 Helper.setStickyHeader(this, "reviewOrdersTable");
@@ -141,6 +129,19 @@ sap.ui.define(
             onHomepagePress: function () {
                 Helper.onHomepagePress(this);
             },
+
+            formatDate: function (dateString) {
+                return Formatter.formatDate(dateString);
+            },
+
+            formatStatusState: function (status) {
+                return Formatter.formatStatusState(status);
+            },
+
+            formatShippedDate: function (shippedDate, status) {
+                return Formatter.formatShippedDate(shippedDate, status);
+            },
+
         });
     }
 );

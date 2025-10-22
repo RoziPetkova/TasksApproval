@@ -34,11 +34,9 @@ sap.ui.define(
             },
 
             onInvoicePress(oEvent) {
-                const oInvoice = oEvent.getSource().getBindingContext("invoices").getObject();
-                const encodedProductName = encodeURIComponent(oInvoice.ProductName);
+                const oInvoice = oEvent.getSource().getBindingContext("odataModel").getObject();
                 this._router.navTo("invoicedetails", {
-                    OrderID: oInvoice.OrderID,
-                    ProductName: encodedProductName
+                    OrderID: oInvoice.OrderID
                 });
             },
 

@@ -47,33 +47,48 @@
                                 <HBox justifyContent="SpaceBetween" wrap="Wrap">
                                     <!-- Left Column -->
                                     <VBox width="45%">
-                                        <List items="{path: 'orderModel>/taskDetails', length: 4}"
-                                            class="sapUiSizeCompact" width="100%">
+                                        <List class="sapUiSizeCompact" width="100%">
                                             <StandardListItem
-                                                title="{orderModel>label}"
-                                                info="{orderModel>value}"
-                                                type="{path: 'orderModel>label', formatter: '.formatCustomerRowType'}"
-                                                press=".onCustomerRowPress" />
+                                                title="{i18n>orderIdColumn}"
+                                                info="{orderModel>/OrderID}" />
+                                            <StandardListItem
+                                                title="{i18n>taskTypeLabel}"
+                                                info="{i18n>orderTaskTypeValue}" />
+                                            <StandardListItem
+                                                title="{i18n>customerIdColumn}"
+                                                info="{orderModel>/CustomerID}"
+                                                type="Navigation"
+                                                press=".onGoToCustomerDetails" />
+                                            <StandardListItem
+                                                title="{i18n>orderDateColumn}"
+                                                info="{path: 'orderModel>/OrderDate', formatter: '.formatDate'}" />
                                         </List>
                                     </VBox>
 
                                     <!-- Right Column -->
                                     <VBox width="45%">
-                                        <List
-                                            items="{path: 'orderModel>/taskDetails', startIndex: 4, filters: [{path: 'label', operator: 'NE', value1: 'RejectionReason'}]}"
-                                            class="sapUiSizeCompact" width="100%">
+                                        <List class="sapUiSizeCompact" width="100%">
                                             <StandardListItem
-                                                title="{orderModel>label}"
-                                                info="{orderModel>value}"
-                                                infoState="{parts: ['orderModel>label', 'orderModel>value'], formatter: '.formatStatusColor'}" />
+                                                title="{i18n>shippedDateLabel}"
+                                                info="{parts: ['orderModel>/ShippedDate', 'orderModel>/Status'], formatter: '.formatter.formatShippedDate'}" />
+                                            <StandardListItem
+                                                title="{i18n>countryLabel}"
+                                                info="{orderModel>/ShipCountry}" />
+                                            <StandardListItem
+                                                title="{i18n>cityLabel}"
+                                                info="{orderModel>/ShipCity}" />
+                                            <StandardListItem
+                                                title="{i18n>statusLabel}"
+                                                info="{orderModel>/Status}"
+                                                infoState="{path: 'orderModel>/Status', formatter: '.formatter.formatStatusState'}" />
                                         </List>
                                     </VBox>
                                 </HBox>
 
                                 <VBox class="sapUiLargeMarginTop" justifyContent="Start"
-                                    visible="{= !!${orderModel>/taskDetails/8/value} }">
+                                    visible="{= !!${orderModel>/RejectionReason} }">
                                     <MessageStrip
-                                        text="{i18n>rejectionReasonPrefix} {orderModel>/taskDetails/8/value}"
+                                        text="{i18n>rejectionReasonPrefix} {orderModel>/RejectionReason}"
                                         type="Error"
                                         class="sapUiMediumMarginBottom">
                                     </MessageStrip>
@@ -91,13 +106,13 @@
                     id="ApproveButton"
                     icon="sap-icon://accept"
                     text="{i18n>Approve}"
-                    enabled="{= ${orderModel>/taskDetails/7/value} === 'Pending' }"
+                    enabled="{= ${orderModel>/Status} === 'Pending' }"
                     press=".onApprove" />
                 <Button
                     id="DeclineButton"
                     icon="sap-icon://decline"
                     text="{i18n>Decline}"
-                    enabled="{= ${orderModel>/taskDetails/7/value} === 'Pending' }"
+                    enabled="{= ${orderModel>/Status} === 'Pending' }"
                     press=".onDecline" />
             </Toolbar>
         </f:footer>

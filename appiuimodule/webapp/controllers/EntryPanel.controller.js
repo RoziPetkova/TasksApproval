@@ -58,7 +58,7 @@ sap.ui.define(
             //     } else {
             //         this.settingsDialog.open();
             //     }
-        },
+            },
 
             onLogoutPress: async function () {
                 if (!this.logoutDialog) {

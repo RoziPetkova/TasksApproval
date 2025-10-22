@@ -15,14 +15,6 @@ sap.ui.define(
             formatter: Formatter,
             _bundle: null,
 
-            formatDate: function (dateString) {
-                return Formatter.formatDate(dateString);
-            },
-
-            formatStatusState: function (status) {
-                return Formatter.formatStatusState(status);
-            },
-
             onInit() {
                 this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
                 const oRouter = this.getOwnerComponent().getRouter();
@@ -88,38 +80,80 @@ sap.ui.define(
                 this.declineDialog.close();
             },
 
-           
-
-            onCustomerRowPress: function (oEvent) {
-                var oItem = oEvent.getSource();
-                var oBindingContext = oItem.getBindingContext("orderModel");
-                var oRowData = oBindingContext.getObject();
-
-                var customerIdLabel = this._bundle.getText("customerIdColumn");
-
-                if (oRowData.label === customerIdLabel && oRowData.value) {
-                    const oRouter = this.getOwnerComponent().getRouter();
-                    oRouter.navTo("customerdetails", { CustomerID: oRowData.value });
-                }
-            },
-
             onGoToCustomerDetails: function () {
-                const oTaskModel = this.getView().getModel("orderModel");
-                const aTaskDetails = oTaskModel.getProperty("/taskDetails");
+                const oOrderModel = this.getView().getModel("orderModel");
+                const customerId = oOrderModel.getProperty("/CustomerID");
 
-                // Find customer ID from the task details
-                const oCustomerDetail = aTaskDetails.find(function (detail) {
-                    return detail.label === this.getOwnerComponent().getModel("i18n").getResourceBundle().getText("customerIdColumn");
-                }.bind(this));
-
-                if (oCustomerDetail && oCustomerDetail.value) {
-                    const customerId = oCustomerDetail.value;
+                if (customerId) {
                     const oRouter = this.getOwnerComponent().getRouter();
                     oRouter.navTo("customerdetails", { CustomerID: customerId });
                 }
             },
 
-            onHomePress: function () {
+            handleApproveOrder: async function () {
+                try {
+                    const oOrderModel = this.getView().getModel("orderModel");
+                    const currentOrder = oOrderModel.getData();
+
+                    oOrderModel.setProperty("/ShippedDate", new Date().toISOString());
+                    oOrderModel.setProperty("/Status", Constants.OrderStatus.SHIPPED);
+
+                    this.updateAllOrdersModel(currentOrder);
+                    MessageToast.show(this._bundle.getText("orderApprovedMessage", [currentOrder.OrderID]));
+
+                } catch (error) {
+                    MessageBox.error(this._bundle.getText("failedToApproveOrderMessage"));
+                }
+            },
+
+            handleDeclineOrder: async function (rejectionReason) {
+                try {
+                    const oOrderModel = this.getView().getModel("orderModel");
+                    const currentOrder = oOrderModel.getData();
+
+                    oOrderModel.setProperty("/ShippedDate", null);
+                    oOrderModel.setProperty("/Status", Constants.OrderStatus.DECLINED);
+
+                    const reason = rejectionReason || this._bundle.getText("noReasonProvidedLabel");
+                    oOrderModel.setProperty("/RejectionReason", reason);
+
+                    this.updateAllOrdersModel(currentOrder);
+
+                    const message = rejectionReason
+                        ? this._bundle.getText("orderDeclinedWithReasonMessage", [currentOrder.OrderID, rejectionReason])
+                        : this._bundle.getText("orderDeclinedMessage", [currentOrder.OrderID]);
+                    MessageToast.show(message);
+
+                } catch (error) {
+                    MessageBox.error(this._bundle.getText("failedToDeclineOrderMessage"));
+                }
+            },
+
+            updateAllOrdersModel(currentOrder) {
+                const allOrdersModel = this.getOwnerComponent().getModel("orders");
+                const allOrders = allOrdersModel.getData();
+
+                const orderIndex = allOrders.findIndex(order => String(order.OrderID) === String(currentOrder.OrderID));
+                if (orderIndex !== -1) {
+                    // Update the order at its index in the array
+                    allOrdersModel.setProperty(`/${orderIndex}`, currentOrder);
+                }
+            },
+
+            loadOrderProperties(order) {
+                // Store the order object directly in the model
+                return new JSONModel(order);
+            },
+
+            formatDate: function (dateString) {
+                return Formatter.formatDate(dateString);
+            },
+
+            formatStatusState: function (status) {
+                return Formatter.formatStatusState(status);
+            },
+
+                        onHomePress: function () {
                 Helper.onHomePress(this);
             },
 
@@ -143,123 +177,6 @@ sap.ui.define(
                 Helper.onHomepagePress(this);
             },
 
-            handleApproveOrder: async function () {
-                try {
-                    const oOrderModel = this.getView().getModel("orderModel");
-                    const currentOrderId = oOrderModel.getProperty("/taskDetails/0/value"); // OrderID is first detail
-
-                    const updatedOrderData = oOrderModel.getData().taskDetails;
-
-                    updatedOrderData.forEach(detail => {
-                        if (detail.label.includes("Shipped Date") || detail.label.includes("shippedDate")) {
-                            detail.value = Formatter.formatDate(new Date().toISOString());
-                        }
-                        if (detail.label.includes("Status") || detail.label.includes("status")) {
-                            detail.value = Constants.OrderStatus.SHIPPED;
-                        }
-                    });
-
-                    oOrderModel.setData({ taskDetails: updatedOrderData });
-
-                    const allOrdersModel = this.getOwnerComponent().getModel("orders");
-                    this.updateOrdersModel(allOrdersModel, updatedOrderData, Constants.OrderStatus.SHIPPED);
-
-                    MessageToast.show(this._bundle.getText("orderApprovedMessage", [currentOrderId]));
-
-                } catch (error) {
-                    MessageBox.error(this._bundle.getText("failedToApproveOrderMessage"));
-                }
-            },
-
-            handleDeclineOrder: async function (rejectionReason) {
-                try {
-                    const oOrderModel = this.getView().getModel("orderModel");
-
-                    const updatedOrderData = oOrderModel.getData().taskDetails;
-
-                    updatedOrderData.forEach(detail => {
-                        if (detail.label.includes("Shipped Date")) {
-                            detail.value = Constants.NONE;
-                        }
-                        if (detail.label.includes("Status") || detail.label.includes("status")) {
-                            detail.value = Constants.OrderStatus.DECLINED;
-                        }
-                    });
-
-                    updatedOrderData.push({
-                        label: this._bundle.getText("rejectionReasonLabel"),
-                        value: rejectionReason || this._bundle.getText("noReasonProvidedLabel")
-                    });
-
-                    oOrderModel.setData({ taskDetails: updatedOrderData });
-
-                    const allOrdersModel = this.getOwnerComponent().getModel("orders");
-                    this.updateOrdersModel(allOrdersModel, updatedOrderData, Constants.OrderStatus.DECLINED);
-
-                    const message = rejectionReason
-                        ? this._bundle.getText("orderDeclinedWithReasonMessage", [updatedOrderData[0].value, rejectionReason])
-                        : this._bundle.getText("orderDeclinedMessage", [updatedOrderData[0].value]);
-                    MessageToast.show(message);
-
-                } catch (error) {
-                    MessageBox.error(this._bundle.getText("failedToDeclineOrderMessage"));
-                }
-            },
-
-            updateOrdersModel(allOrdersModel, updatedOrderData, status) {
-                const allOrders = allOrdersModel.getData();
-                if (allOrders) {
-                    const orderIndex = allOrders.findIndex(order => String(order.OrderID) === String(updatedOrderData[0].value));
-                    if (orderIndex !== -1) {
-                        if (status === Constants.OrderStatus.DECLINED) {
-                            allOrders[orderIndex].ShippedDate = updatedOrderData[4].value;
-                            allOrders[orderIndex].Status = updatedOrderData[7].value;
-                            allOrders[orderIndex].RejectionReason = updatedOrderData[8].value || "No reason provided"
-                        } else if (status === Constants.OrderStatus.SHIPPED) {
-                            allOrders[orderIndex].ShippedDate = updatedOrderData[4].value;
-                            allOrders[orderIndex].Status = updatedOrderData[7].value;
-                        }
-                        allOrdersModel.setData(allOrders);
-                    }
-                }
-            },
-
-            loadOrderProperties(order) {
-                const taskDetails = [
-                    { label: this._bundle.getText("orderIdColumn"), value: order.OrderID },
-                    { label: this._bundle.getText("taskTypeLabel"), value: this._bundle.getText("orderTaskTypeValue") },
-                    { label: this._bundle.getText("customerIdColumn"), value: order.CustomerID },
-                    { label: this._bundle.getText("orderDateColumn"), value: Formatter.formatDate(order.OrderDate) },
-                    { label: this._bundle.getText("shippedDateLabel"), value: Formatter.formatDate(order.ShippedDate) },
-                    { label: this._bundle.getText("countryLabel"), value: order.ShipCountry },
-                    { label: this._bundle.getText("cityLabel"), value: order.ShipCity },
-                    { label: this._bundle.getText("statusLabel"), value: order.Status }
-                ];
-
-                if (order.RejectionReason) {
-                    taskDetails.push({
-                        label: this._bundle.getText("rejectionReasonLabel"),
-                        value: order.RejectionReason
-                    });
-                }
-
-                return new JSONModel({
-                    taskDetails: taskDetails
-                });
-            },
-
-            formatCustomerRowType: function (label) {
-                var customerIdLabel = this._bundle.getText("customerIdColumn");
-                return (label === customerIdLabel) ? "Navigation" : "Inactive";
-            },
-
-            formatStatusColor: function (label, value) {
-                var statusLabel = this._bundle.getText("statusLabel");
-                if (label === statusLabel) {
-                    return Formatter.formatStatusState(value);
-                }
-                return Constants.NONE;
-            },
         });
     }
 );
