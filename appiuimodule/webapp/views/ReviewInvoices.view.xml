@@ -121,7 +121,7 @@
                                                     <Text text="{odataModel>ProductName}" />
                                                     <Text text="{odataModel>CustomerName}" />
                                                     <Text
-                                                        text="{path: 'odataModel>OrderDate', formatter: '.formatDate'}" />
+                                                        text="{path: 'odataModel>OrderDate', formatter: '.formatter.formatDate'}" />
                                                     <Text text="{i18n>activeStatusValue}" />
                                                     <Text text="{invoices>ExtendedPrice}" />
                                                 </cells>

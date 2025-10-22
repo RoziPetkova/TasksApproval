@@ -245,7 +245,7 @@
                                                         <Text text="{orders>CustomerID}" />
                                                         <Text text="{orders>ShipCountry}" />
                                                         <Text
-                                                            text="{path: 'orders>OrderDate', formatter: '.formatDate'}" />
+                                                            text="{path: 'orders>OrderDate', formatter: '.formatter.formatDate'}" />
                                                         <Text
                                                             text="{
                                                     parts: ['orders>ShippedDate', 'orders>Status'],
@@ -379,10 +379,10 @@
                                                         <Text text="{odataModel>ProductName}" />
                                                         <Text text="{odataModel>CustomerName}" />
                                                         <Text
-                                                            text="{path: 'odataModel>OrderDate', formatter: '.formatDate'}" />
+                                                            text="{path: 'odataModel>OrderDate', formatter: '.formatter.formatDate'}" />
                                                         <Text text="{i18n>activeStatusValue}" />
                                                         <Text
-                                                            text="{path: 'odataModel>ExtendedPrice', formatter: '.formatCurrency'}" />
+                                                            text="{path: 'odataModel>ExtendedPrice', formatter: '.formatter.formatCurrency'}" />
                                                     </cells>
                                                 </ColumnListItem>
                                             </items>

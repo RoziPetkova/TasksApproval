@@ -11,8 +11,6 @@ sap.ui.define([
 
     return Controller.extend('appiuimodule.controllers.Overview', {
         formatter: Formatter,
-        _bundle: null,
-        _router: null,
         _originalOrdersData: null,
 
         onInit: function () {
@@ -177,9 +175,6 @@ sap.ui.define([
             Helper.onSortColumnJSON(oEvent, this, "ordersTable", "orders", "/");
         },
 
-        formatDate: function (dateString) {
-            return Formatter.formatDate(dateString);
-        },
 
         formatStatusState: function (status) {
             return Formatter.formatStatusState(status);
@@ -189,9 +184,6 @@ sap.ui.define([
             return Formatter.formatShippedDate(shippedDate, status);
         },
 
-        formatCurrency: function (value) {
-            return Formatter.formatCurrency(value);
-        },
 
         onSettingsPress: async function () {
             await Helper.onSettingsPress(this);
@@ -205,8 +197,8 @@ sap.ui.define([
             Helper.onSettingsSave(this);
         },
 
-        onCloseDialog: function () {
-            Helper.onCloseDialog(this);
+        onCloseDialog: function (oEvent) {
+            oEvent.getSource().getParent().close();
         },
 
         onLogoutConfirm: function () {

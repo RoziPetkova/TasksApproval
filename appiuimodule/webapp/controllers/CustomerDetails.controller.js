@@ -12,8 +12,6 @@ sap.ui.define(
 
         return Controller.extend("appiuimodule.controllers.CustomerDetails", {
             formatter: Formatter,
-            bundle: null,
-            _router: null,
 
             onInit() {
                 this.bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
@@ -28,10 +26,7 @@ sap.ui.define(
                 var sCustomerId = oEvent.getParameter("arguments").CustomerID;
                 this.bindCustomerData(sCustomerId);
 
-                // Filter orders from JSON model and create customer-specific model
                 this.filterCustomerOrdersJSON(sCustomerId);
-
-                // Apply filters to invoices table (still using OData)
                 this.filterCustomerInvoices(sCustomerId);
 
                 this.setStickyHeadersForTables();
@@ -72,17 +67,13 @@ sap.ui.define(
             },
 
             filterCustomerOrdersJSON: function (sCustomerId) {
-                // Get the global orders model
                 const oOrdersModel = this.getOwnerComponent().getModel("orders");
+                const allOrders = oOrdersModel.getData();
 
-                const allOrders = oOrdersModel.getData() || [];
-
-                // Filter orders for this customer
                 const customerOrders = allOrders.filter(function (order) {
                     return order.CustomerID === sCustomerId;
                 });
 
-                // Create a customer-specific orders model
                 const oCustomerOrdersModel = new JSONModel(customerOrders);
                 this.getView().setModel(oCustomerOrdersModel, "customerOrders");
             },
@@ -103,7 +94,6 @@ sap.ui.define(
             onNavBack() {
                 Helper.onNavBack(this);
             },
-
 
             onCustomerOrderPress(oEvent) {
                 const oOrder = oEvent.getSource().getBindingContext("customerOrders").getObject();
@@ -129,8 +119,8 @@ sap.ui.define(
                 Helper.onSettingsSave(this);
             },
 
-            onCloseDialog: function () {
-                Helper.onCloseDialog(this);
+            onCloseDialog: function (oEvent) {
+                oEvent.getSource().getParent().close();
             },
 
             onLogoutPress: async function () {
@@ -153,20 +143,12 @@ sap.ui.define(
                 Helper.onSortColumn(oEvent, this, "customerInvoicesTable");
             },
 
-            formatDate: function (dateString) {
-                return Formatter.formatDate(dateString);
-            },
-
             formatStatusState: function (status) {
                 return Formatter.formatStatusState(status);
             },
 
             formatShippedDate: function (shippedDate, status) {
                 return Formatter.formatShippedDate(shippedDate, status);
-            },
-
-            formatCurrency: function (value) {
-                return Formatter.formatCurrency(value);
             },
 
             formatFax: function (value) {

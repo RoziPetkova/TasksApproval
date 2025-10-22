@@ -10,8 +10,6 @@ sap.ui.define(
 
         return Controller.extend('appiuimodule.controllers.ReviewOrders', {
             formatter: Formatter,
-            _bundle: null,
-            _originalOrdersData: null,
 
             onInit: function () {
                 this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
@@ -33,7 +31,6 @@ sap.ui.define(
                 oRouter.navTo("orderdetails",
                     { OrderID: oEvent.getSource().getBindingContext("orders").getObject().OrderID });
             },
-
 
             onFilterOrders: function (oEvent) {
                 const query = oEvent.getParameter("query");
@@ -118,8 +115,8 @@ sap.ui.define(
                 Helper.onSettingsSave(this);
             },
 
-            onCloseDialog: function () {
-                Helper.onCloseDialog(this);
+            onCloseDialog: function (oEvent) {
+                oEvent.getSource().getParent().close();
             },
 
             onLogoutConfirm: function () {

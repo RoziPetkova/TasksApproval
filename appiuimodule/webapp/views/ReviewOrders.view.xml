@@ -126,7 +126,7 @@
                                                     <Text text="{orders>CustomerID}" />
                                                     <Text text="{orders>ShipCountry}" />
                                                     <Text
-                                                        text="{path: 'orders>OrderDate', formatter: '.formatDate'}" />
+                                                        text="{path: 'orders>OrderDate', formatter: '.formatter.formatDate'}" />
                                                     <Text
                                                         text="{
                                                     parts: ['orders>ShippedDate', 'orders>Status'],

@@ -13,12 +13,11 @@ sap.ui.define(
 
         return Controller.extend("appiuimodule.controllers.OrderDetails", {
             formatter: Formatter,
-            _bundle: null,
 
             onInit() {
                 this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.getRoute("orderdetails").attachPatternMatched(this.onObjectMatched, this);
+                this.oRouter = this.getOwnerComponent().getRouter();
+                this.oRouter.getRoute("orderdetails").attachPatternMatched(this.onObjectMatched, this);
             },
 
             onObjectMatched: async function (oEvent) {
@@ -53,8 +52,8 @@ sap.ui.define(
                 this.approveDialog.close();
             },
 
-            onCloseDialog: function () {
-                Helper.onCloseDialog(this);
+            onCloseDialog: function (oEvent) {
+                oEvent.getSource().getParent().close();
             },
 
             async onDecline() {
@@ -84,10 +83,7 @@ sap.ui.define(
                 const oOrderModel = this.getView().getModel("orderModel");
                 const customerId = oOrderModel.getProperty("/CustomerID");
 
-                if (customerId) {
-                    const oRouter = this.getOwnerComponent().getRouter();
-                    oRouter.navTo("customerdetails", { CustomerID: customerId });
-                }
+                this.oRouter.navTo("customerdetails", { CustomerID: customerId });
             },
 
             handleApproveOrder: async function () {
@@ -145,15 +141,12 @@ sap.ui.define(
                 return new JSONModel(order);
             },
 
-            formatDate: function (dateString) {
-                return Formatter.formatDate(dateString);
-            },
 
             formatStatusState: function (status) {
                 return Formatter.formatStatusState(status);
             },
 
-                        onHomePress: function () {
+            onHomePress: function () {
                 Helper.onHomePress(this);
             },
 

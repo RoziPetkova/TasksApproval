@@ -13,12 +13,11 @@ sap.ui.define(
 
         return Controller.extend("appiuimodule.controllers.InvoiceDetails", {
             formatter: Formatter,
-            _bundle: null,
 
             onInit() {
                 this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.getRoute("invoicedetails").attachPatternMatched(this.onObjectMatched, this);
+                this._router = this.getOwnerComponent().getRouter();
+                this._router.getRoute("invoicedetails").attachPatternMatched(this.onObjectMatched, this);
             },
 
             onObjectMatched: function (oEvent) {
@@ -100,8 +99,7 @@ sap.ui.define(
 
                 if (oCustomerDetail && oCustomerDetail.value) {
                     const sCustomerId = oCustomerDetail.value;
-                    const oRouter = this.getOwnerComponent().getRouter();
-                    oRouter.navTo("customerdetails", { CustomerID: sCustomerId });
+                    this._router.navTo("customerdetails", { CustomerID: sCustomerId });
                 }
             },
 
@@ -117,8 +115,8 @@ sap.ui.define(
                 Helper.onSettingsSave(this);
             },
 
-            onCloseDialog: function () {
-                Helper.onCloseDialog(this);
+            onCloseDialog: function (oEvent) {
+                oEvent.getSource().getParent().close();
             },
 
             onLogoutPress: async function () {
@@ -133,13 +131,7 @@ sap.ui.define(
                 Helper.onHomepagePress(this);
             },
 
-            formatDate: function (dateString) {
-                return Formatter.formatDate(dateString);
-            },
 
-            formatCurrency: function (value) {
-                return Formatter.formatCurrency(value);
-            },
 
             formatDiscount: function (value) {
                 return Formatter.formatDiscount(value);

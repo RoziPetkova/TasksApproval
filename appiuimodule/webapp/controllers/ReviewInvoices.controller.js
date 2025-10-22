@@ -9,18 +9,6 @@ sap.ui.define(
 
         return Controller.extend('appiuimodule.controllers.ReviewInvoices', {
             formatter: Formatter,
-            _bundle: null,
-            _invoicesSkip: 0,
-            _invoicesHasMore: true,
-            _router: null, 
-
-            formatDate: function (dateString) {
-                return Formatter.formatDate(dateString);
-            },
-
-            formatCurrency: function (value) {
-                return Formatter.formatCurrency(value);
-            },
 
             onInit: function () {
                 this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
@@ -60,8 +48,8 @@ sap.ui.define(
                 Helper.onSettingsSave(this);
             },
 
-            onCloseDialog: function () {
-                Helper.onCloseDialog(this);
+            onCloseDialog: function (oEvent) {
+                oEvent.getSource().getParent().close();
             },
 
             onLogoutConfirm: function () {

@@ -83,13 +83,8 @@ sap.ui.define(
                 this.settingsDialog.close();
             },
 
-            onCloseDialog: function () {
-                if (this.settingsDialog && this.settingsDialog.isOpen()) {
-                    this.settingsDialog.close();
-                }
-                if (this.logoutDialog && this.logoutDialog.isOpen()) {
-                    this.logoutDialog.close();
-                }
+            onCloseDialog: function (oEvent) {
+                oEvent.getSource().getParent().close();
             },
 
             onLogoutConfirm: function () {

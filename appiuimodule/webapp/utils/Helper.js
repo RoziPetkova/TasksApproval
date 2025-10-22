@@ -13,9 +13,7 @@ sap.ui.define([
         setStickyHeader: function (oController, sTableId) {
             const Sticky = mobileLibrary.Sticky;
             const oTable = oController.byId(sTableId);
-            if (oTable) {
-                oTable.setSticky([Sticky.ColumnHeaders]);
-            }
+            oTable.setSticky([Sticky.ColumnHeaders]);
         },
 
         onNavBack: function (oController, defaultRoute) {
@@ -29,6 +27,7 @@ sap.ui.define([
                 oRouter.navTo(defaultRoute || "overview", {}, true);
             }
         },
+        
         onSettingsPress: async function (oController) {
             if (!oController.settingsDialog) {
                 oController.settingsDialog = await oController.loadFragment({
@@ -53,21 +52,6 @@ sap.ui.define([
             oController.settingsDialog.close();
         },
 
-        onCloseDialog: function (oController) {
-            if (oController.settingsDialog && oController.settingsDialog.isOpen()) {
-                oController.settingsDialog.close();
-            }
-            if (oController.logoutDialog && oController.logoutDialog.isOpen()) {
-                oController.logoutDialog.close();
-            }
-            if (oController.approveDialog && oController.approveDialog.isOpen()) {
-                oController.approveDialog.close();
-            }
-            if (oController.declineDialog && oController.declineDialog.isOpen()) {
-                oController.declineDialog.close();
-            }
-        },
-
         onLogoutConfirm: function (oController) {
             const oRouter = oController.getOwnerComponent().getRouter();
             oRouter.navTo("logout");
@@ -90,7 +74,7 @@ sap.ui.define([
             const oBinding = oTable.getBinding("items");
 
             if (sQuery && sQuery.trim()) {
-                const aFilters = aFieldNames.map(function(sFieldName) {
+                const aFilters = aFieldNames.map(function (sFieldName) {
                     return new Filter(sFieldName.trim(), FilterOperator.Contains, sQuery);
                 });
 

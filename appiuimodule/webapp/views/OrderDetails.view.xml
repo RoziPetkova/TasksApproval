@@ -61,7 +61,7 @@
                                                 press=".onGoToCustomerDetails" />
                                             <StandardListItem
                                                 title="{i18n>orderDateColumn}"
-                                                info="{path: 'orderModel>/OrderDate', formatter: '.formatDate'}" />
+                                                info="{path: 'orderModel>/OrderDate', formatter: '.formatter.formatDate'}" />
                                         </List>
                                     </VBox>
 

@@ -131,11 +131,11 @@
                                                     <Text text="{odataModel>ProductName}" />
                                                     <Text text="{odataModel>Quantity}" />
                                                     <Text
-                                                        text="{path: 'odataModel>UnitPrice', formatter: '.formatCurrency'}" />
+                                                        text="{path: 'odataModel>UnitPrice', formatter: '.formatter.formatCurrency'}" />
                                                     <Text
                                                         text="{path: 'odataModel>Discount', formatter: '.formatDiscount'}" />
                                                     <Text
-                                                        text="{path: 'odataModel>ExtendedPrice', formatter: '.formatCurrency'}" />
+                                                        text="{path: 'odataModel>ExtendedPrice', formatter: '.formatter.formatCurrency'}" />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>

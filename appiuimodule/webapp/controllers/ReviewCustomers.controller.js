@@ -47,8 +47,8 @@ sap.ui.define(
                 Helper.onSettingsSave(this);
             },
 
-            onCloseDialog: function () {
-                Helper.onCloseDialog(this);
+            onCloseDialog: function (oEvent) {
+                oEvent.getSource().getParent().close();
             },
 
             onLogoutConfirm: function () {
