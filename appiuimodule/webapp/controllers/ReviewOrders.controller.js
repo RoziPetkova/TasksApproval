@@ -41,21 +41,15 @@ sap.ui.define(
                 const oOrdersModel = this.getOwnerComponent().getModel("orders");
 
                 if (!this._originalOrdersData) {
-                    if (oOrdersModel && oOrdersModel.getData()) {
-                        this._originalOrdersData = oOrdersModel.getData();
-                    } else {
-                        //todo: change logic
-                        return;
-                    }
+                    this._originalOrdersData = oOrdersModel.getData();
                 }
 
-                const allOrders = this._originalOrdersData || [];
+                const allOrders = this._originalOrdersData;
                 let filteredOrders;
 
                 if (query && query.trim()) {
-                    const queryLower = query.toLowerCase();
                     filteredOrders = allOrders.filter(function (order) {
-                        return order.CustomerID.toLowerCase().includes(queryLower);
+                        return order.CustomerID.toLowerCase().includes(query.toLowerCase());
                     });
                 } else {
                     filteredOrders = allOrders;
@@ -73,15 +67,10 @@ sap.ui.define(
                 const oOrdersModel = this.getOwnerComponent().getModel("orders");
 
                 if (!this._originalOrdersData) {
-                    if (oOrdersModel && oOrdersModel.getData()) {
-                        this._originalOrdersData = oOrdersModel.getData();
-                    } else {
-                        //todo: change logic
-                        return;
-                    }
+                    this._originalOrdersData = oOrdersModel.getData();
                 }
 
-                const allOrders = this._originalOrdersData || [];
+                const allOrders = this._originalOrdersData;
                 let filteredOrders;
 
                 if (status === Constants.OrderStatus.SHIPPED) {
