@@ -6,7 +6,10 @@
     xmlns:card="sap.f.cards"
     xmlns:macros="sap.fe.macros"
     xmlns:html="http://www.w3.org/1999/xhtml"
-    controllerName="appiuimodule.controllers.ReviewOrders">
+    controllerName="appiuimodule.controllers.ReviewOrders"
+    core:require="{
+		Constants: 'appiuimodule/utils/Constants'
+	}">
 
     <f:DynamicPage
         id="ReviewOrdersDynamicPage">
@@ -51,9 +54,9 @@
                                         class="sapUiTinyMarginBegin"
                                         width="{= ${viewModel>/isMobile} ? '44%' : '20%' }">
                                         <core:Item key="All" text="{i18n>allStatusFilter}" />
-                                        <core:Item key="Pending"
+                                        <core:Item key="{= Constants.OrderStatus.PENDING}"
                                             text="{i18n>pendingStatusFilter}" />
-                                        <core:Item key="Shipped"
+                                        <core:Item key="{= Constants.OrderStatus.SHIPPED}"
                                             text="{i18n>shippedStatusFilter}" />
                                     </Select>
                                 </OverflowToolbar>
@@ -65,51 +68,53 @@
                                     horizontal="false">
                                     <Table
                                         id="reviewOrdersTable"
-                                        items="{ path: 'orders>/value' }"
+                                        items="{ path: 'orders>/' }"
                                         width="100%"
                                         showNoData="false"
                                         mode="None"
                                         busyIndicatorDelay="0">
                                         <columns>
-                                            <Column
-                                                width="5em">
-                                                <Text text="{i18n>orderIdColumn}" />
-                                            </Column>
-                                            <Column minScreenWidth="Small">
-                                                <Text text="{i18n>taskTypeColumn}" />
-                                            </Column>
-                                            <Column  demandPopin="true" minScreenWidth="Small">
-                                                <HBox alignItems="Center">
-                                                    <Text text="{i18n>customerIdColumn}" />
-                                                    <core:Icon
-                                                        src="sap-icon://sort"
-                                                        press=".onSortCustomerIdOrders"
-                                                        class="sapUiTinyMarginBegin sortIcon" />
-                                                </HBox>
+                                            <Column width="5em">
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="OrderID" />
+                                                </customData>
+                                                <Link text="{i18n>orderIdColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                             <Column demandPopin="true" minScreenWidth="Small">
-                                                <Text text="{i18n>countryColumn}" />
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="CustomerID" />
+                                                </customData>
+                                                <Link text="{i18n>customerIdColumn}"
+                                                    press=".onSortColumn" />
+                                            </Column>
+                                            <Column demandPopin="true" minScreenWidth="Small">
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="ShipCountry" />
+                                                </customData>
+                                                <Link text="{i18n>countryColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                             <Column>
-                                                <HBox alignItems="Center">
-                                                    <Text text="{i18n>orderDateColumn}" />
-                                                    <core:Icon
-                                                        src="sap-icon://sort"
-                                                        press=".onSortOrderDate"
-                                                        class="sapUiTinyMarginBegin sortIcon" />
-                                                </HBox>
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="OrderDate" />
+                                                </customData>
+                                                <Link text="{i18n>orderDateColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                             <Column>
-                                                <Text text="{i18n>shippedDateColumn}" />
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="ShippedDate" />
+                                                </customData>
+                                                <Link text="{i18n>shippedDateColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                             <Column>
-                                                <HBox alignItems="Center">
-                                                    <Text text="{i18n>statusColumn}" />
-                                                    <core:Icon
-                                                        src="sap-icon://sort"
-                                                        press=".onSortStatus"
-                                                        class="sapUiTinyMarginBegin sortIcon" />
-                                                </HBox>
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="Status" />
+                                                </customData>
+                                                <Link text="{i18n>statusColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                         </columns>
                                         <items>
@@ -118,11 +123,10 @@
                                                 press=".onOrderPress">
                                                 <cells>
                                                     <Text text="{orders>OrderID}" />
-                                                    <Text text="{i18n>orderTaskTypeValue}" />
                                                     <Text text="{orders>CustomerID}" />
                                                     <Text text="{orders>ShipCountry}" />
                                                     <Text
-                                                        text="{path: 'orders>OrderDate', formatter: '.formatDate'}" />
+                                                        text="{path: 'orders>OrderDate', formatter: '.formatter.formatDate'}" />
                                                     <Text
                                                         text="{
                                                     parts: ['orders>ShippedDate', 'orders>Status'],

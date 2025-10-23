@@ -47,9 +47,9 @@
                                     <ObjectAttribute title="{i18n>productNameColumn}"
                                         text="{invoiceModel>/invoiceDetails/1/value}" />
                                     <ObjectAttribute title="{i18n>customerColumn}"
-                                        text="{invoiceModel>/invoiceDetails/2/value}" />
+                                        text="{invoiceModel>/invoiceDetails/3/value}" />
                                     <ObjectAttribute title="{i18n>orderDateColumn}"
-                                        text="{invoiceModel>/invoiceDetails/9/value}" />
+                                        text="{invoiceModel>/invoiceDetails/10/value}" />
                                 </VBox>
                             </layout:VerticalLayout>
 
@@ -59,13 +59,13 @@
                                     class="sapUiTinyMarginBottom" />
                                 <VBox>
                                     <ObjectAttribute title="{i18n>quantityLabel}"
-                                        text="{invoiceModel>/invoiceDetails/3/value}" />
-                                    <ObjectAttribute title="{i18n>unitPriceLabel}"
                                         text="{invoiceModel>/invoiceDetails/4/value}" />
-                                    <ObjectAttribute title="{i18n>discountLabel}"
+                                    <ObjectAttribute title="{i18n>unitPriceLabel}"
                                         text="{invoiceModel>/invoiceDetails/5/value}" />
-                                    <ObjectAttribute title="{i18n>extendedPriceLabel}"
+                                    <ObjectAttribute title="{i18n>discountLabel}"
                                         text="{invoiceModel>/invoiceDetails/6/value}" />
+                                    <ObjectAttribute title="{i18n>extendedPriceLabel}"
+                                        text="{invoiceModel>/invoiceDetails/7/value}" />
                                 </VBox>
                             </layout:VerticalLayout>
 
@@ -74,11 +74,11 @@
                                 <Label text="Shipping Information" class="sapUiTinyMarginBottom" />
                                 <VBox>
                                     <ObjectAttribute title="{i18n>salespersonLabel}"
-                                        text="{invoiceModel>/invoiceDetails/7/value}" />
-                                    <ObjectAttribute title="{i18n>shipperNameLabel}"
                                         text="{invoiceModel>/invoiceDetails/8/value}" />
+                                    <ObjectAttribute title="{i18n>shipperNameLabel}"
+                                        text="{invoiceModel>/invoiceDetails/9/value}" />
                                     <ObjectAttribute title="{i18n>freightLabel}"
-                                        text="{invoiceModel>/invoiceDetails/10/value}" />
+                                        text="{invoiceModel>/invoiceDetails/11/value}" />
                                 </VBox>
                             </layout:VerticalLayout>
 
@@ -104,7 +104,7 @@
                                 <ScrollContainer height="90%" vertical="true" horizontal="false">
                                     <Table
                                         id="productsTable"
-                                        items="{ path: 'productsModel>/products' }"
+                                        items="{ path: 'odataModel>/Invoices' }"
                                         showNoData="false"
                                         mode="None"
                                         busyIndicatorDelay="0">
@@ -128,23 +128,14 @@
                                         <items>
                                             <ColumnListItem>
                                                 <cells>
-                                                    <Text text="{productsModel>ProductName}" />
-                                                    <Text text="{productsModel>Quantity}" />
+                                                    <Text text="{odataModel>ProductName}" />
+                                                    <Text text="{odataModel>Quantity}" />
                                                     <Text
-                                                        text="{
-                                                        parts: ['productsModel>UnitPrice'],
-                                                        formatter: '.formatCurrency'
-                                                    }" />
+                                                        text="{path: 'odataModel>UnitPrice', formatter: '.formatter.formatCurrency'}" />
                                                     <Text
-                                                        text="{
-                                                        parts: ['productsModel>Discount'],
-                                                        formatter: '.formatDiscount'
-                                                    }" />
+                                                        text="{path: 'odataModel>Discount', formatter: '.formatDiscount'}" />
                                                     <Text
-                                                        text="{
-                                                        parts: ['productsModel>ExtendedPrice'],
-                                                        formatter: '.formatCurrency'
-                                                    }" />
+                                                        text="{path: 'odataModel>ExtendedPrice', formatter: '.formatter.formatCurrency'}" />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>

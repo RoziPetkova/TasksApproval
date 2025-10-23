@@ -1,294 +1,62 @@
 sap.ui.define(
     [
         'sap/ui/core/mvc/Controller',
-        "sap/ui/model/Filter",
-        "sap/ui/model/FilterOperator",
-        "sap/ui/core/routing/History",
-        "sap/ui/model/Sorter",
-        "sap/m/MessageToast",
-        "sap/ui/model/json/JSONModel",
-        "sap/m/MessageBox"
+        "../utils/Helper"
     ],
-    function (Controller, Filter, FilterOperator, History, Sorter, MessageToast, JSONModel, MessageBox) {
+    function (Controller, Helper) {
         'use strict';
 
         return Controller.extend('appiuimodule.controllers.ReviewCustomers', {
             _bundle: null,
-            _sortState: {},
-            _customersSkip: 0,
-            _customersHasMore: true,
 
             onInit: function () {
                 this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                this._loadCustomersModel().then(() => {
-                    this._setStickyHeaderForCustomersTable();
-                });
             },
 
-            _setStickyHeaderForCustomersTable: function() {
-                sap.ui.require([
-                    "sap/m/library"
-                ], function(mobileLibrary) {
-                    const Sticky = mobileLibrary.Sticky;
-                    
-                    const oCustomersTable = this.byId("reviewCustomersTable");
-                    if (oCustomersTable) {
-                        oCustomersTable.setSticky([Sticky.ColumnHeaders]);
-                    }
-                }.bind(this));
-            },
-
-            _loadCustomersModel: async function () {
-                var oCustomersModel = new JSONModel();
-                const oTable = this.byId("reviewCustomersTable");
-                if (oTable) {
-                    oTable.setBusy(true);
-                }
-
-                try {
-                    const response = await fetch("https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$top=20");
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-
-                    data.hasMore = data.value && data.value.length === 20;
-
-                    oCustomersModel.setData(data);
-
-                    this._customersSkip = 20;
-                    this._customersHasMore = data.hasMore;
-                } catch (error) {
-                    console.error("Error loading customers data: ", error);
-                    oCustomersModel.setData({ value: [], hasMore: false });
-                    MessageBox.error(this._bundle.getText("failedToLoadCustomersMessage"));
-                } finally {
-                    const oTable = this.byId("reviewCustomersTable");
-                    if (oTable) {
-                        oTable.setBusy(false);
-                    }
-                }
-
-                this.getOwnerComponent().setModel(oCustomersModel, "customers");
-            },
-
-            onLoadMoreCustomers: async function () {
-                if (!this._customersHasMore) {
-                    return;
-                }
-
-                const oCustomersModel = this.getOwnerComponent().getModel("customers");
-                const currentData = oCustomersModel.getData();
-                const oTable = this.byId("reviewCustomersTable");
-                if (oTable) {
-                    oTable.setBusy(true);
-                }
-
-                try {
-                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$top=20&$skip=${this._customersSkip}`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const newData = await response.json();
-
-                    if (newData.value && newData.value.length > 0) {
-                        currentData.value = currentData.value.concat(newData.value);
-
-                        this._customersSkip += newData.value.length;
-                        this._customersHasMore = newData.value.length === 20;
-                        currentData.hasMore = this._customersHasMore;
-
-                        oCustomersModel.setData(currentData);
-                    } else {
-                        this._customersHasMore = false;
-                        currentData.hasMore = false;
-                        oCustomersModel.setData(currentData);
-                    }
-                } catch (error) {
-                    console.error("Error loading more customers data: ", error);
-                    this._customersHasMore = false;
-                    currentData.hasMore = false;
-                    oCustomersModel.setData(currentData);
-                    MessageBox.error(this._bundle.getText("failedToLoadMoreCustomersMessage"));
-                } finally {
-                    const oTable = this.byId("reviewCustomersTable");
-                    if (oTable) {
-                        oTable.setBusy(false);
-                    }
-                }
+            onAfterRendering: function () {
+                Helper.setStickyHeader(this, "reviewCustomersTable");
             },
 
             onNavBack: function () {
-                const oHistory = History.getInstance();
-                const sPreviousHash = oHistory.getPreviousHash();
-
-                if (sPreviousHash !== undefined) {
-                    window.history.go(-1);
-                } else {
-                    const oRouter = this.getOwnerComponent().getRouter();
-                    oRouter.navTo("overview", {}, true);
-                }
+                Helper.onNavBack(this);
             },
 
             onCustomerPress(oEvent) {
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("customerdetails",
-                    { CustomerID: oEvent.getSource().getBindingContext("customers").getObject().CustomerID });
+                    { CustomerID: oEvent.getSource().getBindingContext("odataModel").getObject().CustomerID });
             },
 
-            onFilterCustomers: async function (oEvent) {
-                const query = oEvent.getParameter("query");
-                await this.searchCustomers(query);
+            onFilterCustomers: function (oEvent) {
+                Helper.onFilter(oEvent, this, "reviewCustomersTable", ["CustomerID", "CompanyName"]);
             },
 
-            searchCustomers: async function (query) {
-                const oCustomersModel = this.getOwnerComponent().getModel("customers");
-                const oTable = this.byId("reviewCustomersTable");
-                if (oTable) {
-                    oTable.setBusy(true);
-                }
-
-                try {
-                    let url = "https://services.odata.org/V4/Northwind/Northwind.svc/Customers";
-
-                    if (query && query.trim()) {
-                        const escapedQuery = query.replace(/'/g, "''");
-                        const filter = `contains(CustomerID,'${escapedQuery}') or contains(CompanyName,'${escapedQuery}')`;
-                        url += `?$filter=${encodeURIComponent(filter)}`;
-                    } else {
-                        url += "?$top=20";
-                    }
-
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-
-                    data.hasMore = data.value && data.value.length === 20;
-
-                    oCustomersModel.setData(data);
-
-                    this._customersSkip = data.value ? data.value.length : 0;
-                    this._customersHasMore = data.hasMore;
-                } catch (error) {
-                    console.error("Error searching customers:", error);
-                    MessageBox.error(this._bundle.getText("failedToSearchCustomersMessage"));
-                } finally {
-                    const oTable = this.byId("reviewCustomersTable");
-                    if (oTable) {
-                        oTable.setBusy(false);
-                    }
-                }
-            },
-
-            onSortCustomersColumn(fieldPath, columnIndex) {
-                const table = this.byId("reviewCustomersTable");
-                const binding = table.getBinding("items");
-
-                if (!this._sortState[fieldPath]) {
-                    this._sortState[fieldPath] = false;
-                }
-
-                this._resetCustomersHeaderIcons();
-
-                this._sortState[fieldPath] = !this._sortState[fieldPath];
-                const isAscending = this._sortState[fieldPath];
-
-                const sorter = new Sorter(fieldPath, !isAscending);
-                binding.sort(sorter);
-
-                const columns = table.getColumns();
-                const column = columns[columnIndex];
-                const header = column.getHeader();
-
-                let icon = null;
-                if (header.getMetadata().getName() === "sap.m.HBox") {
-                    const headerItems = header.getItems();
-                    if (headerItems && headerItems[1]) {
-                        icon = headerItems[1];
-                    }
-                }
-
-                if (icon && icon.getMetadata().getName() === "sap.ui.core.Icon") {
-                    if (isAscending) {
-                        icon.setSrc("sap-icon://sort-ascending");
-                    } else {
-                        icon.setSrc("sap-icon://sort-descending");
-                    }
-                }
-            },
-
-            _resetCustomersHeaderIcons() {
-                const table = this.byId("reviewCustomersTable");
-                const columns = table.getColumns();
-
-                columns.forEach(function (column) {
-                    const header = column.getHeader();
-
-                    if (header && header.getMetadata().getName() === "sap.m.HBox") {
-                        const headerItems = header.getItems();
-                        if (headerItems) {
-                            headerItems.forEach(function (item) {
-                                if (item.getMetadata().getName() === "sap.ui.core.Icon" &&
-                                    (item.getSrc().includes("sort") || item.getSrc() === "sap-icon://text-align-center")) {
-                                    item.setSrc("sap-icon://sort");
-                                }
-                            });
-                        }
-                    }
-                });
-            },
-
-            onSortCustomerId() {
-                this.onSortCustomersColumn("CustomerID", 0);
-            },
-
-            onSortCountry() {
-                this.onSortCustomersColumn("Country", 3);
+            onSortColumn: function (oEvent) {
+                Helper.onSortColumn(oEvent, this, "reviewCustomersTable");
             },
 
             onSettingsPress: async function () {
-                if (!this.settingsDialog) {
-                    this.settingsDialog = await this.loadFragment({
-                        name: "appiuimodule.views.SettingsDialog"
-                    });
-                }
-                this.settingsDialog.open();
+                await Helper.onSettingsPress(this);
             },
 
-            onLogoutPress: async function() {
-                if (!this.logoutDialog) {
-                    this.logoutDialog = await this.loadFragment({
-                        name: "appiuimodule.views.LogoutDialog"
-                    });
-                }
-                this.logoutDialog.open();
+            onLogoutPress: async function () {
+                await Helper.onLogoutPress(this);
             },
 
-            onSettingsSave: function() {
-                MessageToast.show(this._bundle.getText("settingsSavedMessage"));
-                this.settingsDialog.close();
+            onSettingsSave: function () {
+                Helper.onSettingsSave(this);
             },
 
-            onCloseDialog: function() {
-                if (this.settingsDialog && this.settingsDialog.isOpen()) {
-                    this.settingsDialog.close();
-                }
-                if (this.logoutDialog && this.logoutDialog.isOpen()) {
-                    this.logoutDialog.close();
-                }
+            onCloseDialog: function (oEvent) {
+                oEvent.getSource().getParent().close();
             },
 
-            onLogoutConfirm: function() {
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("logout");
-                this.logoutDialog.close();
+            onLogoutConfirm: function () {
+                Helper.onLogoutConfirm(this);
             },
 
-            onHomepagePress: function() {
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("entrypanel");
+            onHomepagePress: function () {
+                Helper.onHomepagePress(this);
             },
         });
     }

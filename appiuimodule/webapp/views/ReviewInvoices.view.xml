@@ -48,47 +48,67 @@
                                 </Toolbar>
                             </VBox>
 
-                            <VBox renderType="Bare" height="75%">
+                            <VBox renderType="Bare" height="85%">
                                 <!-- Single Table with Programmatic Sticky Headers -->
                                 <ScrollContainer height="100%" vertical="true"
                                     horizontal="false">
                                     <Table
                                         id="reviewInvoicesTable"
-                                        items="{ path: 'invoices>/value' }"
+                                        items="{
+                                                path: 'odataModel>/Invoices',
+                                                parameters: {
+                                                    operationMode: 'Server'
+                                                }
+                                            }"
                                         width="100%"
                                         showNoData="false"
                                         mode="None"
-                                        busyIndicatorDelay="0">
+                                        busyIndicatorDelay="0"
+                                        growing="true"
+                                        growingThreshold="50"
+                                        growingTriggerText="{i18n>loadMoreButton}">
                                         <columns>
-                                            <Column width="5em">
-                                                <Text text="{i18n>orderIdColumn}" />
+                                            <Column width="7em">
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="OrderID" />
+                                                </customData>
+                                                <Link text="{i18n>orderIdColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                             <Column demandPopin="true">
-                                                <HBox alignItems="Center">
-                                                    <Text text="{i18n>productNameColumn}" />
-                                                    <core:Icon
-                                                        src="sap-icon://sort"
-                                                        press=".onSortProductName"
-                                                        class="sapUiTinyMarginBegin sortIcon" />
-                                                </HBox>
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="ProductName" />
+                                                </customData>
+                                                <Link text="{i18n>productNameColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                             <Column demandPopin="true">
-                                                <HBox alignItems="Center">
-                                                    <Text text="{i18n>customerColumn}" />
-                                                    <core:Icon
-                                                        src="sap-icon://sort"
-                                                        press=".onSortCustomerName"
-                                                        class="sapUiTinyMarginBegin sortIcon" />
-                                                </HBox>
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="CustomerName" />
+                                                </customData>
+                                                <Link text="{i18n>customerColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                             <Column demandPopin="true" minScreenWidth="Small">
-                                                <Text text="{i18n>orderDateColumn}" />
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="OrderDate" />
+                                                </customData>
+                                                <Link text="{i18n>orderDateColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                             <Column demandPopin="true" minScreenWidth="Small">
-                                                <Text text="{i18n>statusColumn}" />
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="Status" />
+                                                </customData>
+                                                <Link text="{i18n>statusColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                             <Column>
-                                                <Text text="{i18n>priceColumn}" />
+                                                <customData>
+                                                    <core:CustomData key="fieldPath" value="ExtendedPrice" />
+                                                </customData>
+                                                <Link text="{i18n>priceColumn}"
+                                                    press=".onSortColumn" />
                                             </Column>
                                         </columns>
                                         <items>
@@ -96,11 +116,11 @@
                                                 type="Navigation"
                                                 press=".onInvoicePress">
                                                 <cells>
-                                                    <Text text="{invoices>OrderID}" />
-                                                    <Text text="{invoices>ProductName}" />
-                                                    <Text text="{invoices>CustomerName}" />
+                                                    <Text text="{odataModel>OrderID}" />
+                                                    <Text text="{odataModel>ProductName}" />
+                                                    <Text text="{odataModel>CustomerName}" />
                                                     <Text
-                                                        text="{path: 'invoices>OrderDate', formatter: '.formatDate'}" />
+                                                        text="{path: 'odataModel>OrderDate', formatter: '.formatter.formatDate'}" />
                                                     <Text text="{i18n>activeStatusValue}" />
                                                     <Text text="{invoices>ExtendedPrice}" />
                                                 </cells>
@@ -110,16 +130,6 @@
                                 </ScrollContainer>
                             </VBox>
 
-                            <!-- Load More Button at Bottom -->
-                            <HBox justifyContent="End">
-                                <Button
-                                    id="loadMoreInvoicesBtn"
-                                    text="{i18n>loadMoreInvoicesButton}"
-                                    type="Transparent"
-                                    press=".onLoadMoreInvoices"
-                                    enabled="{invoices>/hasMore}"
-                                    class="sapUiSmallMarginTop sapUiSmallMarginEnd" />
-                            </HBox>
                         </VBox>
                     </f:content>
                 </f:Card>

@@ -7,7 +7,11 @@
     xmlns:f="sap.f"
     xmlns:card="sap.f.cards"
     xmlns:table="sap.ui.table"
-    controllerName="appiuimodule.controllers.Overview">
+    controllerName="appiuimodule.controllers.Overview"
+    core:require="{
+		Constants: 'appiuimodule/utils/Constants'
+	}">
+    <!-- Constants........-->
 
     <f:DynamicPage
         id="OverviewDynamicPage">
@@ -45,7 +49,14 @@
                                         <SearchField
                                             width="{= ${viewModel>/isMobile} ? '100%' : '50%' }"
                                             placeholder="{i18n>searchCustomersPlaceholder}"
-                                            search=".onFilterCustomers" />
+                                            search=".onFilter">
+                                            <customData>
+                                                <core:CustomData key="tableId"
+                                                    value="customersTable" />
+                                                <core:CustomData key="filterFields"
+                                                    value="CustomerID,CompanyName" />
+                                            </customData>
+                                        </SearchField>
                                     </Toolbar>
                                 </VBox>
 
@@ -54,36 +65,46 @@
                                         horizontal="false">
                                         <Table
                                             id="customersTable"
-                                            items="{ path: 'customers>/value' }"
+                                            items="{ path: 'odataModel>/Customers'}"
                                             width="100%"
                                             showNoData="false"
                                             mode="None"
-                                            busyIndicatorDelay="0">
+                                            busyIndicatorDelay="0"
+                                            growingThreshold="10"
+                                            growingTriggerText="{i18n>loadMoreButton}"
+                                            growing="true">
                                             <columns>
-                                                <Column
-                                                    width="7em">
-                                                    <HBox alignItems="Center">
-                                                        <Text text="{i18n>customerIdColumn}" />
-                                                        <core:Icon
-                                                            src="sap-icon://sort"
-                                                            press=".onSortCustomerId"
-                                                            class="sapUiTinyMarginBegin sortIcon" />
-                                                    </HBox>
+                                                <Column width="7em">
+                                                    <customData>
+                                                        <core:CustomData key="fieldPath"
+                                                            value="CustomerID" />
+                                                    </customData>
+                                                    <Link text="{i18n>customerIdColumn}"
+                                                        press=".onSortCustomersColumn" />
                                                 </Column>
                                                 <Column>
-                                                    <Text text="{i18n>companyNameColumn}" />
+                                                    <customData>
+                                                        <core:CustomData key="fieldPath"
+                                                            value="CompanyName" />
+                                                    </customData>
+                                                    <Link text="{i18n>companyNameColumn}"
+                                                        press=".onSortCustomersColumn" />
                                                 </Column>
                                                 <Column>
-                                                    <Text text="{i18n>contactNameColumn}" />
+                                                    <customData>
+                                                        <core:CustomData key="fieldPath"
+                                                            value="ContactName" />
+                                                    </customData>
+                                                    <Link text="{i18n>contactNameColumn}"
+                                                        press=".onSortCustomersColumn" />
                                                 </Column>
                                                 <Column minScreenWidth="Small" demandPopin="true">
-                                                    <HBox alignItems="Center">
-                                                        <Text text="{i18n>countryColumn}" />
-                                                        <core:Icon
-                                                            src="sap-icon://sort"
-                                                            press=".onSortCountry"
-                                                            class="sapUiTinyMarginBegin sortIcon" />
-                                                    </HBox>
+                                                    <customData>
+                                                        <core:CustomData key="fieldPath"
+                                                            value="Country" />
+                                                    </customData>
+                                                    <Link text="{i18n>countryColumn}"
+                                                        press=".onSortCustomersColumn" />
                                                 </Column>
                                             </columns>
                                             <items>
@@ -91,10 +112,10 @@
                                                     type="Navigation"
                                                     press=".onCustomerPress">
                                                     <cells>
-                                                        <Text text="{customers>CustomerID}" />
-                                                        <Text text="{customers>CompanyName}" />
-                                                        <Text text="{customers>ContactName}" />
-                                                        <Text text="{customers>Country}" />
+                                                        <Text text="{odataModel>CustomerID}" />
+                                                        <Text text="{odataModel>CompanyName}" />
+                                                        <Text text="{odataModel>ContactName}" />
+                                                        <Text text="{odataModel>Country}" />
                                                     </cells>
                                                 </ColumnListItem>
                                             </items>
@@ -108,7 +129,6 @@
                                         text="{i18n>loadMoreCustomersButton}"
                                         type="Transparent"
                                         press=".onLoadMoreCustomers"
-                                        enabled="{customers>/hasMore}"
                                         class="sapUiSmallMarginTop sapUiSmallMarginEnd" />
                                 </HBox>
                             </VBox>
@@ -147,65 +167,73 @@
                                             class="sapUiTinyMarginBegin"
                                             width="{= ${viewModel>/isMobile} ? '44%' : '15%' }">
                                             <core:Item key="All" text="{i18n>allStatusFilter}" />
-                                            <core:Item key="Pending"
+                                            <core:Item key="{= Constants.OrderStatus.PENDING}"
                                                 text="{i18n>pendingStatusFilter}" />
-                                            <core:Item key="Shipped"
+                                            <core:Item key="{= Constants.OrderStatus.SHIPPED}"
                                                 text="{i18n>shippedStatusFilter}" />
                                         </Select>
                                     </OverflowToolbar>
                                 </HBox>
 
-                                <VBox renderType="Bare" height="80%">
+                                <VBox renderType="Bare" height="75%">
                                     <!-- Single Table with Programmatic Sticky Headers -->
                                     <ScrollContainer height="100%" vertical="true"
                                         horizontal="false">
                                         <Table
                                             id="ordersTable"
-                                            items="{ path: 'orders>/value' }"
+                                            items="{ path: 'orders>/' }"
                                             width="100%"
                                             showNoData="false"
                                             mode="None"
                                             busyIndicatorDelay="0">
                                             <columns>
-                                                <Column
-                                                    width="5em">
-                                                    <Text text="{i18n>orderIdColumn}" />
-                                                </Column>
-                                                <Column minScreenWidth="Small">
-                                                    <Text text="{i18n>taskTypeColumn}" />
-                                                </Column>
-                                                <Column demandPopin="true" minScreenWidth="Small">
-                                                    <HBox alignItems="Center">
-                                                        <Text text="{i18n>customerIdColumn}" />
-                                                        <core:Icon
-                                                            src="sap-icon://sort"
-                                                            press=".onSortCustomerIdOrders"
-                                                            class="sapUiTinyMarginBegin sortIcon" />
-                                                    </HBox>
+                                                <Column width="5em">
+                                                    <customData>
+                                                        <core:CustomData key="fieldPath"
+                                                            value="OrderID" />
+                                                    </customData>
+                                                    <Link text="{i18n>orderIdColumn}"
+                                                        press=".onSortOrdersColumn" />
                                                 </Column>
                                                 <Column demandPopin="true" minScreenWidth="Small">
-                                                    <Text text="{i18n>countryColumn}" />
+                                                    <customData>
+                                                        <core:CustomData key="fieldPath"
+                                                            value="CustomerID" />
+                                                    </customData>
+                                                    <Link text="{i18n>customerIdColumn}"
+                                                        press=".onSortOrdersColumn" />
+                                                </Column>
+                                                <Column demandPopin="true" minScreenWidth="Small">
+                                                    <customData>
+                                                        <core:CustomData key="fieldPath"
+                                                            value="ShipCountry" />
+                                                    </customData>
+                                                    <Link text="{i18n>countryColumn}"
+                                                        press=".onSortOrdersColumn" />
                                                 </Column>
                                                 <Column>
-                                                    <HBox alignItems="Center">
-                                                        <Text text="{i18n>orderDateColumn}" />
-                                                        <core:Icon
-                                                            src="sap-icon://sort"
-                                                            press=".onSortOrderDate"
-                                                            class="sapUiTinyMarginBegin sortIcon" />
-                                                    </HBox>
+                                                    <customData>
+                                                        <core:CustomData key="fieldPath"
+                                                            value="OrderDate" />
+                                                    </customData>
+                                                    <Link text="{i18n>orderDateColumn}"
+                                                        press=".onSortOrdersColumn" />
                                                 </Column>
                                                 <Column>
-                                                    <Text text="{i18n>shippedDateColumn}" />
+                                                    <customData>
+                                                        <core:CustomData key="fieldPath"
+                                                            value="ShippedDate" />
+                                                    </customData>
+                                                    <Link text="{i18n>shippedDateColumn}"
+                                                        press=".onSortOrdersColumn" />
                                                 </Column>
                                                 <Column>
-                                                    <HBox alignItems="Center">
-                                                        <Text text="{i18n>statusColumn}" />
-                                                        <core:Icon
-                                                            src="sap-icon://sort"
-                                                            press=".onSortStatus"
-                                                            class="sapUiTinyMarginBegin sortIcon" />
-                                                    </HBox>
+                                                    <customData>
+                                                        <core:CustomData key="fieldPath"
+                                                            value="Status" />
+                                                    </customData>
+                                                    <Link text="{i18n>statusColumn}"
+                                                        press=".onSortOrdersColumn" />
                                                 </Column>
                                             </columns>
                                             <items>
@@ -214,11 +242,10 @@
                                                     press=".onOrderPress">
                                                     <cells>
                                                         <Text text="{orders>OrderID}" />
-                                                        <Text text="{i18n>orderTaskTypeValue}" />
                                                         <Text text="{orders>CustomerID}" />
                                                         <Text text="{orders>ShipCountry}" />
                                                         <Text
-                                                            text="{path: 'orders>OrderDate', formatter: '.formatDate'}" />
+                                                            text="{path: 'orders>OrderDate', formatter: '.formatter.formatDate'}" />
                                                         <Text
                                                             text="{
                                                     parts: ['orders>ShippedDate', 'orders>Status'],
@@ -233,6 +260,15 @@
                                         </Table>
                                     </ScrollContainer>
                                 </VBox>
+
+                                <HBox justifyContent="End">
+                                    <Button
+                                        id="loadMoreOrdersBtn"
+                                        text="{i18n>loadMoreOrdersButton}"
+                                        type="Transparent"
+                                        press=".onLoadMoreOrders"
+                                        class="sapUiSmallMarginTop sapUiSmallMarginEnd" />
+                                </HBox>
                             </VBox>
                         </f:content>
                     </f:Card>
@@ -255,51 +291,82 @@
                                         <SearchField
                                             width="{= ${viewModel>/isMobile} ? '100%' : '50%' }"
                                             placeholder="{i18n>searchInvoicesPlaceholder}"
-                                            search=".onFilterInvoices" />
+                                            search=".onFilter">
+                                            <customData>
+                                                <core:CustomData key="tableId" value="invoicesTable" />
+                                                <core:CustomData key="filterFields"
+                                                    value="CustomerName,ProductName" />
+                                            </customData>
+                                        </SearchField>
                                     </Toolbar>
                                 </VBox>
 
                                 <VBox renderType="Bare" height="75%">
-                                    <!-- Single Table with Programmatic Sticky Headers -->
                                     <ScrollContainer height="100%" vertical="true"
                                         horizontal="false">
                                         <Table
                                             id="invoicesTable"
-                                            items="{ path: 'invoices>/value' }"
+                                            items="{
+                                                path: 'odataModel>/Invoices',
+                                                parameters: {
+                                                    operationMode: 'Server'
+                                                }
+                                            }"
                                             width="100%"
                                             showNoData="false"
                                             mode="None"
-                                            busyIndicatorDelay="0">
+                                            busyIndicatorDelay="0"
+                                            growing="true"
+                                            growingThreshold="10"
+                                            growingTriggerText="{i18n>loadMoreButton}">
                                             <columns>
                                                 <Column width="5em">
-                                                    <Text text="{i18n>orderIdColumn}" />
+                                                    <customData>
+                                                        <core:CustomData key="fieldPath"
+                                                            value="OrderID" />
+                                                    </customData>
+                                                    <Link text="{i18n>orderIdColumn}"
+                                                        press=".onSortInvoicesColumn" />
                                                 </Column>
                                                 <Column demandPopin="true">
-                                                    <HBox alignItems="Center">
-                                                        <Text text="{i18n>productNameColumn}" />
-                                                        <core:Icon
-                                                            src="sap-icon://sort"
-                                                            press=".onSortProductName"
-                                                            class="sapUiTinyMarginBegin sortIcon" />
-                                                    </HBox>
+                                                    <customData>
+                                                        <core:CustomData key="fieldPath"
+                                                            value="ProductName" />
+                                                    </customData>
+                                                    <Link text="{i18n>productNameColumn}"
+                                                        press=".onSortInvoicesColumn" />
                                                 </Column>
                                                 <Column demandPopin="true">
-                                                    <HBox alignItems="Center">
-                                                        <Text text="{i18n>customerColumn}" />
-                                                        <core:Icon
-                                                            src="sap-icon://sort"
-                                                            press=".onSortCustomerName"
-                                                            class="sapUiTinyMarginBegin sortIcon" />
-                                                    </HBox>
+                                                    <customData>
+                                                        <core:CustomData key="fieldPath"
+                                                            value="CustomerName" />
+                                                    </customData>
+                                                    <Link text="{i18n>customerColumn}"
+                                                        press=".onSortInvoicesColumn" />
                                                 </Column>
                                                 <Column demandPopin="true" minScreenWidth="Small">
-                                                    <Text text="{i18n>orderDateColumn}" />
+                                                    <customData>
+                                                        <core:CustomData key="fieldPath"
+                                                            value="OrderDate" />
+                                                    </customData>
+                                                    <Link text="{i18n>orderDateColumn}"
+                                                        press=".onSortInvoicesColumn" />
                                                 </Column>
                                                 <Column demandPopin="true" minScreenWidth="Small">
-                                                    <Text text="{i18n>statusColumn}" />
+                                                    <customData>
+                                                        <core:CustomData key="fieldPath"
+                                                            value="Status" />
+                                                    </customData>
+                                                    <Link text="{i18n>statusColumn}"
+                                                        press=".onSortInvoicesColumn" />
                                                 </Column>
-                                                <Column >
-                                                    <Text text="{i18n>priceColumn}" />
+                                                <Column>
+                                                    <customData>
+                                                        <core:CustomData key="fieldPath"
+                                                            value="ExtendedPrice" />
+                                                    </customData>
+                                                    <Link text="{i18n>priceColumn}"
+                                                        press=".onSortInvoicesColumn" />
                                                 </Column>
                                             </columns>
                                             <items>
@@ -307,13 +374,14 @@
                                                     type="Navigation"
                                                     press=".onInvoicePress">
                                                     <cells>
-                                                        <Text text="{invoices>OrderID}" />
-                                                        <Text text="{invoices>ProductName}" />
-                                                        <Text text="{invoices>CustomerName}" />
+                                                        <Text text="{odataModel>OrderID}" />
+                                                        <Text text="{odataModel>ProductName}" />
+                                                        <Text text="{odataModel>CustomerName}" />
                                                         <Text
-                                                            text="{path: 'invoices>OrderDate', formatter: '.formatDate'}" />
+                                                            text="{path: 'odataModel>OrderDate', formatter: '.formatter.formatDate'}" />
                                                         <Text text="{i18n>activeStatusValue}" />
-                                                        <Text text="{invoices>ExtendedPrice}" />
+                                                        <Text
+                                                            text="{path: 'odataModel>ExtendedPrice', formatter: '.formatter.formatCurrency'}" />
                                                     </cells>
                                                 </ColumnListItem>
                                             </items>
@@ -321,14 +389,12 @@
                                     </ScrollContainer>
                                 </VBox>
 
-                                <!-- Load More Button at Bottom -->
                                 <HBox justifyContent="End">
                                     <Button
                                         id="loadMoreInvoicesBtn"
                                         text="{i18n>loadMoreInvoicesButton}"
                                         type="Transparent"
                                         press=".onLoadMoreInvoices"
-                                        enabled="{invoices>/hasMore}"
                                         class="sapUiSmallMarginTop sapUiSmallMarginEnd" />
                                 </HBox>
                             </VBox>

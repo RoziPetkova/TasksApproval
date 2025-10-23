@@ -1,9 +1,11 @@
 sap.ui.define(
     [
         "sap/ui/core/UIComponent",
+        "sap/ui/model/odata/v2/ODataModel",
+        "sap/ui/Device",
         "sap/ui/model/json/JSONModel"
     ],
-    function (UIComponent, JSONModel) {
+    function (UIComponent, ODataModel, Device, JSONModel) {
         "use strict";
 
         return UIComponent.extend("appiuimodule.Component", {
@@ -23,27 +25,43 @@ sap.ui.define(
                 UIComponent.prototype.init.apply(this, arguments);
 
                 // switch to Bulgarian fere if needed
-                //sap.ui.getCore().getConfiguration().setLanguage("bg"); 
+                //sap.ui.getCore().getConfiguration().setLanguage("bg");
 
                 // create the views based on the url/hash
                 //this.getRouter() gets the router instance defined in your app's manifest.
                 //.initialize() starts the router, enabling navigation and view handling
                 // based on the URL/hash.
                 const oRouter = this.getRouter();
-                
+
                 // Show global busy indicator before route matched
-                oRouter.attachBeforeRouteMatched(function() {
+                oRouter.attachBeforeRouteMatched(function () {
                     sap.ui.core.BusyIndicator.show(0);
                 });
-                
+
                 // Hide global busy indicator after route matched
-                oRouter.attachRouteMatched(function() {
+                oRouter.attachRouteMatched(function () {
                     sap.ui.core.BusyIndicator.hide();
                 });
-                
+
                 oRouter.initialize();
+
+                // Set view model with device information (set once at component level)
+                const isMobile = Device.system.phone || Device.system.tablet;
+                const oViewModel = new JSONModel({
+                    isMobile: isMobile
+                });
+                this.setModel(oViewModel, "viewModel");
+
+                // set data model
+                const customersModel = new ODataModel({
+                    serviceUrl: "https://services.odata.org/V2/Northwind/Northwind.svc/",
+                    useBatch: false,       // Optional: combine multiple requests in one batch
+                    defaultBindingMode: "TwoWay", // Optional: allow updates via binding
+                    defaultCountMode: "None"
+                });
+
+                this.setModel(customersModel, "odataModel");
             }
-        },
-        );
+        });
     }
 );

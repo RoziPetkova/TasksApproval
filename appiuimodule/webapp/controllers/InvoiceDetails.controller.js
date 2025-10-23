@@ -1,108 +1,72 @@
 sap.ui.define(
     [
         "sap/ui/core/mvc/Controller",
-        "sap/ui/core/routing/History",
-        "sap/m/MessageToast",
         "sap/ui/model/json/JSONModel",
-        "sap/m/MessageBox"
+        "sap/m/MessageBox",
+        "sap/ui/model/Filter",
+        "sap/ui/model/FilterOperator",
+        "../utils/Formatter",
+        "../utils/Helper"
     ],
-    function (Controller, History, MessageToast, JSONModel, MessageBox) {
+    function (Controller, JSONModel, MessageBox, Filter, FilterOperator, Formatter, Helper) {
         "use strict";
 
         return Controller.extend("appiuimodule.controllers.InvoiceDetails", {
-            _bundle: null,
+            formatter: Formatter,
 
             onInit() {
                 this._bundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.getRoute("invoicedetails").attachPatternMatched(this.onObjectMatched, this);
+                this._router = this.getOwnerComponent().getRouter();
+                this._router.getRoute("invoicedetails").attachPatternMatched(this.onObjectMatched, this);
             },
 
-            onObjectMatched: async function (oEvent) {
+            onObjectMatched: function (oEvent) {
                 var sOrderID = oEvent.getParameter("arguments").OrderID;
-                await this.loadOrderData(sOrderID);
-                this.setStickyHeaderForProductsTable();
+
+                // Filter the products table to show only items for this order
+                this.filterInvoiceProducts(sOrderID);
+                // Bind the first invoice item to display header details
+                this.bindInvoiceHeader(sOrderID);
+                Helper.setStickyHeader(this, "productsTable");
             },
 
-            loadOrderData: async function (orderID) {
-                const table = this.byId("productsTable");
-                if (table) {
-                    table.setBusy(true);
-                }
+            filterInvoiceProducts: function (sOrderID) {
+                const oTable = this.byId("productsTable");
 
-                try {
-                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Invoices?$filter=OrderID eq ${orderID}`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
+                const oBinding = oTable.getBinding("items");
+                const oFilter = new Filter("OrderID", FilterOperator.EQ, parseInt(sOrderID));
+                oBinding.filter([oFilter], "Application");
+            },
 
-                    if (data.value && data.value.length > 0) {
-                        // Use any entry for invoice details
-                        // since they all share the same order information (OrderID, CustomerName, OrderDate, etc.)
-                        const oInvoice = data.value[0];
-                        var oInvoiceModel = this.loadInvoiceProperties(oInvoice);
-                        this.getView().setModel(oInvoiceModel, "invoiceModel");
+            bindInvoiceHeader: function (sOrderID) {
+                const oView = this.getView();
 
-                        var oProductsModel = new JSONModel({
-                            products: data.value
-                        });
-                        this.getView().setModel(oProductsModel, "productsModel");
-                    }
-                } catch (error) {
-                    console.error("Error loading order data:", error);
-                    MessageBox.error(this._bundle.getText("failedToLoadOrderDataMessage"));
-                    var oProductsModel = new JSONModel({
-                        products: []
-                    });
-                    this.getView().setModel(oProductsModel, "productsModel");
-                } finally {
-                    if (table) {
-                        table.setBusy(false);
-                    }
-                }
+                // Read the first invoice item to get header details
+                const oModel = this.getOwnerComponent().getModel("odataModel");
+                const sPath = "/Invoices";
+
+                oView.setBusy(true);
+
+                oModel.read(sPath, {
+                    filters: [new Filter("OrderID", FilterOperator.EQ, parseInt(sOrderID))],
+                    urlParameters: {
+                        "$top": "1"
+                    },
+                    success: function (oData) {
+                        const oInvoice = oData.results[0];
+                        const oInvoiceModel = this.loadInvoiceProperties(oInvoice);
+                        oView.setModel(oInvoiceModel, "invoiceModel");
+                        oView.setBusy(false);
+                    }.bind(this),
+                    error: function (oError) {
+                        MessageBox.error(this._bundle.getText("failedToLoadOrderDataMessage"));
+                        oView.setBusy(false);
+                    }.bind(this)
+                });
             },
 
             onNavBack() {
-                const oHistory = History.getInstance();
-                const sPreviousHash = oHistory.getPreviousHash();
-
-                if (sPreviousHash !== undefined) {
-                    window.history.go(-1);
-                } else {
-                    const oRouter = this.getOwnerComponent().getRouter();
-                    oRouter.navTo("overview", {}, true);
-                }
-            },
-
-            setStickyHeaderForProductsTable: function () {
-                sap.ui.require([
-                    "sap/m/library"
-                ], function (mobileLibrary) {
-                    const Sticky = mobileLibrary.Sticky;
-
-                    // Set sticky for products table
-                    const oProductsTable = this.byId("productsTable");
-                    if (oProductsTable) {
-                        oProductsTable.setSticky([Sticky.ColumnHeaders]);
-                    }
-                }.bind(this));
-            },
-
-            formatCurrency: function (value) {
-                if (!value) return "0.00";
-                return parseFloat(value).toFixed(2);
-            },
-
-            formatDate: function (dateString) {
-                if (!dateString) return "";
-                var date = new Date(dateString);
-                return date.toLocaleDateString();
-            },
-
-            formatDiscount: function (value) {
-                if (!value) return "0%";
-                return (value * 100).toFixed(1) + "%";
+                Helper.onNavBack(this);
             },
 
             loadInvoiceProperties(invoice) {
@@ -110,118 +74,68 @@ sap.ui.define(
                     invoiceDetails: [
                         { label: this._bundle.getText("orderIdColumn"), value: invoice.OrderID },
                         { label: this._bundle.getText("productNameColumn"), value: invoice.ProductName },
+                        { label: this._bundle.getText("customerIdColumn"), value: invoice.CustomerID },
                         { label: this._bundle.getText("customerColumn"), value: invoice.CustomerName },
                         { label: this._bundle.getText("quantityLabel"), value: invoice.Quantity },
-                        { label: this._bundle.getText("unitPriceLabel"), value: this.formatCurrency(invoice.UnitPrice) },
-                        { label: this._bundle.getText("discountLabel"), value: (invoice.Discount * 100).toFixed(1) + "%" },
-                        { label: this._bundle.getText("extendedPriceLabel"), value: this.formatCurrency(invoice.ExtendedPrice) },
+                        { label: this._bundle.getText("unitPriceLabel"), value: Formatter.formatCurrency(invoice.UnitPrice) },
+                        { label: this._bundle.getText("discountLabel"), value: Formatter.formatDiscount(invoice.Discount) },
+                        { label: this._bundle.getText("extendedPriceLabel"), value: Formatter.formatCurrency(invoice.ExtendedPrice) },
                         { label: this._bundle.getText("salespersonLabel"), value: invoice.Salesperson },
                         { label: this._bundle.getText("shipperNameLabel"), value: invoice.ShipperName },
-                        { label: this._bundle.getText("orderDateColumn"), value: this.formatDate(invoice.OrderDate) },
-                        { label: this._bundle.getText("freightLabel"), value: this.formatCurrency(invoice.Freight) }
+                        { label: this._bundle.getText("orderDateColumn"), value: Formatter.formatDate(invoice.OrderDate) },
+                        { label: this._bundle.getText("freightLabel"), value: Formatter.formatCurrency(invoice.Freight) }
                     ]
                 });
             },
 
-            onGoToCustomerDetails: async function () {
+            onGoToCustomerDetails: function () {
                 const oInvoiceModel = this.getView().getModel("invoiceModel");
                 const aInvoiceDetails = oInvoiceModel.getProperty("/invoiceDetails");
 
-                // Find customer name from the invoice details
+                // Find customer ID from the invoice details (we'll add it to the details)
                 const oCustomerDetail = aInvoiceDetails.find(function (detail) {
-                    return detail.label === this._bundle.getText("customerColumn");
+                    return detail.label === this._bundle.getText("customerIdColumn");
                 }.bind(this));
 
                 if (oCustomerDetail && oCustomerDetail.value) {
-                    const customerName = oCustomerDetail.value;
-                    let oCustomer = null;
-
-                    const oCustomersModel = this.getOwnerComponent().getModel("customers");
-                    if (!oCustomersModel || !oCustomersModel.getProperty("/value")) {
-                        oCustomer = await this.loadCustomerByName(customerName);
-                    } else {
-                        const aCustomers = oCustomersModel.getProperty("/value");
-                        oCustomer = aCustomers.find(function (customer) {
-                            return customer.CompanyName === customerName;
-                        });
-                        if (!oCustomer) {
-                            oCustomer = await this.loadCustomerByName(customerName);
-                        }
-                    }
-                    const oRouter = this.getOwnerComponent().getRouter();
-                    oRouter.navTo("customerdetails", { CustomerID: oCustomer.CustomerID });
-                }
-            },
-
-            loadCustomerByName: async function (customerName) {
-                try {
-                    const response = await fetch(`https://services.odata.org/V4/Northwind/Northwind.svc/Customers?$filter=CompanyName eq '${customerName}'`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-
-                    if (data.value && data.value.length > 0) {
-                        return data.value[0];
-                    } else {
-                        console.error("Customer not found in API:", customerName);
-                        MessageBox.error(this._bundle.getText("customerNotFoundMessage", [customerName]));
-                        return null;
-                    }
-                } catch (error) {
-                    console.error("Error loading customer by name:", error);
-                    MessageBox.error(this._bundle.getText("failedToLoadCustomerMessage", [customerName]));
-                    return null;
+                    const sCustomerId = oCustomerDetail.value;
+                    this._router.navTo("customerdetails", { CustomerID: sCustomerId });
                 }
             },
 
             onHomePress: function () {
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("overview");
+                Helper.onHomePress(this);
             },
 
             onSettingsPress: async function () {
-                if (!this.settingsDialog) {
-                    this.settingsDialog = await this.loadFragment({
-                        name: "appiuimodule.views.SettingsDialog"
-                    });
-                }
-                this.settingsDialog.open();
+                await Helper.onSettingsPress(this);
             },
 
             onSettingsSave: function () {
-                MessageToast.show(this._bundle.getText("settingsSavedMessage"));
-                this.settingsDialog.close();
+                Helper.onSettingsSave(this);
             },
 
-            onCloseDialog: function () {
-                if (this.settingsDialog && this.settingsDialog.isOpen()) {
-                    this.settingsDialog.close();
-                }
-                if (this.logoutDialog && this.logoutDialog.isOpen()) {
-                    this.logoutDialog.close();
-                }
+            onCloseDialog: function (oEvent) {
+                oEvent.getSource().getParent().close();
             },
 
             onLogoutPress: async function () {
-                if (!this.logoutDialog) {
-                    this.logoutDialog = await this.loadFragment({
-                        name: "appiuimodule.views.LogoutDialog"
-                    });
-                }
-                this.logoutDialog.open();
+                await Helper.onLogoutPress(this);
             },
 
             onLogoutConfirm: function () {
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("logout");
-                this.logoutDialog.close();
+                Helper.onLogoutConfirm(this);
             },
 
             onHomepagePress: function () {
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("entrypanel");
-            }
+                Helper.onHomepagePress(this);
+            },
+
+
+
+            formatDiscount: function (value) {
+                return Formatter.formatDiscount(value);
+            },
 
         });
     }
