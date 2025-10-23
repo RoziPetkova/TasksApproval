@@ -65,7 +65,7 @@
                                         horizontal="false">
                                         <Table
                                             id="customersTable"
-                                            items="{ path: 'odataModel>/Customers', parameters: {$top: 10}}"
+                                            items="{ path: 'odataModel>/Customers'}"
                                             width="100%"
                                             showNoData="false"
                                             mode="None"
@@ -309,7 +309,6 @@
                                             items="{
                                                 path: 'odataModel>/Invoices',
                                                 parameters: {
-                                                    $top: 10,
                                                     operationMode: 'Server'
                                                 }
                                             }"

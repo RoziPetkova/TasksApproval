@@ -56,7 +56,6 @@
                                         items="{
                                             path: 'odataModel>/Customers',
                                             parameters: {
-                                                $top: 20,
                                                 operationMode: 'Server'
                                             }
                                         }"
@@ -65,7 +64,7 @@
                                         mode="None"
                                         busyIndicatorDelay="0"
                                         growing="true"
-                                        growingThreshold="20"
+                                        growingThreshold="50"
                                         growingTriggerText="{i18n>loadMoreButton}">
                                         <columns>
                                             <Column width="7em">

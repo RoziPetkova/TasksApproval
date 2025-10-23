@@ -57,7 +57,6 @@
                                         items="{
                                                 path: 'odataModel>/Invoices',
                                                 parameters: {
-                                                    $top: 10,
                                                     operationMode: 'Server'
                                                 }
                                             }"
@@ -66,7 +65,7 @@
                                         mode="None"
                                         busyIndicatorDelay="0"
                                         growing="true"
-                                        growingThreshold="10"
+                                        growingThreshold="50"
                                         growingTriggerText="{i18n>loadMoreButton}">
                                         <columns>
                                             <Column width="7em">
