@@ -55,7 +55,7 @@
 
                             <!-- Pricing Information -->
                             <layout:VerticalLayout class="sapUiLargeMarginEnd sapUiSmallMarginBottom">
-                                <Label text="Pricing Information"
+                                <Label text="{i18n>pricingInformationLabel}"
                                     class="sapUiTinyMarginBottom" />
                                 <VBox>
                                     <ObjectAttribute title="{i18n>quantityLabel}"
@@ -71,7 +71,7 @@
 
                             <!-- Shipping Information -->
                             <layout:VerticalLayout class="sapUiLargeMarginEnd sapUiSmallMarginBottom">
-                                <Label text="Shipping Information" class="sapUiTinyMarginBottom" />
+                                <Label text="{i18n>shippingInformationLabel}" class="sapUiTinyMarginBottom" />
                                 <VBox>
                                     <ObjectAttribute title="{i18n>salespersonLabel}"
                                         text="{invoiceModel>/invoiceDetails/8/value}" />
