@@ -136,6 +136,10 @@ sap.ui.define([
                 filteredOrders = allOrders.filter(function (order) {
                     return order.Status === Constants.OrderStatus.PENDING;
                 });
+            } else if (status === Constants.OrderStatus.DECLINED) {
+                filteredOrders = allOrders.filter(function (order) {
+                    return order.Status === Constants.OrderStatus.DECLINED;
+                });
             } else {
                 filteredOrders = allOrders;
             }
@@ -170,6 +174,20 @@ sap.ui.define([
 
         formatShippedDate: function (shippedDate, status) {
             return Formatter.formatShippedDate(shippedDate, status);
+        },
+
+        formatStatusText: function (status) {
+            if (!status) return "";
+            switch (status) {
+                case Constants.OrderStatus.SHIPPED:
+                    return this._bundle.getText("shippedStatusFilter");
+                case Constants.OrderStatus.PENDING:
+                    return this._bundle.getText("pendingStatusFilter");
+                case Constants.OrderStatus.DECLINED:
+                    return this._bundle.getText("declinedStatusValue");
+                default:
+                    return status;
+            }
         },
 
 

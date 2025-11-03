@@ -79,7 +79,7 @@
                                                 info="{orderModel>/ShipCity}" />
                                             <StandardListItem
                                                 title="{i18n>statusLabel}"
-                                                info="{orderModel>/Status}"
+                                                info="{path: 'orderModel>/Status', formatter: '.formatStatusText'}"
                                                 infoState="{path: 'orderModel>/Status', formatter: '.formatter.formatStatusState'}" />
                                         </List>
                                     </VBox>

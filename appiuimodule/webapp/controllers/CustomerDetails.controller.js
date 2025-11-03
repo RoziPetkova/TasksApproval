@@ -5,9 +5,10 @@ sap.ui.define(
         "sap/ui/model/FilterOperator",
         "sap/ui/model/json/JSONModel",
         "../utils/Formatter",
-        "../utils/Helper"
+        "../utils/Helper",
+        "../utils/Constants"
     ],
-    function (Controller, Filter, FilterOperator, JSONModel, Formatter, Helper) {
+    function (Controller, Filter, FilterOperator, JSONModel, Formatter, Helper, Constants) {
         "use strict";
 
         return Controller.extend("appiuimodule.controllers.CustomerDetails", {
@@ -157,6 +158,20 @@ sap.ui.define(
 
             formatRegion: function (value) {
                 return Formatter.formatRegion(value);
+            },
+
+            formatStatusText: function (status) {
+                if (!status) return "";
+                switch (status) {
+                    case Constants.OrderStatus.SHIPPED:
+                        return this.bundle.getText("shippedStatusFilter");
+                    case Constants.OrderStatus.PENDING:
+                        return this.bundle.getText("pendingStatusFilter");
+                    case Constants.OrderStatus.DECLINED:
+                        return this.bundle.getText("declinedStatusValue");
+                    default:
+                        return status;
+                }
             },
         });
     }

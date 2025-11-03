@@ -171,6 +171,8 @@
                                                 text="{i18n>pendingStatusFilter}" />
                                             <core:Item key="{= Constants.OrderStatus.SHIPPED}"
                                                 text="{i18n>shippedStatusFilter}" />
+                                            <core:Item key="{= Constants.OrderStatus.DECLINED}"
+                                                text="{i18n>declinedStatusValue}" />
                                         </Select>
                                     </OverflowToolbar>
                                 </HBox>
@@ -252,7 +254,7 @@
                                                     formatter: '.formatShippedDate'
                                                 }" />
                                                         <ObjectStatus
-                                                            text="{orders>Status}"
+                                                            text="{path: 'orders>Status', formatter: '.formatStatusText'}"
                                                             state="{path: 'orders>Status', formatter: '.formatStatusState'}" />
                                                     </cells>
                                                 </ColumnListItem>

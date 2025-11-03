@@ -165,7 +165,7 @@
                                                     formatter: '.formatShippedDate'
                                                 }" />
                                                     <ObjectStatus
-                                                        text="{customerOrders>Status}"
+                                                        text="{path: 'customerOrders>Status', formatter: '.formatStatusText'}"
                                                         state="{path: 'customerOrders>Status', formatter: '.formatStatusState'}" />
                                                 </cells>
                                             </ColumnListItem>
